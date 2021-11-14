@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="UE4">
+      <UniqueIdentifier>{0f000464-de2e-48e5-a35e-7e7cb7596649}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mod">
+      <UniqueIdentifier>{5e9905c0-4bbb-46a4-8002-8adc3490cc17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VMTHook">
+      <UniqueIdentifier>{4c384f7a-42a5-4b76-8438-44fb5a7ac2be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK">
+      <UniqueIdentifier>{cc6e4333-e6f9-4939-9cf3-2e8fad93fbce}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnrealEngineModLoader\UE4\Basic.cpp">
+      <Filter>UE4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnrealEngineModLoader\UE4\CoreUObject_functions.cpp">
+      <Filter>UE4</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiplayerMod.cpp">
+      <Filter>Mod</Filter>
+    </ClCompile>
+    <ClCompile Include="VMTHook.cpp">
+      <Filter>VMTHook</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Mod</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp">
+      <Filter>UE4</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiplayerMod.h">
+      <Filter>Mod</Filter>
+    </ClInclude>
+    <ClInclude Include="VMTHook.h">
+      <Filter>VMTHook</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Mod</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
