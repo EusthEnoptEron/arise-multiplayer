@@ -73,6 +73,8 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 			gamepads[i].IsConnected = false;
 		}
 	}
+	
+	SteamAPI_ReleaseCurrentThreadMemory();
 }
 
 void InputManager::ActivateActionSetHook(ISteamInput* self, InputHandle_t inputHandle, InputActionSetHandle_t actionSetHandle) {

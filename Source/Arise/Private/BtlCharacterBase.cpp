@@ -7,7 +7,7 @@
 // Sets default values
 ABtlCharacterBase::ABtlCharacterBase()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
@@ -16,7 +16,7 @@ ABtlCharacterBase::ABtlCharacterBase()
 void ABtlCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -51,6 +51,22 @@ EBtlUnitGroup ABtlCharacterBase::GetUnitGroup() {
 FName ABtlCharacterBase::GetUnitID() {
 	return FName();
 }
+
+bool ABtlCharacterBase::UseItemProcess(int ItemID) { return false; }
+
+//void ABtlCharacterBase::SetTargetComponent(class UBtlTargetCursorComponent* Component) {}
+
+void ABtlCharacterBase::SetTargetCharacter(class ABtlCharacterBase* Character) {}
+
+bool ABtlCharacterBase::SetPlayerOperation(bool Enable) { return false; }
+
+bool ABtlCharacterBase::SetEnableRestartAI(bool on) { return false; }
+
+void ABtlCharacterBase::SetBtlAIController(class ABtl_AIControllerBase* AIController) {}
+
+void ABtlCharacterBase::SetAIFlag(bool Enable, EBtlBitFlagCategory Category) {}
+
+void ABtlCharacterBase::DestroyBtlAIController() {}
 //
 //int ABtlCharacterBase::GetCoreHp(class UBtlDamageSphereComponent* CoreCollision) {
 //	return 0;

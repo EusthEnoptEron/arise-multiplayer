@@ -24,7 +24,9 @@ namespace Hooks
 		{
 			if (!GameStateClassInitNotRan)
 			{
-				if (Frame->Node->GetName() == "PrintToModLoader")
+				auto fnName = Frame->Node->GetName();
+
+				if (fnName == "PrintToModLoader")
 				{
 					auto msg = Frame->GetParams<PrintStringParams>()->Message;
 					if (msg.IsValid())
@@ -245,11 +247,11 @@ namespace Hooks
 		Log::Info("ScanLoadedPaks Setup");
 		MinHook::Add(GameProfile::SelectedGameProfile.GameStateInit, &HookedFunctions::hookInitGameState, &HookedFunctions::origInitGameState, "AGameModeBase::InitGameState");
 		MinHook::Add(GameProfile::SelectedGameProfile.BeginPlay, &HookedFunctions::hookBeginPlay, &HookedFunctions::origBeginPlay, "AActor::BeginPlay");
-		LoaderUI::GetUI()->CreateUILogicThread();
+	/*	LoaderUI::GetUI()->CreateUILogicThread();
 		if (!GameProfile::SelectedGameProfile.bDelayGUISpawn)
 		{
 			LoaderUI::HookDX();
-		}
+		}*/
 		return NULL;
 	}
 

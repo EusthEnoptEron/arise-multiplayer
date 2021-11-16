@@ -67,6 +67,8 @@ namespace Actions {
 	const UE4::FString BATTLE_CAMERA_ANGLE = L"BATTLE_CAMERA_ANGLE";
 }
 
+typedef void(*FEngineLoop__Tick_Fn)(void* thisptr);
+
 class MultiplayerMod : public Mod
 {
 public:
@@ -105,7 +107,7 @@ public:
 	//Call ImGui Here (CALLED EVERY FRAME ON DX HOOK)
 	virtual void DrawImGui() override;
 
-	void Tick(UE4::AActor* Actor);
+	void Tick();
 	void OnAction(int index, const UE4::FString &name);
 	void OnActionPressed(int index, const UE4::FString &name);
 	void OnActionReleased(int index, const UE4::FString &name);
@@ -133,8 +135,11 @@ private:
 	UE4::UFunction* OnControllerDisconnectedFn;
 	UE4::UFunction* IsBattleSceneFn;
 
+	bool LogEverything = false;
+
 	time_t LastCheck;
 	InputManager* Manager;
 
+	bool Initialized = false;
 	void CompareDigitalStates(bool newValue, bool oldValue, bool *justPressed, bool *justReleased, const UE4::FString &name, int index);
 };

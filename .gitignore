@@ -57,6 +57,7 @@ Build/*
 Build/*/**
 !Build/*/PakBlacklist*.txt
 
+
 # Don't ignore icon files in Build
 !Build/**/*.ico
 
@@ -72,3 +73,5 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+Compile/*

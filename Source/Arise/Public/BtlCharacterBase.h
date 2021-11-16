@@ -4,19 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Enums.h"
 #include "BtlActionProcessor.h"
+#include "Btl_AIControllerBase.h"
+#include "Btl_Camera.h"
 #include "BtlCharacterBase.generated.h"
-
-// Enum Arise.EBtlUnitGroup
-UENUM(BlueprintType)
-enum class EBtlUnitGroup : uint8
-{
-	GROUP_UNKNOWN = 0,
-	GROUP_PARTY = 1,
-	GROUP_ENEMY = 2,
-	GROUP_GUEST = 3,
-	GROUP_MAX = 4
-};
 
 UCLASS()
 class ARISE_API ABtlCharacterBase : public ACharacter
@@ -50,7 +42,33 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FName GetUnitID();
+
+	UFUNCTION(BlueprintCallable)
+	bool UseItemProcess(int ItemID);
+
+	//UFUNCTION(BlueprintCallable)
+	//void SetTargetComponent(UBtlTargetCursorComponent* Component);
+
+	UFUNCTION(BlueprintCallable)
+	void SetTargetCharacter(ABtlCharacterBase* Character);
+
+	UFUNCTION(BlueprintCallable)
+	bool SetPlayerOperation(bool Enable);
+	UFUNCTION(BlueprintCallable)
+	bool SetEnableRestartAI(bool on);
+
+	UFUNCTION(BlueprintCallable)
+	void SetBtlAIController(ABtl_AIControllerBase* AIController);
+
+	UFUNCTION(BlueprintCallable)
+	void SetAIFlag(bool Enable, EBtlBitFlagCategory Category);
+
+	UFUNCTION(BlueprintCallable)
+	void DestroyBtlAIController();
+
 /*
+
+
 	UFUNCTION(BlueprintCallable)
 	int GetCoreHp(class UBtlDamageSphereComponent* CoreCollision);
 */
