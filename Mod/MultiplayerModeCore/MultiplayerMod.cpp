@@ -12,6 +12,7 @@
 #include "SDK.h";
 #include "SDK/BP_BtlCamera_classes.h";
 #include "Utilities/Pattern.h";
+#include <thread>
 
 #define hasFlag(x,m) ((x&m) > 0)
 
@@ -108,19 +109,15 @@ void SetActiveCameraHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
 
 	SetActiveCamera(Context, Stack, ret);
 }
-
-FNativeFuncPtr K2_ExecuteProcess;
-void K2_ExecuteProcessHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
-	int id = round(((UE4::AActor*)Context)->GetActorLocation().X);
-	if (id > 0) {
-		Log::Info("Start: %s", Context->GetName().c_str());
-		K2_ExecuteProcess(Context, Stack, ret);
-		Log::Info("End: %s", Context->GetName().c_str());
-	}
-	else {
-		K2_ExecuteProcess(Context, Stack, ret);
-	}
-};
+//
+//FNativeFuncPtr K2_ExecuteProcess;
+//void K2_ExecuteProcessHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
+//	Log::Info("Start: %d", std::this_thread::get_id());
+//
+//	K2_ExecuteProcess(Context, Stack, ret);
+//	Log::Info("End");
+//
+//};
 
 FNativeFuncPtr K2_IsBtlButtonJustPressed;
 void K2_IsBtlButtonJustPressedHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {

@@ -1,6 +1,122 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "ObjectMacros.h"
 
+
+UENUM(BlueprintType)
+enum class EBtlInputConfigType : uint8
+{
+	InputEnable = 0,
+	BattleFinish = 1,
+	MainStateOnly = 2,
+	CutScene = 3,
+	Pause = 4,
+	DebugWindow = 5,
+	Tutorial = 6,
+	SystemPause = 7,
+	MetaScript = 8,
+	PlayerChangeFormation = 9,
+	MapChange = 10,
+	BoostStrike = 11,
+	EBtlInputConfigType_MAX = 12
+};
+
+
+
+// Enum Arise.EPCOrder
+UENUM(BlueprintType)
+enum class EPCOrder : uint8
+{
+	ORDER_1ST = 0,
+	ORDER_2ND = 1,
+	ORDER_3RD = 2,
+	ORDER_4TH = 3,
+	ORDER_5TH = 4,
+	ORDER_6TH = 5,
+	ORDER_7TH = 6,
+	ORDER_8TH = 7,
+	ORDER_MAX = 8
+};
+
+
+UENUM(BlueprintType)
+enum class EArisePartyID : uint8
+{
+	ARI = 0,
+	SIO = 1,
+	NNA = 2,
+	ZGU = 3,
+	MNK = 4,
+	YRA = 5,
+	DLC = 6,
+	DLC01 = 7,
+	MAX = 8,
+	INVALID = 9,
+	DUMMY_ANONYMOUS_ = 10
+};
+
+UENUM(BlueprintType)
+enum class EAriseGameState : uint8
+{
+	GameState_Pause = 0,
+	GameState_ScreenMask = 1,
+	GameState_Nowloading = 2,
+	GameState_StreamingLevelLoading = 3,
+	GameState_PlayerFreeLock = 4,
+	GameState_PlayCutSceneEvent = 5,
+	GameState_MapChanging = 6,
+	GameState_Battle = 7,
+	GameState_BattleTraining = 8,
+	GameState_PlayEvent = 9,
+	GameState_PlayQuest = 10,
+	GameState_PlayLongChat = 11,
+	GameState_EventFade = 12,
+	GameState_ActionLadder = 13,
+	GameState_ActionSwim = 14,
+	GameState_ActionGrab = 15,
+	GameState_Fishing = 16,
+	GameState_AutoSaving = 17,
+	GameState_EventContinue = 18,
+	GameState_EncountLock = 19,
+	GameState_ActionDash = 20,
+	GameState_ActionFloating = 21,
+	GameState_PlayScript = 22,
+	GameState_Camp = 23,
+	GameState_QuestContinue = 24,
+	GameState_PlayLookAtCamera = 25,
+	GameState_BattleResultShowHud = 26,
+	GameState_PlayInteract = 27,
+	GameState_ExecuteEnableControlDelegate = 28,
+	GameState_RequestEnableControlDelegate = 29,
+	GameState_Menu = 30,
+	GameState_MenuClosing = 31,
+	GameState_NearMapLink = 32,
+	GameState_DoFastTravel = 33,
+	GameState_GoBackToTitle = 34,
+	GameState_UIControl = 35,
+	GameState_Encounting = 36,
+	GameState_PostGameDataLoaded = 37,
+	GameState_PassBlocked = 38,
+	GameState_PlayerFreeLockUntilMapJump = 39,
+	GameState_SaveLoading = 40,
+	GameState_TextureStreaming = 41,
+	GameState_QuestAutoSaveProcess = 42,
+	GameState_DebugMenuOpen = 43,
+	GameState_Sandbox = 44,
+	GameState_FlyMode = 45,
+	GameState_MAX = 46
+};
+
+
+UENUM(BlueprintType)
+enum class EBtlInputEventType : uint8
+{
+	ButtonPressed = 0,
+	ButtonJustPressed = 1,
+	ButtonJustReleased = 2,
+	ButtonRepeated = 3,
+	EBtlInputEventType_MAX = 4
+};
 
 // Enum Arise.EBtlUnitGroup
 UENUM(BlueprintType)

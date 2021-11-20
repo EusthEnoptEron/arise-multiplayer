@@ -37,6 +37,9 @@
     <ClCompile Include="InputManager.cpp">
       <Filter>Mod</Filter>
     </ClCompile>
+    <ClCompile Include="Libs\Arise-SDK\src\SDK\Basic.cpp">
+      <Filter>SDK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp">

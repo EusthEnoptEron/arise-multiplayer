@@ -1,6 +1,8 @@
 #include "InputManager.h"
 #include "Mod/Mod.h"
 #include <intrin.h>
+#include <thread>
+#include <chrono>
 
 #pragma intrinsic(_ReturnAddress)
 
@@ -98,6 +100,10 @@ void InputManager::ActivateActionSetHook(ISteamInput* self, InputHandle_t inputH
 
 int InputManager::DetourGetConnectedControllers(ISteamInput* self, STEAM_OUT_ARRAY_COUNT(STEAM_INPUT_MAX_COUNT) InputHandle_t* handlesOut)
 {
+	/*using namespace std::chrono_literals;
+
+	std::this_thread::sleep_for(100ms);*/
+
 	//Log::Info("[GET CONTROLLERS]");
 	InputManager* instance = InputManager::GetInstance();
 

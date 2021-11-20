@@ -153,6 +153,7 @@
     <ClCompile Include="..\UnrealEngineModLoader\UE4\CoreUObject_functions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="Libs\Arise-SDK\src\SDK\Basic.cpp" />
     <ClCompile Include="MultiplayerMod.cpp" />
     <ClCompile Include="VMTHook.cpp" />
   </ItemGroup>

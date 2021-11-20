@@ -4,86 +4,131 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Engine/DataTable.h"
 #include "InputExtInputProcessBase.h"
 #include "Btl_Camera.h"
+#include "Enums.h"
 #include "BtlInputExtInputProcessBase.generated.h"
 
-UENUM(BlueprintType)
-enum class EBtlInputConfigType : uint8
+UDELEGATE(BlueprintCallable)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FButtonMulticastDelegate, FName, name, EBtlInputEventType, type);
+
+UDELEGATE(BlueprintCallable)
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FButtonCallback, FName, name, EBtlInputEventType, type);
+
+USTRUCT(BlueprintType)
+struct FBtlInputConfig_DatatableLabel
 {
-	InputEnable = 0,
-	BattleFinish = 1,
-	MainStateOnly = 2,
-	CutScene = 3,
-	Pause = 4,
-	DebugWindow = 5,
-	Tutorial = 6,
-	SystemPause = 7,
-	MetaScript = 8,
-	PlayerChangeFormation = 9,
-	MapChange = 10,
-	BoostStrike = 11,
-	EBtlInputConfigType_MAX = 12
+	GENERATED_BODY()
+	UPROPERTY(BlueprintReadOnly)
+	FName Label; // 0x0000(0x0008) (Edit, BlueprintVisible, ZeroConstructor, IsPlainOldData)
 };
 
-UENUM(BlueprintType)
-enum class EAriseGameState : uint8
+USTRUCT(BlueprintType)
+struct FBtlInputConfig : public FTableRowBase
 {
-	GameState_Pause = 0,
-	GameState_ScreenMask = 1,
-	GameState_Nowloading = 2,
-	GameState_StreamingLevelLoading = 3,
-	GameState_PlayerFreeLock = 4,
-	GameState_PlayCutSceneEvent = 5,
-	GameState_MapChanging = 6,
-	GameState_Battle = 7,
-	GameState_BattleTraining = 8,
-	GameState_PlayEvent = 9,
-	GameState_PlayQuest = 10,
-	GameState_PlayLongChat = 11,
-	GameState_EventFade = 12,
-	GameState_ActionLadder = 13,
-	GameState_ActionSwim = 14,
-	GameState_ActionGrab = 15,
-	GameState_Fishing = 16,
-	GameState_AutoSaving = 17,
-	GameState_EventContinue = 18,
-	GameState_EncountLock = 19,
-	GameState_ActionDash = 20,
-	GameState_ActionFloating = 21,
-	GameState_PlayScript = 22,
-	GameState_Camp = 23,
-	GameState_QuestContinue = 24,
-	GameState_PlayLookAtCamera = 25,
-	GameState_BattleResultShowHud = 26,
-	GameState_PlayInteract = 27,
-	GameState_ExecuteEnableControlDelegate = 28,
-	GameState_RequestEnableControlDelegate = 29,
-	GameState_Menu = 30,
-	GameState_MenuClosing = 31,
-	GameState_NearMapLink = 32,
-	GameState_DoFastTravel = 33,
-	GameState_GoBackToTitle = 34,
-	GameState_UIControl = 35,
-	GameState_Encounting = 36,
-	GameState_PostGameDataLoaded = 37,
-	GameState_PassBlocked = 38,
-	GameState_PlayerFreeLockUntilMapJump = 39,
-	GameState_SaveLoading = 40,
-	GameState_TextureStreaming = 41,
-	GameState_QuestAutoSaveProcess = 42,
-	GameState_DebugMenuOpen = 43,
-	GameState_Sandbox = 44,
-	GameState_FlyMode = 45,
-	GameState_MAX = 46
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	FName ButtonName; // 0x0008(0x0008) (Edit, ZeroConstructor, DisableEditOnInstance, IsPlainOldData)
+
+	UPROPERTY(BlueprintReadOnly)
+	EBtlInputEventType EventType; // 0x0010(0x0001) (Edit, ZeroConstructor, DisableEditOnInstance, IsPlainOldData)
+
+	unsigned char UnknownData00[0x3]; // 0x0011(0x0003) MISSED OFFSET
+
+	uint32 Config; // 0x0014(0x0004) (Edit, ZeroConstructor, DisableEditOnInstance, IsPlainOldData)
 };
+
+
+// ScriptStruct Arise.BtlInputEventData
+// 0x0030
+USTRUCT(BlueprintType)
+struct FBtlInputEventData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	FName ButtonName; // 0x0000(0x0008) (Edit, ZeroConstructor, DisableEditOnTemplate, EditConst, IsPlainOldData)
+
+	UPROPERTY(BlueprintReadOnly)
+	EBtlInputEventType InputType;
+	// 0x0008(0x0001) (Edit, ZeroConstructor, DisableEditOnTemplate, EditConst, IsPlainOldData)
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bEnableEvent; // 0x0009(0x0001) (ZeroConstructor, IsPlainOldData)
+	unsigned char UnknownData00[0x6]; // 0x000A(0x0006) MISSED OFFSET
+
+	//UPROPERTY(BlueprintCallable)
+	UPROPERTY(BlueprintCallable)
+	FButtonMulticastDelegate Events;
+
+	//UPROPERTY(BlueprintCallable)
+	UPROPERTY(BlueprintCallable)
+	FButtonMulticastDelegate AlwaysEvents;
+};
+
+USTRUCT(BlueprintType)
+struct FBtlInputEventConfigData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	FBtlInputConfig_DatatableLabel ConfigLabel; // 0x0000(0x0008)
+
+	UPROPERTY(BlueprintReadOnly)
+	FBtlInputConfig ConfigData; // 0x0008(0x0018)
+
+
+	UPROPERTY(BlueprintReadOnly, meta = (GetByRef))
+	FButtonCallback Event; // 0x0020(0x0014) (ZeroConstructor, InstancedReference)
+
+	UPROPERTY(BlueprintReadOnly, meta = (GetByRef))
+	FButtonCallback ChangeEnableEvent; // 0x0030(0x0014) (ZeroConstructor, InstancedReference)
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bEnableEvent; // 0x0040(0x0001) (ZeroConstructor, IsPlainOldData)
+	unsigned char UnknownData00[0x7];
+};
+
+USTRUCT(BlueprintType)
+
+struct FBtlInputConfigEvent
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	FName ButtonName; // 0x0000(0x0008) (Edit, ZeroConstructor, DisableEditOnTemplate, EditConst, IsPlainOldData)
+
+	UPROPERTY(BlueprintReadOnly)
+	EBtlInputEventType InputType;
+	// 0x0008(0x0001) (Edit, ZeroConstructor, DisableEditOnTemplate, EditConst, IsPlainOldData)
+
+	unsigned char UnknownData00[0x7]; // 0x0009(0x0007) MISSED OFFSET
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite)
+	FButtonMulticastDelegate Events; // 0x0010(0x0010) (ZeroConstructor, InstancedReference)
+};
+
 
 UCLASS()
 class ARISE_API ABtlInputExtInputProcessBase : public AInputExtInputProcessBase
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FBtlInputEventData> ButtonEvents;
+	// 0x0350(0x0010) (Edit, ZeroConstructor, DisableEditOnTemplate, Transient, EditConst)
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FBtlInputEventConfigData> ConfigButtons;
+	// 0x0360(0x0010) (Edit, ZeroConstructor, DisableEditOnTemplate, Transient, EditConst)
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FBtlInputConfigEvent> ConfigEvents;
+
+
 	// Sets default values for this actor's properties
 	ABtlInputExtInputProcessBase();
 
@@ -91,7 +136,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -100,11 +145,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetInputEnable(bool Enable, EBtlBitFlagCategory Category);
-	
+
 	UFUNCTION(BlueprintCallable)
 	void SetInputConfigFlag(EBtlInputConfigType ConfigType, bool bEnable);
 
 	UFUNCTION(BlueprintCallable)
 	void OnChangeAriseGameState(EAriseGameState ChangedState, bool bNewState);
 
+	UFUNCTION(BlueprintCallable)
+	void RegisterInputEvent(const FName& InButtonName, EBtlInputEventType Type, const FButtonCallback& Event);
 };

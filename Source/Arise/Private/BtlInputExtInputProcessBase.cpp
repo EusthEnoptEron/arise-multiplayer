@@ -35,3 +35,7 @@ void ABtlInputExtInputProcessBase::SetInputEnable(bool Enable, EBtlBitFlagCatego
 void ABtlInputExtInputProcessBase::SetInputConfigFlag(EBtlInputConfigType ConfigType, bool bEnable) {}
 
 void ABtlInputExtInputProcessBase::OnChangeAriseGameState(EAriseGameState ChangedState, bool bNewState) {}
+
+void ABtlInputExtInputProcessBase::RegisterInputEvent(const FName& InButtonName, EBtlInputEventType Type, const FButtonCallback& Event) {
+
+}
