@@ -4,6 +4,8 @@
 #include "XInput.h"
 #include <time.h>
 #include "InputManager.h";
+#include "SDK.h";
+#include "SDK/BP_BtlCamera_classes.h";
 
 typedef void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void *result);
 struct FScriptName {
@@ -135,6 +137,7 @@ private:
 	UE4::UFunction* OnControllerDisconnectedFn;
 	UE4::UFunction* IsBattleSceneFn;
 
+	int MenuCandidate = 0;
 	bool LogEverything = false;
 
 	time_t LastCheck;

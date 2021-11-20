@@ -62,7 +62,7 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 
 		state.Move = Input->GetAnalogActionData(handle, AA_Move);
 		state.CameraAngle= Input->GetAnalogActionData(handle, AA_CameraAngle);
-
+		
 		if (index < 4) {
 			gamepads[index] = state;
 		}
@@ -83,7 +83,7 @@ void InputManager::ActivateActionSetHook(ISteamInput* self, InputHandle_t inputH
 	InputManager* instance = InputManager::GetInstance();
 
 	// Workaround because the custom InputProcesses seem to interfere with the activated action sets
-	if (inputHandle == instance->Controllers[0] || !instance->_rerouteControllers) {
+	if (inputHandle == instance->Controllers[instance->FirstPlayerIndex] || !instance->_rerouteControllers) {
 		if (actionSetHandle == instance->AS_Battle) {
 			if (instance->_preventBattleInput || (instance->UpdateCounter - instance->_lastDifferentActionSet) < 2) {
 				//	Log::Info("%p", _ReturnAddress());

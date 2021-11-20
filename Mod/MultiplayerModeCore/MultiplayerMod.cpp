@@ -9,8 +9,6 @@
 #include <fstream>
 #include "libloaderapi.h"
 #include <math.h>
-#include "SDK.h";
-#include "SDK/BP_BtlCamera_classes.h";
 #include "Utilities/Pattern.h";
 #include <thread>
 
@@ -293,6 +291,18 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 		else if (name == "OnEndBattle") {
 			InputManager::GetInstance()->SetRerouteControllers(false);
 		}
+		else if (name == "OnSubStateStart") {
+			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
+			if (state == SDK::EBattleState::StateMenu && MenuCandidate != 0) {
+				InputManager::GetInstance()->SetFirstPlayer(MenuCandidate);
+			}
+		}
+		else if (name == "OnSubStateEnd") {
+			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
+			if (state == SDK::EBattleState::StateMenu) {
+				InputManager::GetInstance()->SetFirstPlayer(0);
+			}
+		}
 	}
 }
 
@@ -385,6 +395,13 @@ void MultiplayerMod::Tick()
 		CompareDigitalStates(newState.IsSwap, oldState.IsSwap, &(justPressed.IsSwap), &(justReleased.IsSwap), Actions::BATTLE_BASE_SWAP, i);
 		CompareDigitalStates(newState.IsAttack, oldState.IsAttack, &(justPressed.IsAttack), &(justReleased.IsAttack), Actions::BATTLE_BASE_ATTACK, i);
 		CompareDigitalStates(newState.IsGuard, oldState.IsGuard, &(justPressed.IsGuard), &(justReleased.IsGuard), Actions::BATTLE_BASE_GUARD, i);
+
+		if (newState.IsMenu && !oldState.IsMenu) {
+			MenuCandidate = i;
+		}
+		if (MenuCandidate == i && !newState.IsMenu) {
+			MenuCandidate = 0;
+		}
 
 		if (newState.Move.bActive)
 		{
