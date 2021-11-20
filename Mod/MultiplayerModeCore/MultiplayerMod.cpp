@@ -78,7 +78,7 @@ std::string GetName(UE4::FFrame& Stack) {
 FNativeFuncPtr GetBtlAxisValue;
 void GetBtlAxisValueHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
 	int id = static_cast<int>(((UE4::AActor*)Context)->GetActorLocation().X);
-	if (id > 0) {
+	if (id > 0 && InputManager::GetInstance()->IsRerouteControllers()) {
 		auto mod = ((MultiplayerMod *)Mod::ModRef);
 		std::string nameString = GetName(Stack);
 
@@ -284,7 +284,16 @@ bool MultiplayerMod::IsBattleScene() {
 
 void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 {
-	
+	if (obj == ModActor) {
+		auto name = Frame->Node->GetName();
+
+		if (name == "OnBeginBattle") {
+			InputManager::GetInstance()->SetRerouteControllers(true);
+		}
+		else if (name == "OnEndBattle") {
+			InputManager::GetInstance()->SetRerouteControllers(false);
+		}
+	}
 }
 
 void MultiplayerMod::InitGameState()

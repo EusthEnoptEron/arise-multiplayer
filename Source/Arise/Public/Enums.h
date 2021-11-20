@@ -22,7 +22,6 @@ enum class EBtlInputConfigType : uint8
 };
 
 
-
 // Enum Arise.EPCOrder
 UENUM(BlueprintType)
 enum class EPCOrder : uint8
@@ -209,4 +208,36 @@ enum class EBtlCameraMode : uint8
 	MODE_END = 13,
 	MODE_BOGUS = 14,
 	EBtlCameraMode_MAX = 15
+};
+
+// Enum Arise.EOperationMode
+UENUM(BlueprintType)
+enum class EOperationMode : uint8
+{
+	OPERATION_MODE_AUTO = 0,
+	OPERATION_MODE_SEMI_AUTO = 1,
+	OPERATION_MODE_MANUAL = 2,
+	OPERATION_MODE_MAX = 3
+};
+
+
+// Enum Arise.EBattleState
+UENUM(BlueprintType)
+enum class EBattleState : uint8
+{
+	StateNone = 0,
+	StateInitialize = 1,
+	StatePrev = 2,
+	StateMain = 3,
+	StatePostMain = 4,
+	StateMenu = 5,
+	StateEvent = 6,
+	StateGameover = 7,
+	StateRetry = 8,
+	StateResult = 9,
+	StateRunaway = 10,
+	StateTutorial = 11,
+	StatePause = 12,
+	StateFinalize = 13,
+	EBattleState_MAX = 14
 };

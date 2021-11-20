@@ -49,13 +49,26 @@ public:
 		}
 	}
 
+	/// <summary>
+	/// Temporarily swaps the first player with another player of choice.
+	/// </summary>
+	/// <param name="index">The index of the other player</param>
+	void SetFirstPlayer(int index);
+	
+	void SetRerouteControllers(bool reroute) {
+		_rerouteControllers = reroute;
+	}
+	bool IsRerouteControllers() {
+		return _rerouteControllers;
+	}
+
 	void SetPreventBattleInput(bool val) {
 		_preventBattleInput = val;
 	}
 private:
 	InputManager() {
 		Input = SteamInput();
-		GetConnectedControllers = (GetConnectedControllers_t)HookMethod((LPVOID)Input, (PVOID)DetourGetConnectedControllers, 3 * 8);
+		GetConnectedControllers = (GetConnectedControllers_t)HookMethod((LPVOID)Input, (PVOID)GetConnectedControllersHook, 3 * 8);
 		ActivateActionSet = (ActivateActionSet_t)HookMethod((LPVOID)Input, (PVOID)ActivateActionSetHook, 5 * 8);
 
 		Input->Init();
@@ -87,12 +100,14 @@ private:
 	InputHandle_t InputHandles[STEAM_INPUT_MAX_COUNT];
 	int InputHandleCount;
 	std::vector<InputHandle_t> Controllers;
+	int FirstPlayerIndex;
+
 	unsigned long UpdateCounter = 0;
 
 	static GetConnectedControllers_t GetConnectedControllers;
 	static ActivateActionSet_t ActivateActionSet;
 
-	static int DetourGetConnectedControllers(ISteamInput* self, STEAM_OUT_ARRAY_COUNT(STEAM_INPUT_MAX_COUNT, Receives list of connected controllers) InputHandle_t* handlesOut);
+	static int GetConnectedControllersHook(ISteamInput* self, STEAM_OUT_ARRAY_COUNT(STEAM_INPUT_MAX_COUNT, Receives list of connected controllers) InputHandle_t* handlesOut);
 	static void ActivateActionSetHook(ISteamInput* self, InputHandle_t inputHandle, InputActionSetHandle_t actionSetHandle);
 
 	int GetIndexForController(InputHandle_t handle);
@@ -120,5 +135,6 @@ private:
 	// Hack for the time being
 	bool _preventBattleInput = false;
 	unsigned long _lastDifferentActionSet;
+	bool _rerouteControllers = false;
 
 };

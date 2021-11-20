@@ -35,7 +35,7 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 		InputHandle_t handle = InputHandles[i];
 		int index = GetIndexForController(handle);
 
-		if (index == 0) continue; // Ignore first one. Is passed on to game.
+		if (index == 0 || index == FirstPlayerIndex || !_rerouteControllers) continue; // Ignore first one (or its override). Is passed on to game.
 
 		// Make sure battoru is active
 		Input->ActivateActionSet(handle, AS_Battle);
@@ -82,7 +82,8 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 void InputManager::ActivateActionSetHook(ISteamInput* self, InputHandle_t inputHandle, InputActionSetHandle_t actionSetHandle) {
 	InputManager* instance = InputManager::GetInstance();
 
-	if (inputHandle == instance->Controllers[0]) {
+	// Workaround because the custom InputProcesses seem to interfere with the activated action sets
+	if (inputHandle == instance->Controllers[0] || !instance->_rerouteControllers) {
 		if (actionSetHandle == instance->AS_Battle) {
 			if (instance->_preventBattleInput || (instance->UpdateCounter - instance->_lastDifferentActionSet) < 2) {
 				//	Log::Info("%p", _ReturnAddress());
@@ -98,21 +99,19 @@ void InputManager::ActivateActionSetHook(ISteamInput* self, InputHandle_t inputH
 	ActivateActionSet(self, inputHandle, actionSetHandle);
 }
 
-int InputManager::DetourGetConnectedControllers(ISteamInput* self, STEAM_OUT_ARRAY_COUNT(STEAM_INPUT_MAX_COUNT) InputHandle_t* handlesOut)
+int InputManager::GetConnectedControllersHook(ISteamInput* self, STEAM_OUT_ARRAY_COUNT(STEAM_INPUT_MAX_COUNT) InputHandle_t* handlesOut)
 {
-	/*using namespace std::chrono_literals;
-
-	std::this_thread::sleep_for(100ms);*/
-
-	//Log::Info("[GET CONTROLLERS]");
 	InputManager* instance = InputManager::GetInstance();
+	if (!instance->_rerouteControllers) {
+		return GetConnectedControllers(self, handlesOut);
+	}
 
 	// Get real handles
 	instance->InputHandleCount = InputManager::GetConnectedControllers(self, instance->InputHandles);
 
 	if (instance->Controllers.size() > 0) {
 		// Return the first controller if found
-		InputHandle_t firstHandle = instance->Controllers[0];
+		InputHandle_t firstHandle = instance->Controllers[instance->FirstPlayerIndex];
 
 		for (int i = 0; i < instance->InputHandleCount; i++) {
 			if (instance->InputHandles[i] == firstHandle) {
@@ -125,3 +124,6 @@ int InputManager::DetourGetConnectedControllers(ISteamInput* self, STEAM_OUT_ARR
 	return 0;
 }
 
+void InputManager::SetFirstPlayer(int index) {
+	FirstPlayerIndex = index;
+}
