@@ -1,5 +1,4 @@
 #include "InputManager.h"
-#include "Mod/Mod.h"
 #include <intrin.h>
 #include <thread>
 #include <chrono>
@@ -9,6 +8,7 @@
 InputManager *InputManager::Instance;
 GetConnectedControllers_t InputManager::GetConnectedControllers;
 ActivateActionSet_t InputManager::ActivateActionSet;
+GetAnalogActionData_t InputManager::GetAnalogActionData;
 
 
 int InputManager::GetIndexForController(InputHandle_t handle) {
@@ -63,9 +63,9 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 		state.IsAttack = Input->GetDigitalActionData(handle, AD_BaseAttack).bState;
 		state.IsGuard = Input->GetDigitalActionData(handle, AD_BaseGuard).bState;
 
-		state.Move = Input->GetAnalogActionData(handle, AA_Move);
-		state.CameraAngle= Input->GetAnalogActionData(handle, AA_CameraAngle);
-		
+		state.Move = GetAnalogActionDataSimple(handle, AA_Move);
+		state.CameraAngle = GetAnalogActionDataSimple(handle, AA_CameraAngle);
+		//
 		if (index < 4) {
 			gamepads[index] = state;
 		}
@@ -100,6 +100,38 @@ void InputManager::ActivateActionSetHook(ISteamInput* self, InputHandle_t inputH
 
 	ActivateActionSet(self, inputHandle, actionSetHandle);
 }
+
+InputAnalogActionData_t *InputManager::GetAnalogActionDataHook(ISteamInput* self, InputAnalogActionData_t* data, InputHandle_t inputHandle, InputAnalogActionHandle_t analogActionHandle) {
+	auto result = GetAnalogActionData(self, data, inputHandle, analogActionHandle);
+
+	if (result->bActive && analogActionHandle == InputManager::GetInstance()->AA_CameraAngle) {
+		auto instance = InputManager::GetInstance();
+		int numControllers = GetConnectedControllers(instance->Input, instance->InputHandles);
+
+		float xAccumulator = 0.0f;
+		float yAccumulator = 0.0f;
+		for (int i = 0; i < numControllers; i++) {
+			auto subresult = instance->GetAnalogActionDataSimple(instance->InputHandles[i], analogActionHandle);
+			if (subresult.bActive) {
+				xAccumulator += subresult.x;
+				yAccumulator += subresult.y;
+			}
+		}
+
+		result->x = xAccumulator / static_cast<float>(numControllers) * instance->_cameraSpeedRatio;
+		result->y = yAccumulator / static_cast<float>(numControllers) * instance->_cameraSpeedRatio;
+		//Log::Info("%.2f (%.2f / %d)", result->x, xAccumulator, numControllers);
+	}
+	
+	return result;
+}
+
+InputAnalogActionData_t InputManager::GetAnalogActionDataSimple(InputHandle_t inputHandle, InputAnalogActionHandle_t analogActionHandle) {
+	InputAnalogActionData_t result;
+	GetAnalogActionData(InputManager::GetInput(), &result, inputHandle, analogActionHandle);
+	return result;
+}
+
 
 int InputManager::GetConnectedControllersHook(ISteamInput* self, STEAM_OUT_ARRAY_COUNT(STEAM_INPUT_MAX_COUNT) InputHandle_t* handlesOut)
 {

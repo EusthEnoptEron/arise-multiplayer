@@ -301,19 +301,20 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
 			if (state == SDK::EBattleState::StateMenu && MenuCandidate != 0) {
 				InputManager::GetInstance()->SetFirstPlayer(MenuCandidate);
+				//ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &MenuCandidate);
 			}
 		}
 		else if (name == "OnSubStateEnd") {
 			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
 			if (state == SDK::EBattleState::StateMenu) {
 				InputManager::GetInstance()->SetFirstPlayer(0);
+				//ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
 			}
 		}
 		else if (name == "OnBeginChangeTarget") {
 			for (int i = 0; i < 4; i++) {
 				if (OldStates[i].IsTarget) {
 					InputManager::GetInstance()->SetFirstPlayer(i);
-					Log::Info("Hand over control to %d", i);
 					if (i != 0) {
 						ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &i);
 					}
@@ -323,7 +324,6 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 			//InputManager::GetInstance()->SetRerouteControllers(true);
 		}
 		else if (name == "OnEndChangeTarget") {
-			Log::Info("Restorecontrol");
 			InputManager::GetInstance()->SetFirstPlayer(0);
 			ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
 			//InputManager::GetInstance()->SetRerouteControllers(false);
