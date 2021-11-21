@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BtlStateBase.h"
 #include "Enums.h"
 #include "UObject/NoExportTypes.h"
 #include "BtlStateManager.generated.h"
@@ -33,4 +34,7 @@ class ARISE_API UBtlStateManager : public UObject
 
 	UFUNCTION(BlueprintCallable)
 	EBattleState GetSubState();
+
+	UFUNCTION(BlueprintCallable)
+	UBtlStateBase* GetStateAction(EBattleState State);
 };

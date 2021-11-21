@@ -76,11 +76,11 @@ std::string GetName(UE4::FFrame& Stack) {
 FNativeFuncPtr GetBtlAxisValue;
 void GetBtlAxisValueHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
 	int id = static_cast<int>(((UE4::AActor*)Context)->GetActorLocation().X);
-	if (id > 0 && InputManager::GetInstance()->IsRerouteControllers()) {
-		auto mod = ((MultiplayerMod *)Mod::ModRef);
-		std::string nameString = GetName(Stack);
+	std::string nameString = GetName(Stack);
+	GetBtlAxisValue(Context, Stack, result);
+	auto mod = ((MultiplayerMod*)Mod::ModRef);
 
-		GetBtlAxisValue(Context, Stack, result);
+	if (id > 0 && InputManager::GetInstance()->IsRerouteControllers()) {
 
 		if ("BATTLE_MOVE_FORWARD_BACKWARD" == nameString) {
 			*((float*)result) = mod->OldStates[id].Move.y;
@@ -88,13 +88,19 @@ void GetBtlAxisValueHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result
 		else if("BATTLE_MOVE_LEFT_RIGHT" == nameString) {
 			*((float*)result) = mod->OldStates[id].Move.x;
 		}
+		else if ("BATTLE_TARGET_CHANGE_LEFT" == nameString) {
+			*((float*)result) = max(0.0f, (-mod->OldStates[InputManager::GetInstance()->GetFirstPlayer()].Move.x));
+		}
+		else if ("BATTLE_TARGET_CHANGE_RIGHT" == nameString) {
+			*((float*)result) = max(0.0f, (mod->OldStates[InputManager::GetInstance()->GetFirstPlayer()].Move.x));
+		}
 		else {
-			Log::Info("Unknown direction: %s", nameString.c_str() );
-			GetBtlAxisValue(Context, Stack, result);
+			Log::Info("Unknown direction: %s (%d)", nameString.c_str(), id);
 		}
 	}
 	else {
-		GetBtlAxisValue(Context, Stack, result);
+
+	
 	}
 }
 
@@ -303,6 +309,25 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 				InputManager::GetInstance()->SetFirstPlayer(0);
 			}
 		}
+		else if (name == "OnBeginChangeTarget") {
+			for (int i = 0; i < 4; i++) {
+				if (OldStates[i].IsTarget) {
+					InputManager::GetInstance()->SetFirstPlayer(i);
+					Log::Info("Hand over control to %d", i);
+					if (i != 0) {
+						ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &i);
+					}
+					break;
+				}
+			}
+			//InputManager::GetInstance()->SetRerouteControllers(true);
+		}
+		else if (name == "OnEndChangeTarget") {
+			Log::Info("Restorecontrol");
+			InputManager::GetInstance()->SetFirstPlayer(0);
+			ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
+			//InputManager::GetInstance()->SetRerouteControllers(false);
+		}
 	}
 }
 
@@ -331,6 +356,8 @@ void MultiplayerMod::PostBeginPlay(std::wstring ModActorName, UE4::AActor* Actor
 		OnAnalogActionFn = Actor->GetFunction("OnAnalogAction");
 		OnControllerConnectedFn = Actor->GetFunction("OnControllerConnected");
 		OnControllerDisconnectedFn = Actor->GetFunction("OnControllerDisconnected");
+		OnChangeFirstPlayerTemporarilyFn = Actor->GetFunction("OnChangeFirstPlayerTemporarily");
+		OnRestoreFirstPlayerFn = Actor->GetFunction("OnRestoreFirstPlayer");
 
 		IsBattleSceneFn = UE4::UObject::FindObject<UE4::UFunction>("Function BP_GameFunctionLibrary.BP_GameFunctionLibrary_C.GameFunc_IsBattelScene");
 		functionLibClazz = UE4::UObject::FindObject<UE4::UClass>("BlueprintGeneratedClass BP_GameFunctionLibrary.BP_GameFunctionLibrary_C");
@@ -392,6 +419,7 @@ void MultiplayerMod::Tick()
 		CompareDigitalStates(newState.IsArts2, oldState.IsArts2, &(justPressed.IsArts2), &(justReleased.IsArts2), Actions::BATTLE_BASE_ARTS_2, i);
 		CompareDigitalStates(newState.IsJump, oldState.IsJump, &(justPressed.IsJump), &(justReleased.IsJump), Actions::BATTLE_BASE_JUMP, i);
 		CompareDigitalStates(newState.IsTarget, oldState.IsTarget, &(justPressed.IsTarget), &(justReleased.IsTarget), Actions::BATTLE_BASE_TARGET, i);
+		CompareDigitalStates(newState.IsTarget, oldState.IsTarget, &(justPressed.IsTarget), &(justReleased.IsTarget), Actions::BATTLE_BASE_TARGET_QUICK, i);
 		CompareDigitalStates(newState.IsSwap, oldState.IsSwap, &(justPressed.IsSwap), &(justReleased.IsSwap), Actions::BATTLE_BASE_SWAP, i);
 		CompareDigitalStates(newState.IsAttack, oldState.IsAttack, &(justPressed.IsAttack), &(justReleased.IsAttack), Actions::BATTLE_BASE_ATTACK, i);
 		CompareDigitalStates(newState.IsGuard, oldState.IsGuard, &(justPressed.IsGuard), &(justReleased.IsGuard), Actions::BATTLE_BASE_GUARD, i);

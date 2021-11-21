@@ -10,7 +10,6 @@
 #include "Enums.h"
 #include "BtlInputExtInputProcessBase.generated.h"
 
-UDELEGATE(BlueprintCallable)
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FButtonMulticastDelegate, FName, name, EBtlInputEventType, type);
 
 UDELEGATE(BlueprintCallable)
@@ -59,12 +58,10 @@ struct FBtlInputEventData
 	bool bEnableEvent; // 0x0009(0x0001) (ZeroConstructor, IsPlainOldData)
 	unsigned char UnknownData00[0x6]; // 0x000A(0x0006) MISSED OFFSET
 
-	//UPROPERTY(BlueprintCallable)
-	UPROPERTY(BlueprintCallable)
+	UPROPERTY(BlueprintCallable, BlueprintAssignable)
 	FButtonMulticastDelegate Events;
 
-	//UPROPERTY(BlueprintCallable)
-	UPROPERTY(BlueprintCallable)
+	UPROPERTY(BlueprintCallable, BlueprintAssignable)
 	FButtonMulticastDelegate AlwaysEvents;
 };
 

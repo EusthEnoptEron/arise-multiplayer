@@ -35,10 +35,13 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 		InputHandle_t handle = InputHandles[i];
 		int index = GetIndexForController(handle);
 
-		if (index == 0 || index == FirstPlayerIndex || !_rerouteControllers) continue; // Ignore first one (or its override). Is passed on to game.
+		// Ignore first one (or its override). Is passed on to game.
+		if (!(index == 0 || index == FirstPlayerIndex || !_rerouteControllers))
+		{
+			Input->ActivateActionSet(handle, AS_Battle);
+			// Make sure battoru is active
 
-		// Make sure battoru is active
-		Input->ActivateActionSet(handle, AS_Battle);
+		}
 
 		GamepadState state = { 0 };
 		state.Handle = handle;
@@ -76,7 +79,7 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 		}
 	}
 	
-	SteamAPI_ReleaseCurrentThreadMemory();
+	//SteamAPI_ReleaseCurrentThreadMemory();
 }
 
 void InputManager::ActivateActionSetHook(ISteamInput* self, InputHandle_t inputHandle, InputActionSetHandle_t actionSetHandle) {
@@ -86,7 +89,6 @@ void InputManager::ActivateActionSetHook(ISteamInput* self, InputHandle_t inputH
 	if (inputHandle == instance->Controllers[instance->FirstPlayerIndex] || !instance->_rerouteControllers) {
 		if (actionSetHandle == instance->AS_Battle) {
 			if (instance->_preventBattleInput || (instance->UpdateCounter - instance->_lastDifferentActionSet) < 2) {
-				//	Log::Info("%p", _ReturnAddress());
 				return; // Abort
 			}
 		}

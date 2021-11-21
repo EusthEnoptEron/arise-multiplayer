@@ -12,3 +12,8 @@ EBattleState UBtlStateManager::GetSubState()
 {
 	return {};
 }
+
+UBtlStateBase* UBtlStateManager::GetStateAction(EBattleState State)
+{
+	return nullptr;
+}

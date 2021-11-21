@@ -325,6 +325,11 @@ bool UBtlFunctionLibrary::InArena()
 	return false;
 }
 
+ABattleUIManager* UBtlFunctionLibrary::GetUIManager()
+{
+	return nullptr;
+}
+
 int UBtlFunctionLibrary::GetTPPercent()
 {
 	return 0;

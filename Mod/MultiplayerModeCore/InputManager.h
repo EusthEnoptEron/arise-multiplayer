@@ -55,6 +55,9 @@ public:
 	/// <param name="index">The index of the other player</param>
 	void SetFirstPlayer(int index);
 	
+	int GetFirstPlayer() {
+		return FirstPlayerIndex;
+	}
 	void SetRerouteControllers(bool reroute) {
 		_rerouteControllers = reroute;
 	}
@@ -64,6 +67,10 @@ public:
 
 	void SetPreventBattleInput(bool val) {
 		_preventBattleInput = val;
+	}
+
+	static ISteamInput *GetInput() {
+		return GetInstance()->Input;
 	}
 private:
 	InputManager() {

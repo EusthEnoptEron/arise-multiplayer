@@ -60,7 +60,8 @@ namespace Actions {
 	const UE4::FString BATTLE_BASE_ARTS_1 = L"BATTLE_ARTS_1";
 	const UE4::FString BATTLE_BASE_ARTS_2 = L"BATTLE_ARTS_2";
 	const UE4::FString BATTLE_BASE_JUMP = L"BATTLE_JUMP";
-	const UE4::FString BATTLE_BASE_TARGET = L"BATTLE_QUICK_TARGET";
+	const UE4::FString BATTLE_BASE_TARGET = L"BATTLE_TARGET";
+	const UE4::FString BATTLE_BASE_TARGET_QUICK = L"BATTLE_QUICK_TARGET";
 	const UE4::FString BATTLE_BASE_SWAP = L"BATTLE_STRIKE_SWAP";
 	const UE4::FString BATTLE_BASE_ATTACK = L"BATTLE_NORMAL_ATTACK";
 	const UE4::FString BATTLE_BASE_GUARD = L"BATTLE_GUARD";
@@ -136,6 +137,9 @@ private:
 	UE4::UFunction* OnControllerConnectedFn;
 	UE4::UFunction* OnControllerDisconnectedFn;
 	UE4::UFunction* IsBattleSceneFn;
+	UE4::UFunction* OnChangeFirstPlayerTemporarilyFn;
+	UE4::UFunction* OnRestoreFirstPlayerFn;
+
 
 	int MenuCandidate = 0;
 	bool LogEverything = false;

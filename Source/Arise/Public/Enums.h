@@ -37,6 +37,18 @@ enum class EPCOrder : uint8
 	ORDER_MAX = 8
 };
 
+UENUM(BlueprintType)
+enum class EBattleStateAction : uint8
+{
+	None                           = 0,
+	Initialize                     = 1,
+	WaitComplete                   = 2,
+	Activate                       = 3,
+	Execute                        = 4,
+	Finalize                       = 5,
+	WaitFinalize                   = 6,
+	EBattleStateAction_MAX         = 7
+};
 
 UENUM(BlueprintType)
 enum class EArisePartyID : uint8
