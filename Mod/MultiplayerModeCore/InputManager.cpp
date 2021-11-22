@@ -12,13 +12,45 @@ GetAnalogActionData_t InputManager::GetAnalogActionData;
 
 
 int InputManager::GetIndexForController(InputHandle_t handle) {
+	int emptySpot = -1;
+	// Search for handle
 	for (int i = 0; i < Controllers.size(); i++) {
 		if (Controllers[i] == handle) return i;
+		if (emptySpot < 0 &&Controllers[i] == 0) {
+			emptySpot = i;
+		}
 	}
-	Controllers.push_back(handle);
 
+	if (emptySpot >= 0) {
+		// Found empty spot
+		Controllers[emptySpot] = handle;
+		Log::Info("Registering new controller: %p => %d", handle, emptySpot);
+		return emptySpot;
+	}
+
+	Controllers.push_back(handle);
 	Log::Info("Registering new controller: %p", handle);
 	return Controllers.size() - 1;
+}
+
+void InputManager::RemoveObsoleteControllers() {
+	for (int i = 0; i < Controllers.size(); i++) {
+		if (Controllers[i] != 0) {
+			bool found = false;
+			// Check if the handle is present in the connected handle array
+			for (int j = 0; j < InputHandleCount; j++) {
+				if (InputHandles[j] == Controllers[i]) {
+					found = true;
+					break;
+				}
+			}
+
+			if (!found) {
+				// Not found, remove
+				Controllers[i] = 0;
+			}
+		}
+	}
 }
 
 void InputManager::Refresh(GamepadState gamepads[]) {
@@ -28,6 +60,8 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 	//	Log::Info("%d: %d", j, Input->GetInputTypeForHandle(InputHandles[j]));
 	//}
 	//Log::Info("%d", InputHandleCount);
+
+	RemoveObsoleteControllers();
 
 	gamepads[0] = { 0 }; // Clear
 	

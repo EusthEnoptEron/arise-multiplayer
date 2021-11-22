@@ -152,4 +152,6 @@ private:
 	unsigned long _lastDifferentActionSet;
 	bool _rerouteControllers = false;
 	float _cameraSpeedRatio = .75f;
+
+	void RemoveObsoleteControllers();
 };
