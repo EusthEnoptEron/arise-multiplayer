@@ -16,7 +16,7 @@ UBtlActionProcessor::UBtlActionProcessor()
 
 // Called when the game starts
 void UBtlActionProcessor::BeginPlay()
-{
+{	
 	Super::BeginPlay();
 
 	// ...
@@ -35,5 +35,20 @@ void UBtlActionProcessor::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 void UBtlActionProcessor::PlayJump() {
 
+}
+
+ABtlCharacterBase* UBtlActionProcessor::GetOwnerUnit()
+{
+	return nullptr;
+}
+
+EBattleActionState UBtlActionProcessor::GetNowState()
+{
+	return {};
+}
+
+UBtlActionQuery* UBtlActionProcessor::PlayGuardEnd()
+{
+	return nullptr;
 }
 

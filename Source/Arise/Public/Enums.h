@@ -253,3 +253,27 @@ enum class EBattleState : uint8
 	StateFinalize = 13,
 	EBattleState_MAX = 14
 };
+
+UENUM(BlueprintType)
+enum class EBattleActionState : uint8
+{
+	STATE_INVALID                  = 0,
+	STATE_MOVE                     = 1,
+	STATE_JUMP                     = 2,
+	STATE_FALL                     = 3,
+	STATE_LAND                     = 4,
+	STATE_STEP                     = 5,
+	STATE_TURN                     = 6,
+	STATE_GUARD                    = 7,
+	STATE_DAMAGE                   = 8,
+	STATE_BLOW                     = 9,
+	STATE_DOWN                     = 10,
+	STATE_ARISE                    = 11,
+	STATE_REACT                    = 12,
+	STATE_DEAD                     = 13,
+	STATE_MAGIC                    = 14,
+	STATE_ITEM                     = 15,
+	STATE_ADVENT                   = 16,
+	STATE_ATTACK                   = 17,
+	STATE_MAX                      = 18
+};

@@ -15,6 +15,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FButtonMulticastDelegate, FName, na
 UDELEGATE(BlueprintCallable)
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FButtonCallback, FName, name, EBtlInputEventType, type);
 
+UDELEGATE(BlueprintCallable)
+DECLARE_DYNAMIC_DELEGATE_ThreeParams(FButtonChangeEnableCallback, FName, name, EBtlInputEventType, type, bool, isEnable);
+
 USTRUCT(BlueprintType)
 struct FBtlInputConfig_DatatableLabel
 {
@@ -81,7 +84,7 @@ struct FBtlInputEventConfigData
 	FButtonCallback Event; // 0x0020(0x0014) (ZeroConstructor, InstancedReference)
 
 	UPROPERTY(BlueprintReadOnly, meta = (GetByRef))
-	FButtonCallback ChangeEnableEvent; // 0x0030(0x0014) (ZeroConstructor, InstancedReference)
+	FButtonChangeEnableCallback ChangeEnableEvent; // 0x0030(0x0014) (ZeroConstructor, InstancedReference)
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bEnableEvent; // 0x0040(0x0001) (ZeroConstructor, IsPlainOldData)

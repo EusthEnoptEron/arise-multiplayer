@@ -47,6 +47,11 @@ struct ModTickParams {
 	uint8_t Scene;
 };
 
+struct GetControlledCharacterParms {
+	int Index;
+	UE4::AActor* Result;
+};
+
 
 namespace Actions {
 	const UE4::FString BATTLE_CAMERA_RESET = L"BATTLE_CAMERA_RESET";
@@ -128,6 +133,8 @@ public:
 	GamepadState JustReleased[4] = { 0 };
 	UE4::AActor* ModActor;
 
+	UE4::AActor* GetControlledCharacter(int index);
+
 private:
 
 	UE4::UFunction* OnActionFn;
@@ -139,6 +146,7 @@ private:
 	UE4::UFunction* IsBattleSceneFn;
 	UE4::UFunction* OnChangeFirstPlayerTemporarilyFn;
 	UE4::UFunction* OnRestoreFirstPlayerFn;
+	UE4::UFunction* GetControlledCharacterFn;
 
 
 	int MenuCandidate = 0;

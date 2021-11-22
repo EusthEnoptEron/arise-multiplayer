@@ -73,6 +73,28 @@ std::string GetName(UE4::FFrame& Stack) {
 	return name.GetName();
 }
 
+FNativeFuncPtr GetPlayerControlledUnit;
+void GetPlayerControlledUnitHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
+	if (!Stack.Object->IsA(UE4::AActor::StaticClass())) {
+		GetPlayerControlledUnit(Context, Stack, result);
+		return;
+	}
+
+	auto location =((UE4::AActor*)Stack.Object)->GetActorLocation();
+	GetPlayerControlledUnit(Context, Stack, result);
+
+	int id = static_cast<int>(location.X);
+	if (static_cast<int>(location.Y) == 0 && static_cast<int>(location.Z) == 0 && id > 0 && id < 4) {
+		auto resultPointer = (UE4::AActor**)result;
+		auto character = ((MultiplayerMod*)(Mod::ModRef))->GetControlledCharacter(id);
+
+		if (character != nullptr) {
+			Log::Info("Swap character");
+			*(UE4::AActor**)result = character;
+		}
+	}
+}
+
 FNativeFuncPtr GetBtlAxisValue;
 void GetBtlAxisValueHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
 	int id = static_cast<int>(((UE4::AActor*)Context)->GetActorLocation().X);
@@ -216,6 +238,10 @@ void MultiplayerMod::InitializeMod()
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCameraLibrary.SetActiveCamera")->GetFunction()),
 		&SetActiveCameraHook, &SetActiveCamera, "SetActiveCamera");
 	
+	
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlUnitLibrary.GetPlayerControlledUnit")->GetFunction()),
+		&GetPlayerControlledUnitHook, &GetPlayerControlledUnit, "GetPlayerControlledUnit");
 	//MinHook::Add((DWORD_PTR)
 	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonJustPressed")->GetFunction()),
 	//	&K2_IsBtlButtonJustPressedHook, &K2_IsBtlButtonJustPressed, "K2_IsBtlButtonJustPressed");
@@ -358,6 +384,7 @@ void MultiplayerMod::PostBeginPlay(std::wstring ModActorName, UE4::AActor* Actor
 		OnControllerDisconnectedFn = Actor->GetFunction("OnControllerDisconnected");
 		OnChangeFirstPlayerTemporarilyFn = Actor->GetFunction("OnChangeFirstPlayerTemporarily");
 		OnRestoreFirstPlayerFn = Actor->GetFunction("OnRestoreFirstPlayer");
+		GetControlledCharacterFn = Actor->GetFunction("GetControlledCharacterFn");
 
 		IsBattleSceneFn = UE4::UObject::FindObject<UE4::UFunction>("Function BP_GameFunctionLibrary.BP_GameFunctionLibrary_C.GameFunc_IsBattelScene");
 		functionLibClazz = UE4::UObject::FindObject<UE4::UClass>("BlueprintGeneratedClass BP_GameFunctionLibrary.BP_GameFunctionLibrary_C");
@@ -376,6 +403,15 @@ void MultiplayerMod::OnModMenuButtonPressed()
 
 void MultiplayerMod::DrawImGui()
 {
+}
+
+UE4::AActor* MultiplayerMod::GetControlledCharacter(int index) {
+	if (GetControlledCharacterFn == nullptr) return nullptr;
+
+	GetControlledCharacterParms parms = { index, nullptr};
+	ModActor->ProcessEvent(GetControlledCharacterFn, &parms);
+
+	return parms.Result;
 }
 
 void MultiplayerMod::Tick()

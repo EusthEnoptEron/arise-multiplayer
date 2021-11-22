@@ -3,16 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BtlActionQuery.h"
+#include "BtlCharacterBase.h"
+#include "Enums.h"
 #include "Components/ActorComponent.h"
 #include "BtlActionProcessor.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ARISE_API UBtlActionProcessor : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UBtlActionProcessor();
 
@@ -20,11 +23,22 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override;
 
-	
+
 	UFUNCTION(BlueprintCallable)
-		void PlayJump();
+	void PlayJump();
+
+	UFUNCTION(BlueprintCallable)
+	ABtlCharacterBase* GetOwnerUnit();
+
+
+	UFUNCTION(BlueprintCallable)
+	EBattleActionState GetNowState();
+
+	UFUNCTION(BlueprintCallable)
+	UBtlActionQuery* PlayGuardEnd();
 };
