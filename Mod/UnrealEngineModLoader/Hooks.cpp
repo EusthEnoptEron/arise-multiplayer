@@ -8,6 +8,8 @@
 #include "UnrealEngineModLoader/Memory/CoreModLoader.h"
 #include "UE4/Ue4.hpp"
 #include "LoaderUI.h"
+#include "thread"
+
 bool bIsProcessInternalsHooked = false;
 bool GameStateClassInitNotRan = true;
 namespace Hooks
@@ -22,9 +24,11 @@ namespace Hooks
 		PVOID(*origProcessFunction)(UE4::UObject*, UE4::FFrame*, void* const);
 		PVOID hookProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame, void* const Result)
 		{
-			if (!GameStateClassInitNotRan)
+			static std::thread::id main_thread = std::this_thread::get_id();
+
+			if (!GameStateClassInitNotRan && std::this_thread::get_id() == main_thread)
 			{
-				auto fnName = Frame->Node->GetName();
+				/*auto fnName = Frame->Node->GetName();
 
 				if (fnName == "PrintToModLoader")
 				{
@@ -33,11 +37,11 @@ namespace Hooks
 					{
 						Log::Print("%s", msg.ToString().c_str());
 					}
-				}
+				}*/
 				Global::eventSystem.dispatchEvent("ProcessFunction", obj, Frame);
 			}
-			return origProcessFunction(obj, Frame, Result);
 
+			return origProcessFunction(obj, Frame, Result);
 		}
 
 		PVOID(*origInitGameState)(void*);
