@@ -18,10 +18,12 @@ This mirrors the default behavior of the game and allows for taking turns withou
 
 ### Battle Controls
 
-During battle, each player gets to control their own character. Make sure that P1 is assigned the top party member.
+During battle, each player gets to control their own character. Make sure that P1 (= the flag) is assigned to the top party member.
 
-```
-    P1
- P2    P3
-    P4
-```
+The other characters are assigned like so:
+
+| Player | Party Member |
+| ------ | ------------ |
+| P2     | Left  |
+| P3     | Right |
+| P4     | Bottom |
