@@ -10,6 +10,7 @@
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBattleStateDelegate, EBattleState, State);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBattleStateChangeDelegate, EBattleState, State, EBattleState, PrevState);
 
 /**
  * 
@@ -20,7 +21,7 @@ class ARISE_API UBtlStateManager : public UObject
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FBattleStateDelegate OnBtlStateChange; // 0x0160(0x0010) (ZeroConstructor, InstancedReference, BlueprintAssignable)
+	FBattleStateChangeDelegate OnBtlStateChange; // 0x0160(0x0010) (ZeroConstructor, InstancedReference, BlueprintAssignable)
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FBattleStateDelegate OnBtlSubStateStart;
