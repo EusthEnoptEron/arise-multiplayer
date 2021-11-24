@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Enums.h"
 #include "BtlActionProcessor.h"
+#include "BtlStatusViewModelBase.h"
 #include "Btl_AIControllerBase.h"
 #include "Btl_Camera.h"
 #include "BtlCharacterBase.generated.h"
@@ -19,11 +20,12 @@ public:
 	// Sets default values for this character's properties
 	ABtlCharacterBase();
 
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -31,8 +33,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable)
-	UBtlActionProcessor *GetActionProcessor();
-	
+	UBtlActionProcessor* GetActionProcessor();
+
 	UFUNCTION(BlueprintCallable)
 	FVector GetTargetComponentLocation(bool IgnoreTemporary);
 
@@ -67,10 +69,12 @@ public:
 	void DestroyBtlAIController();
 
 
-/*
-
-
-	UFUNCTION(BlueprintCallable)
-	int GetCoreHp(class UBtlDamageSphereComponent* CoreCollision);
-*/
+	UPROPERTY(BlueprintReadWrite)
+	/*UBtlStatusViewModelBase*/UBtlStatusViewModelBase* ViewModel;
+	/*
+	
+	
+		UFUNCTION(BlueprintCallable)
+		int GetCoreHp(class UBtlDamageSphereComponent* CoreCollision);
+	*/
 };

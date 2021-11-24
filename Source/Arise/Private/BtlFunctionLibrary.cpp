@@ -37,13 +37,15 @@ void UBtlFunctionLibrary::StopAllCameraShakes(bool bImmediately)
 }
 
 bool UBtlFunctionLibrary::SphereAABBIntersection(const FVector& BoxOrigin, const FVector& BoxExtent,
-	const FVector& SphereCenter, float Radius)
+                                                 const FVector& SphereCenter, float Radius)
 {
 	return false;
 }
 
 UParticleSystemComponent* UBtlFunctionLibrary::SpawnBtlEmitterAtLocation(UObject* WorldContextObject,
-                                                                         UParticleSystem* EmitterTemplate, const FVector& Location, const FRotator& Rotation, bool bAutoDestroy,
+                                                                         UParticleSystem* EmitterTemplate,
+                                                                         const FVector& Location,
+                                                                         const FRotator& Rotation, bool bAutoDestroy,
                                                                          ABtlCharacterBase* Sender)
 {
 	return nullptr;
@@ -73,7 +75,7 @@ void UBtlFunctionLibrary::SetRewindInterpolateRank_Attack(int Rank)
 }
 
 void UBtlFunctionLibrary::SetRareUnitMaterialParameter(TArray<UMaterialInstanceDynamic*> Materials,
-	UMaterialParameterCollection* Collection)
+                                                       UMaterialParameterCollection* Collection)
 {
 }
 
@@ -154,7 +156,8 @@ bool UBtlFunctionLibrary::LoadBattleLocation()
 }
 
 bool UBtlFunctionLibrary::LineSphereIntersection(const FVector& SphereOrigin, float SphereRadius,
-                                                 const FVector& LineStart, const FVector& LineDirection, float LineLength)
+                                                 const FVector& LineStart, const FVector& LineDirection,
+                                                 float LineLength)
 {
 	return false;
 }
@@ -310,7 +313,7 @@ void UBtlFunctionLibrary::InitializeBattleManager()
 }
 
 TArray<ABtlCharacterBase*> UBtlFunctionLibrary::InFructumList(UObject* WorldContextObject,
-	TArray<ABtlCharacterBase*> Actors)
+                                                              TArray<ABtlCharacterBase*> Actors)
 {
 	return {};
 }
