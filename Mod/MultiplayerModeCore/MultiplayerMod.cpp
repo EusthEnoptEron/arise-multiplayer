@@ -32,7 +32,6 @@ void MultiplayerMod::CompareDigitalStates(bool newValue, bool oldValue, bool* ju
 		if (newValue) {
 			*justPressed = true;
 			*justReleased = false;
-			Log::Info("PRESSED %s", name.c_str());
 			OnActionPressed(index, name);
 		}
 		else {

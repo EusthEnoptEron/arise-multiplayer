@@ -80,8 +80,7 @@ private:
 		Input = SteamInput();
 		GetConnectedControllers = (GetConnectedControllers_t)HookMethod((LPVOID)Input, (PVOID)GetConnectedControllersHook, 3 * 8);
 		ActivateActionSet = (ActivateActionSet_t)HookMethod((LPVOID)Input, (PVOID)ActivateActionSetHook, 5 * 8);
-		GetAnalogActionData = (GetAnalogActionData_t)HookMethod((LPVOID)Input, (PVOID)GetAnalogActionDataHook, 15 * 8);
-
+		
 		Input->Init();
 		Log::Info("Input located @ %p", Input);
 
@@ -118,13 +117,10 @@ private:
 
 	static GetConnectedControllers_t GetConnectedControllers;
 	static ActivateActionSet_t ActivateActionSet;
-	static GetAnalogActionData_t GetAnalogActionData;
 
 	static int GetConnectedControllersHook(ISteamInput* self, STEAM_OUT_ARRAY_COUNT(STEAM_INPUT_MAX_COUNT, Receives list of connected controllers) InputHandle_t* handlesOut);
 	static void ActivateActionSetHook(ISteamInput* self, InputHandle_t inputHandle, InputActionSetHandle_t actionSetHandle);
-	static InputAnalogActionData_t* GetAnalogActionDataHook(ISteamInput* self, InputAnalogActionData_t* data,InputHandle_t inputHandle, InputAnalogActionHandle_t analogActionHandle);
 
-	InputAnalogActionData_t GetAnalogActionDataSimple(InputHandle_t inputHandle, InputAnalogActionHandle_t analogActionHandle);
 	int GetIndexForController(InputHandle_t handle);
 
 	InputActionSetHandle_t AS_Battle;
