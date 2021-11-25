@@ -134,6 +134,7 @@ public:
 	UE4::AActor* ModActor;
 
 	UE4::AActor* GetControlledCharacter(int index);
+	int CurrentPlayer = 0;
 
 private:
 
@@ -154,6 +155,7 @@ private:
 
 	time_t LastCheck;
 	InputManager* Manager;
+
 
 	bool Initialized = false;
 	void CompareDigitalStates(bool newValue, bool oldValue, bool *justPressed, bool *justReleased, const UE4::FString &name, int index);

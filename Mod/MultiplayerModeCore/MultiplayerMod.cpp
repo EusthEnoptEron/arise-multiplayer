@@ -74,18 +74,13 @@ std::string GetName(UE4::FFrame& Stack) {
 
 FNativeFuncPtr GetPlayerControlledUnit;
 void GetPlayerControlledUnitHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
-	if (!Stack.Object->IsA(UE4::AActor::StaticClass())) {
-		GetPlayerControlledUnit(Context, Stack, result);
-		return;
-	}
-
-	auto location =((UE4::AActor*)Stack.Object)->GetActorLocation();
 	GetPlayerControlledUnit(Context, Stack, result);
 
-	int id = static_cast<int>(location.X);
-	if (static_cast<int>(location.Y) == 0 && static_cast<int>(location.Z) == 0 && id > 0 && id < 4) {
+	auto mod = ((MultiplayerMod*)(Mod::ModRef));
+
+	if (mod->CurrentPlayer > 0) {
 		auto resultPointer = (UE4::AActor**)result;
-		auto character = ((MultiplayerMod*)(Mod::ModRef))->GetControlledCharacter(id);
+		auto character = ((MultiplayerMod*)(Mod::ModRef))->GetControlledCharacter(mod->CurrentPlayer);
 
 		if (character != nullptr) {
 			Log::Info("Swap character");
@@ -316,6 +311,10 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 	if (obj == ModActor) {
 		auto name = Frame->Node->GetName();
 
+		// Make sure that our own functions get the real values
+		int tempCurrentPlayer = CurrentPlayer;
+		CurrentPlayer = 0;
+
 		if (name == "OnBeginBattle") {
 			InputManager::GetInstance()->SetRerouteControllers(true);
 		}
@@ -324,21 +323,30 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 		}
 		else if (name == "OnSubStateStart") {
 			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
-			if (state == SDK::EBattleState::StateMenu && MenuCandidate != 0) {
-				InputManager::GetInstance()->SetFirstPlayer(MenuCandidate);
-				//ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &MenuCandidate);
+			if (state == SDK::EBattleState::StateMenu) {
+				for (int i = 0; i < 4; i++) {
+					if (OldStates[i].IsMenu) {
+						Log::Info("Change first player: %d", i);
+						InputManager::GetInstance()->SetFirstPlayer(i);
+						if (i != 0) {
+							ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &i);
+						}
+						break;
+					}
+				}
 			}
 		}
 		else if (name == "OnSubStateEnd") {
 			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
 			if (state == SDK::EBattleState::StateMenu) {
 				InputManager::GetInstance()->SetFirstPlayer(0);
-				//ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
+				ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
 			}
 		}
 		else if (name == "OnBeginChangeTarget") {
 			for (int i = 0; i < 4; i++) {
 				if (OldStates[i].IsTarget) {
+					Log::Info("Change first player: %d", i);
 					InputManager::GetInstance()->SetFirstPlayer(i);
 					if (i != 0) {
 						ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &i);
@@ -353,6 +361,8 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 			ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
 			//InputManager::GetInstance()->SetRerouteControllers(false);
 		}
+
+		CurrentPlayer = tempCurrentPlayer;
 	}
 }
 
@@ -442,6 +452,8 @@ void MultiplayerMod::Tick()
 			OnControllerConnected(i);
 		}
 
+		CurrentPlayer = i;
+
 		CompareDigitalStates(newState.IsCameraReset, oldState.IsCameraReset, &(justPressed.IsCameraReset), &(justReleased.IsCameraReset), Actions::BATTLE_CAMERA_RESET, i);
 		CompareDigitalStates(newState.IsMenu, oldState.IsMenu, &(justPressed.IsMenu), &(justReleased.IsMenu), Actions::BATTLE_MENU, i);
 		CompareDigitalStates(newState.IsStrikeAttack0, oldState.IsStrikeAttack0, &(justPressed.IsStrikeAttack0), &(justReleased.IsStrikeAttack0), Actions::BATTLE_STRIKE_ATTACK_0, i);
@@ -459,13 +471,6 @@ void MultiplayerMod::Tick()
 		CompareDigitalStates(newState.IsAttack, oldState.IsAttack, &(justPressed.IsAttack), &(justReleased.IsAttack), Actions::BATTLE_BASE_ATTACK, i);
 		CompareDigitalStates(newState.IsGuard, oldState.IsGuard, &(justPressed.IsGuard), &(justReleased.IsGuard), Actions::BATTLE_BASE_GUARD, i);
 
-		if (newState.IsMenu && !oldState.IsMenu) {
-			MenuCandidate = i;
-		}
-		if (MenuCandidate == i && !newState.IsMenu) {
-			MenuCandidate = 0;
-		}
-
 		if (newState.Move.bActive)
 		{
 			OnAnalogAction(i, Actions::BATTLE_MOVE, newState.Move.x, newState.Move.y);
@@ -475,6 +480,8 @@ void MultiplayerMod::Tick()
 		{
 			OnAnalogAction(i, Actions::BATTLE_CAMERA_ANGLE, newState.CameraAngle.x, newState.CameraAngle.y);
 		}
+
+		CurrentPlayer = 0;
 	}
 
 	std::swap(OldStates, NewStates);
