@@ -504,15 +504,9 @@ namespace ClassDefFinder
 		}
 		else
 		{
-			Log::Info("Get Core Object.");
 			CoreUobjectObject = UE4::UObject::GObjects->GetAsTUArray().GetByIndex(1).Object;
-
-			Log::Info("Get Array.");
 			UEObject = UE4::UObject::GObjects->GetAsTUArray().GetByIndex(2).Object;
 		}
-
-		Log::Info("Saerch.");
-
 		if (FindUObjectDefs(CoreUobjectObject, UEObject) && FindUFieldDefs() && FindUStructDefs() && FindUFunctionDefs())
 		{
 			if (GameProfile::SelectedGameProfile.IsPropertyMissing)

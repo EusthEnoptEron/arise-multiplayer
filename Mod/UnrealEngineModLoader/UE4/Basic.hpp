@@ -351,16 +351,13 @@ public:
 		: ComparisonIndex(0),
 		  Number(0)
 	{
-		Log::Info("CREATE FROM STRING");
 		static std::unordered_set<int> cache;
 
 		for (auto i : cache)
 		{
 			if (IsUsingNamePool())
 			{
-				auto name = GetFNamePool()[i]->GetAnsiName().c_str();
-				Log::Info("%s",  name);
-				if (!std::strcmp(name, nameToFind))
+				if (!std::strcmp(GetFNamePool()[i]->GetAnsiName().c_str(), nameToFind))
 				{
 					ComparisonIndex = i;
 
@@ -384,9 +381,7 @@ public:
 			{
 				if (GetFNamePool()[i] != nullptr)
 				{
-					auto name = GetFNamePool()[i]->GetAnsiName().c_str();
-					//Log::Info("%s", name);
-					if (!name, nameToFind)
+					if (!std::strcmp(GetFNamePool()[i]->GetAnsiName().c_str(), nameToFind))
 					{
 						cache.insert(i);
 
@@ -403,8 +398,6 @@ public:
 			{
 				if (GetTNameArray()[i] != nullptr)
 				{
-					//Log::Info("%d: %s", i, GetTNameArray()[i]->GetAnsiName());
-
 					if (!std::strcmp(GetTNameArray()[i]->GetAnsiName(), nameToFind))
 					{
 						cache.insert(i);

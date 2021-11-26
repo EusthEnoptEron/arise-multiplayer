@@ -26,12 +26,8 @@ bool Dumper::DumpObjectArray()
 			for (int i = 0; i < UE4::UObject::GObjects->GetAsChunckArray().Num(); i++)
 			{
 				auto obj = UE4::UObject::GObjects->GetAsChunckArray().GetByIndex(i).Object;
-				if (obj != nullptr && i == 1) {
+				if (obj != nullptr)
 					fprintf(Log, "[%06i] %-100s 0x%p\n", obj->GetIndex(), obj->GetFullName().c_str(), obj);
-					Log::Info("OK: %s", obj->GetFullName().c_str());
-
-					break;
-				}
 			}
 			Log::SetupMessage("Done!", "Object Dump Complete!");
 		}
@@ -40,11 +36,8 @@ bool Dumper::DumpObjectArray()
 			for (int i = 0; i < UE4::UObject::GObjects->GetAsTUArray().Num(); i++)
 			{
 				auto obj = UE4::UObject::GObjects->GetAsTUArray().GetByIndex(i).Object;
-				if (obj != nullptr && i == 1) {
+				if (obj != nullptr)
 					fprintf(Log, "[%06i] %-100s 0x%p\n", obj->GetIndex(), obj->GetFullName().c_str(), obj);
-					Log::Info("OK: %s", obj->GetFullName().c_str());
-					break;
-				}
 			}
 			Log::SetupMessage("Done!", "Object Dump Complete!");
 		}

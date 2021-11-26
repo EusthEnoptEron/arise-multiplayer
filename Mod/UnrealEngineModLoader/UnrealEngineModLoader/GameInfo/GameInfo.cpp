@@ -51,7 +51,7 @@ void SetupProfile(std::string Path)
 		FreeConsole();
 		AllocConsole();
 		freopen("CON", "w", LOG_STREAM);
-		Log::Info("Created by ~Russell.J Release V2.0.0");
+		Log::Info("Created by ~Russell.J Release V2.0.2");
 	}
 	if (std::filesystem::exists(Profile))
 	{
@@ -131,7 +131,7 @@ void SetupProfile(std::string Path)
 				}
 			}
 
-			auto GObjectPat = Pattern::Find("8B 46 10 3B 46 3C 75 0F 48 8B D6 48 8D 0D ?? ?? ?? ?? E8");
+			auto GObjectPat = Pattern::Find("8B 46 10 3B 46 3C 75 0F 48 8B D6 48 8D 0D ? ? ? ? E8");
 			if (GObjectPat != nullptr)
 			{
 				auto GObjectOffset = *reinterpret_cast<uint32_t*>(GObjectPat + 14);
@@ -210,7 +210,7 @@ void SetupProfile(std::string Path)
 				GameProfile::SelectedGameProfile.CallFunctionByNameWithArguments = (DWORD64)GetModuleHandleW(0) + StringToDWord(GameInfo.get("FunctionInfo", "CallFunctionByNameWithArguments", ""));
 				GameProfile::SelectedGameProfile.ProcessEvent = (DWORD64)GetModuleHandleW(0) + StringToDWord(GameInfo.get("FunctionInfo", "ProcessEvent", ""));
 				GameProfile::SelectedGameProfile.CreateDefaultObject = (DWORD64)GetModuleHandleW(0) + StringToDWord(GameInfo.get("FunctionInfo", "CreateDefaultObject", ""));
-				Log::Info("Function Offsets Set! (%p)", GameProfile::SelectedGameProfile.SpawnActorFTrans);
+				Log::Info("Function Offsets Set!");
 			}
 			else
 			{
@@ -245,28 +245,28 @@ void SetupProfile(std::string Path)
 				Log::Error("AActor::BeginPlay NOT FOUND!");
 			}
 
-			auto StaticLoadObject = Pattern::Find("89 64 24 ?? 48 8B C8 E8 ?? ?? ?? ?? 41 BE ?? ?? ?? ?? EB 05 E8"); // Sig 1
+			auto StaticLoadObject = Pattern::Find("89 64 24 ? 48 8B C8 E8 ? ? ? ? 41 BE ? ? ? ? EB 05 E8"); // Sig 1
 			if (StaticLoadObject != nullptr)
 			{
 				StaticLoadObject += 0x7;
 			}
 			else
 			{
-				StaticLoadObject = Pattern::Find("C7 44 24 ?? ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 8D ?? ?? ?? ?? 48 85 C9 74 05 E8 ?? ?? ?? ?? 45 33 C9 ?? 89 74 24");
+				StaticLoadObject = Pattern::Find("C7 44 24 ? ? ? ? ? E8 ? ? ? ? 48 8B 8D ? ? ? ? 48 85 C9 74 05 E8 ? ? ? ? 45 33 C9 ? 89 74 24");
 				if (StaticLoadObject != nullptr)
 				{
 					StaticLoadObject += 0x8;
 				}
 				else
 				{
-					StaticLoadObject = Pattern::Find("89 6C 24 20 48 8B C8 E8 ?? ?? ?? ?? 48 8B 4C 24 ?? 48 8B F0 48 85 C9 74 05");
+					StaticLoadObject = Pattern::Find("89 6C 24 20 48 8B C8 E8 ? ? ? ? 48 8B 4C 24 ? 48 8B F0 48 85 C9 74 05");
 					if (StaticLoadObject != nullptr)
 					{
 						StaticLoadObject += 0x7;
 					}
 					else
 					{
-						if (StaticLoadObject = Pattern::Find("48 8B C8 89 5C 24 20 E8 ?? ?? ?? ?? 48"))
+						if (StaticLoadObject = Pattern::Find("48 8B C8 89 5C 24 20 E8 ? ? ? ? 48"))
 						{
 							StaticLoadObject += 0x7;
 						}

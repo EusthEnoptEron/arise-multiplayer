@@ -23,13 +23,6 @@ namespace UE4
 
 		DWORD64   GObjObjects_offset = NULL;
 		GObjObjects_offset = (DWORD64)(GameProfile::SelectedGameProfile.GObject);
-
-		auto offset = (DWORD64)GetModuleHandleW(0);
-		Log::Info("GObject=%p", GameProfile::SelectedGameProfile.GObject);
-		Log::Info("GName=%p", GameProfile::SelectedGameProfile.GName);
-		Log::Info("GWorld=%p", GameProfile::SelectedGameProfile.GWorld);
-		Log::Info("Offset=%p", offset);
-
 		UObject::GObjects = (FUObjectArray*)GObjObjects_offset;
 
 		DWORD64   GWorldObjects = NULL;
@@ -43,9 +36,6 @@ namespace UE4
 			{
 				Log::Info("All Engine Classes Found");
 				GameProfile::SelectedGameProfile.IsEngineDefsMissing = false;
-			}
-			else {
-				Log::Info("Not all Engine Classes found");
 			}
 		}
 		#endif

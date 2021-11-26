@@ -20,18 +20,15 @@ namespace MinHook
 	template <typename T>
 	static void Add(DWORD_PTR pTarget, LPVOID pDetour, T** ppOriginal, std::string displayName = "")
 	{
-		auto result1 = MH_CreateHook((LPVOID)pTarget, pDetour, reinterpret_cast<LPVOID*>(ppOriginal));
-
-		if (result1 != MH_OK)
+		if (MH_CreateHook((LPVOID)pTarget, pDetour, reinterpret_cast<LPVOID*>(ppOriginal)) != MH_OK)
 		{
-			Log::Error("Failed to create hook: %s [%d]", displayName.c_str(), result1);
+			Log::Error("Failed to create hook: %s", displayName.c_str());
 			return;
 		}
 
-		auto result2 = MH_EnableHook((LPVOID)pTarget);
-		if (result2 != MH_OK)
+		if (MH_EnableHook((LPVOID)pTarget) != MH_OK)
 		{
-			Log::Error("Failed to enable hook: %s (%d)", displayName.c_str(), result2);
+			Log::Error("Failed to enable hook: %s", displayName.c_str());
 			return;
 		}
 		Log::Info("Added hook: %s", displayName.c_str());

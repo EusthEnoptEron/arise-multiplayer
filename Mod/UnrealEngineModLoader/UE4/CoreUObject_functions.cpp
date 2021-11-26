@@ -293,11 +293,7 @@ namespace UE4
 
 	AActor* UWorld::SpawnActor(UClass* uclass, const  FTransform* transform, const FActorSpawnParameters* params)
 	{
-		Log::Info("Spawning actor...!");
-		
-		auto result = reinterpret_cast<AActor * (*)(UWorld*, UClass*, const FTransform*, const FActorSpawnParameters*)>(GameProfile::SelectedGameProfile.SpawnActorFTrans)(this, uclass, transform, params);
-		Log::Info("Spwaned actor!");
-		return result;
+		return reinterpret_cast<AActor * (*)(UWorld*, UClass*, const FTransform*, const FActorSpawnParameters*)>(GameProfile::SelectedGameProfile.SpawnActorFTrans)(this, uclass, transform, params);
 	}
 
 	//---------------------------------------------------------------------------
@@ -370,15 +366,7 @@ namespace UE4
 		params.SpawnTransform = SpawnTransform;
 		params.CollisionHandlingOverride = CollisionHandlingOverride;
 		params.Owner = Owner;
-
-		Log::Info("WorldContextObject: %d", params.WorldContextObject);
-		Log::Info("ActorClass: %d", params.ActorClass);
-		Log::Info("Owner: %d", params.Owner);
-		Log::Info("AActor: %d", params.ReturnValue);
-		Log::Info("fn: %d", fn);
-
 		GameplayStatics->UObject::ProcessEvent(fn, &params);
-
 		return params.ReturnValue;
 	}
 

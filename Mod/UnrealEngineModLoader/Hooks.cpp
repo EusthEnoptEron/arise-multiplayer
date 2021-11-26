@@ -8,8 +8,6 @@
 #include "UnrealEngineModLoader/Memory/CoreModLoader.h"
 #include "UE4/Ue4.hpp"
 #include "LoaderUI.h"
-#include "thread"
-
 bool bIsProcessInternalsHooked = false;
 bool GameStateClassInitNotRan = true;
 namespace Hooks
@@ -24,13 +22,9 @@ namespace Hooks
 		PVOID(*origProcessFunction)(UE4::UObject*, UE4::FFrame*, void* const);
 		PVOID hookProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame, void* const Result)
 		{
-			static std::thread::id main_thread = std::this_thread::get_id();
-
-			if (!GameStateClassInitNotRan && std::this_thread::get_id() == main_thread)
+			if (!GameStateClassInitNotRan)
 			{
-				/*auto fnName = Frame->Node->GetName();
-
-				if (fnName == "PrintToModLoader")
+				/*if (Frame->Node->GetName() == "PrintToModLoader")
 				{
 					auto msg = Frame->GetParams<PrintStringParams>()->Message;
 					if (msg.IsValid())
@@ -40,8 +34,8 @@ namespace Hooks
 				}*/
 				Global::eventSystem.dispatchEvent("ProcessFunction", obj, Frame);
 			}
-
 			return origProcessFunction(obj, Frame, Result);
+
 		}
 
 		PVOID(*origInitGameState)(void*);
@@ -57,7 +51,7 @@ namespace Hooks
 				UE4::FActorSpawnParameters spawnParams = UE4::FActorSpawnParameters::FActorSpawnParameters();
 				if (GameProfile::SelectedGameProfile.StaticLoadObject)
 				{
-					Log::Info("StaticLoadObject Found at 0x%p", GameProfile::SelectedGameProfile.StaticLoadObject);
+					Log::Info("StaticLoadObject Found");
 				}
 				else
 				{
@@ -91,38 +85,23 @@ namespace Hooks
 					std::wstring CurrentMod;
 					//StartSpawningMods
 					CurrentMod = Global::ModInfoList[i].ModName;
-					Log::Info("Loading %s", std::string(CurrentMod.begin(), CurrentMod.end()).c_str());
-
 					if (Global::ModInfoList[i].IsEnabled)
 					{
 						if (GameProfile::SelectedGameProfile.StaticLoadObject)
 						{
 							std::string str(CurrentMod.begin(), CurrentMod.end());
 							const std::wstring Path = L"/Game/Mods/" + CurrentMod + L"/ModActor.ModActor_C";
-							Log::Info("Loading class %s", std::string(Path.begin(), Path.end()).c_str());
 							UE4::UClass* ModObject = UE4::UClass::LoadClassFromString(Path.c_str(), false);
-							Log::Info("Loaded");
-
 							if (ModObject)
 							{
-								Log::Info("Got object");
-
 								UE4::AActor* ModActor = nullptr;
 								if (!GameProfile::SelectedGameProfile.IsUsingDeferedSpawn)
 								{
-									Log::Info("Spawning normal");
 									ModActor = UE4::UWorld::GetWorld()->SpawnActor(ModObject, &transform, &spawnParams);
-									Log::Info("Spawned");
-
 								}
 								else
 								{
-									Log::Info("Spawning deferred");
-
 									ModActor = UE4::UGameplayStatics::BeginDeferredActorSpawnFromClass(ModObject, transform, UE4::ESpawnActorCollisionHandlingMethod::AlwaysSpawn, nullptr);
-
-									Log::Info("Spawned: %p", ModActor);
-
 								}
 								if (ModActor)
 								{
@@ -251,11 +230,11 @@ namespace Hooks
 		Log::Info("ScanLoadedPaks Setup");
 		MinHook::Add(GameProfile::SelectedGameProfile.GameStateInit, &HookedFunctions::hookInitGameState, &HookedFunctions::origInitGameState, "AGameModeBase::InitGameState");
 		MinHook::Add(GameProfile::SelectedGameProfile.BeginPlay, &HookedFunctions::hookBeginPlay, &HookedFunctions::origBeginPlay, "AActor::BeginPlay");
-	/*	LoaderUI::GetUI()->CreateUILogicThread();
-		if (!GameProfile::SelectedGameProfile.bDelayGUISpawn)
-		{
-			LoaderUI::HookDX();
-		}*/
+		//LoaderUI::GetUI()->CreateUILogicThread();
+		//if (!GameProfile::SelectedGameProfile.bDelayGUISpawn)
+		//{
+		//	LoaderUI::HookDX();
+		//}
 		return NULL;
 	}
 
