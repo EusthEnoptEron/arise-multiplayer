@@ -308,7 +308,7 @@ bool MultiplayerMod::IsBattleScene() {
 
 void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 {
-	if (obj == ModActor) {
+	if (Frame->Object == ModActor) {
 		auto name = Frame->Node->GetName();
 
 		// Make sure that our own functions get the real values
@@ -320,6 +320,7 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 		}
 		else if (name == "OnEndBattle") {
 			InputManager::GetInstance()->SetRerouteControllers(false);
+			ResetNearClippingPlane(); // To be sure
 		}
 		else if (name == "OnSubStateStart") {
 			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
@@ -361,10 +362,32 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 			ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
 			//InputManager::GetInstance()->SetRerouteControllers(false);
 		}
+		else if (name == "Native_SetNearClippingPlane") {
+			SetNearClippingPlane(*Frame->GetParams<float>());
+		}
+		else if (name == "Native_ResetNearClippingPlane") {
+			ResetNearClippingPlane();
+		}
 
 		CurrentPlayer = tempCurrentPlayer;
 	}
 }
+
+// FF FF FF FF ?? ?? ?? ?? 84 3C EB F0 F7 7F 00 00 20 46 21 F1
+static float* GNearClippingPlane = (float*)((DWORD64)GetModuleHandleW(0) + 0x42644E4);
+static float GNearOriginal = *GNearClippingPlane;
+
+void MultiplayerMod::SetNearClippingPlane(float nearPlane) {
+	
+
+	Log::Info("Near Plane: %f (%p)", nearPlane, GNearClippingPlane);
+	*GNearClippingPlane = nearPlane;
+}
+
+void MultiplayerMod::ResetNearClippingPlane() {
+	*GNearClippingPlane = GNearOriginal;
+}
+
 
 void MultiplayerMod::InitGameState()
 {

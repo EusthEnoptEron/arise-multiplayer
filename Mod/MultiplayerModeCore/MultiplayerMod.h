@@ -124,6 +124,9 @@ public:
 	void OnControllerDisconnected(int index);
 	bool IsBattleScene();
 
+	void SetNearClippingPlane(float plane);
+	void ResetNearClippingPlane();
+
 
 	static FNativeFuncPtr *GNatives;
 
