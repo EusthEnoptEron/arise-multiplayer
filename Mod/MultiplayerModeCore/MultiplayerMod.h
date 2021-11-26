@@ -126,6 +126,7 @@ public:
 
 	void SetNearClippingPlane(float plane);
 	void ResetNearClippingPlane();
+	void BP_OnCameraAngle(UE4::FVector2D angle);
 
 
 	static FNativeFuncPtr *GNatives;

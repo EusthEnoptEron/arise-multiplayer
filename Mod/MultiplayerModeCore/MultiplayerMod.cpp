@@ -378,13 +378,12 @@ static float* GNearClippingPlane = (float*)((DWORD64)GetModuleHandleW(0) + 0x426
 static float GNearOriginal = *GNearClippingPlane;
 
 void MultiplayerMod::SetNearClippingPlane(float nearPlane) {
-	
-
-	Log::Info("Near Plane: %f (%p)", nearPlane, GNearClippingPlane);
+	//Log::Info("Near Plane: %f (%p)", nearPlane, GNearClippingPlane);
 	*GNearClippingPlane = nearPlane;
 }
 
 void MultiplayerMod::ResetNearClippingPlane() {
+	Log::Info("Set clipping plane to: %f" , GNearOriginal);
 	*GNearClippingPlane = GNearOriginal;
 }
 
@@ -435,6 +434,12 @@ void MultiplayerMod::OnModMenuButtonPressed()
 
 void MultiplayerMod::DrawImGui()
 {
+}
+
+void MultiplayerMod::BP_OnCameraAngle(UE4::FVector2D angle) 
+{
+	static auto fn = ModActor->GetFunction("BP_OnCameraAngle");
+	ModActor->ProcessEvent(fn, &angle);
 }
 
 UE4::AActor* MultiplayerMod::GetControlledCharacter(int index) {
@@ -506,6 +511,23 @@ void MultiplayerMod::Tick()
 
 		CurrentPlayer = 0;
 	}
+
+
+	float x = 0.0f, y = 0.0f;
+	for (int i = 0; i < 4; i++) {
+		auto angle = OldStates[i].CameraAngle;
+		if (angle.bActive) {
+			if (abs(x) < abs(angle.x)) {
+				x = angle.x;
+			}
+			if (abs(y) < abs(angle.y)) {
+				y = angle.y;
+			}
+		}
+	}
+
+	BP_OnCameraAngle(UE4::FVector2D(x, y));
+
 
 	std::swap(OldStates, NewStates);
 }
