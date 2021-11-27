@@ -8,6 +8,8 @@ For progress, see [Milestones.](https://github.com/EusthEnoptEron/arise-multipla
 1. Extract files to the game data folder.
 2. Start the game. 
 
+During battle, controllers will automatically be assigned to the characters. See below for details on the order.
+
 ## Disabling
 
 1. Remove the xinput1_3.dll
@@ -28,6 +30,7 @@ For a complete list, see [issues](https://github.com/EusthEnoptEron/arise-multip
 - When a controller connects, it is assigned the first free player number.
 
 ## Controls
+
 ### Overworld Controls
 
 Outside of battle, all controllers are treated equally and can steer the main character and navigate through menus.
