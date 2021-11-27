@@ -6,6 +6,7 @@
 #include "BattleUIManager.h"
 #include "BtlCharacterBase.h"
 #include "BtlEventDispatcher.h"
+#include "BtlManager.h"
 #include "BtlStateManager.h"
 #include "Enums.h"
 #include "Camera/CameraShake.h"
@@ -394,7 +395,9 @@ class ARISE_API UBtlFunctionLibrary : public UBlueprintFunctionLibrary
 
 	UFUNCTION(BlueprintCallable)
 	static FString GetBattleMapId();
-	// ABtlManager* GetBattleManager(UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintCallable)
+	static ABtlManager *GetBattleManager(UObject* WorldContextObject);
 	// ABtl_Location* GetBattleLocation();
 
 	UFUNCTION(BlueprintCallable)

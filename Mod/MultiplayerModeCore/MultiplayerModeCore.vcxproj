@@ -135,8 +135,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;EXAMPLEMOD_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)MinHook\;$(SolutionDir)UE4;$(SolutionDir)UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;C:\Program Files\Epic Games\UE_4.25\Engine\Source\ThirdParty\Windows\DirectX\Include;$(ProjectDir)Libs\Arise-SDK\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)MinHook\;$(SolutionDir)UE4;$(SolutionDir)UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;C:\Program Files\Epic Games\UE_4.25\Engine\Source\ThirdParty\Windows\DirectX\Include;$(ProjectDir)Libs\Arise-SDK\src;$(SolutionDir)INI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -159,6 +160,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp" />
+    <ClInclude Include="FileWatch.hpp" />
+    <ClInclude Include="INI.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="MultiplayerMod.h" />
     <ClInclude Include="VMTHook.h" />

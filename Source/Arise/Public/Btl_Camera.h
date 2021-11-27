@@ -15,252 +15,261 @@ UCLASS()
 class ARISE_API ABtl_Camera : public ACameraActor
 {
 	GENERATED_BODY()
-	
-		UFUNCTION(BlueprintCallable)
-		void UseAutoResetTargetAngleRange(bool on);
+
+public:
+	UPROPERTY(BlueprintReadWrite)
+	TArray<EBtlCameraMode> ModeList;
+
+	UPROPERTY(BlueprintReadWrite)
+	float InterpolateValue_Native;
+
 	UFUNCTION(BlueprintCallable)
-		void UpdateRewindToYawHeightNative(float DeltaSeconds);
+	void UseAutoResetTargetAngleRange(bool on);
 	UFUNCTION(BlueprintCallable)
-		void UpdateResetToYawNative(float DeltaSeconds);
+	void UpdateRewindToYawHeightNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void UpdateInterpolateCoefficientNative(float DeltaSeconds);
+	void UpdateResetToYawNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void UpdateExternalNative2(const FVector& AimPoint, const FVector& CamPoint, FVector& oAimPoint, FVector& oCamPoint);
+	void UpdateInterpolateCoefficientNative(float DeltaSeconds);
+	UFUNCTION(BlueprintCallable)
+	void UpdateExternalNative2(const FVector& AimPoint, const FVector& CamPoint, FVector& oAimPoint,
+	                           FVector& oCamPoint);
 	UFUNCTION(BlueprintCallable)
 	void UpdateExternalNative(FVector& AimPoint, FVector& CamPoint);
 	UFUNCTION(BlueprintCallable)
-		void UpdateDistanceTableNative(float DeltaSeconds);
+	void UpdateDistanceTableNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void UpdateCameraModeActionNative(float DeltaSeconds);
+	void UpdateCameraModeActionNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void TickNative(float DeltaSeconds);
+	void TickNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void SoundPostEvent_BoostEndNative(float DeltaSeconds);
+	void SoundPostEvent_BoostEndNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void SetUseCutsceneToNormalInterpolate(bool Enable);
+	void SetUseCutsceneToNormalInterpolate(bool Enable);
 	UFUNCTION(BlueprintCallable)
-		void SetRewindFlag(bool on);
+	void SetRewindFlag(bool on);
 	UFUNCTION(BlueprintCallable)
-		void SetResetCameraProcessTime(float Time);
+	void SetResetCameraProcessTime(float Time);
 	UFUNCTION(BlueprintCallable)
-		void SetResetCameraInterpolateTime(float Time);
+	void SetResetCameraInterpolateTime(float Time);
 	UFUNCTION(BlueprintCallable)
-		void SetResetCameraFlag(bool on);
+	void SetResetCameraFlag(bool on);
 	UFUNCTION(BlueprintCallable)
-		void SetResetCameraCutsceneEndFlag(bool on);
+	void SetResetCameraCutsceneEndFlag(bool on);
 	UFUNCTION(BlueprintCallable)
-		void SetOverlimitUnitCameraNative(ABtlCharacterBase* Unit);
+	void SetOverlimitUnitCameraNative(ABtlCharacterBase* Unit);
 	UFUNCTION(BlueprintCallable)
-		void SetOverlimitUnitCamera(ABtlCharacterBase* Unit);
+	void SetOverlimitUnitCamera(ABtlCharacterBase* Unit);
 	UFUNCTION(BlueprintCallable)
-		void SetOverlimitUnit(ABtlCharacterBase* Unit);
+	void SetOverlimitUnit(ABtlCharacterBase* Unit);
 	UFUNCTION(BlueprintCallable)
-		void SetOffsetRotation(const FRotator& Rotator);
+	void SetOffsetRotation(const FRotator& Rotator);
 	UFUNCTION(BlueprintCallable)
-		void SetOffsetLocation(const FVector& Location);
+	void SetOffsetLocation(const FVector& Location);
 	UFUNCTION(BlueprintCallable)
-		void SetNormalCameraNative(const FVector& Aim, float Yaw, float Height, float Distance);
+	void SetNormalCameraNative(const FVector& Aim, float Yaw, float Height, float Distance);
 	UFUNCTION(BlueprintCallable)
-		void SetNormalBtlWinCameraNative();
+	void SetNormalBtlWinCameraNative();
 	UFUNCTION(BlueprintCallable)
-		void SetNormalBtlWinCamera();
+	void SetNormalBtlWinCamera();
 	UFUNCTION(BlueprintCallable)
-		void SetMouseControlNative(bool MouseControl, bool GamepadControl);
+	void SetMouseControlNative(bool MouseControl, bool GamepadControl);
 	UFUNCTION(BlueprintCallable)
-		void SetMode(EBtlCameraMode CameraMode);
+	void SetMode(EBtlCameraMode CameraMode);
 	UFUNCTION(BlueprintCallable)
-		void SetInterpolateIgnoreFlag(bool on);
+	void SetInterpolateIgnoreFlag(bool on);
 	UFUNCTION(BlueprintCallable)
-		void SetInterpolateCoefficientNative(float Coefficient, float Time);
+	void SetInterpolateCoefficientNative(float Coefficient, float Time);
 	UFUNCTION(BlueprintCallable)
-		void SetInterpolateCoefficientIgnoreTimer(float Time);
+	void SetInterpolateCoefficientIgnoreTimer(float Time);
 	UFUNCTION(BlueprintCallable)
-		void SetInterpolateCoefficientCamPointNative(float CoefficientCamPoint);
+	void SetInterpolateCoefficientCamPointNative(float CoefficientCamPoint);
 	UFUNCTION(BlueprintCallable)
-		void SetInspirationUnitCameraNative(ABtlCharacterBase* Unit);
+	void SetInspirationUnitCameraNative(ABtlCharacterBase* Unit);
 	UFUNCTION(BlueprintCallable)
-		void SetInspirationUnitCamera(ABtlCharacterBase* Unit);
+	void SetInspirationUnitCamera(ABtlCharacterBase* Unit);
 	UFUNCTION(BlueprintCallable)
-		void SetInspirationUnit(ABtlCharacterBase* Unit);
+	void SetInspirationUnit(ABtlCharacterBase* Unit);
 	UFUNCTION(BlueprintCallable)
-		void SetInputYawAddNative(float Value);
+	void SetInputYawAddNative(float Value);
 	UFUNCTION(BlueprintCallable)
-		void SetInputLimitYawNative(bool Enable, float YawMin, float YawMax);
+	void SetInputLimitYawNative(bool Enable, float YawMin, float YawMax);
 	UFUNCTION(BlueprintCallable)
-		void SetInputLimitPitchNative(bool Enable, float PitchMin, float PitchMax);
+	void SetInputLimitPitchNative(bool Enable, float PitchMin, float PitchMax);
 	UFUNCTION(BlueprintCallable)
-		void SetInputLimitHeightNative(bool Enable, float Low, float High);
+	void SetInputLimitHeightNative(bool Enable, float Low, float High);
 	UFUNCTION(BlueprintCallable)
-		void SetInputHeightAddNative(float Value);
+	void SetInputHeightAddNative(float Value);
 	UFUNCTION(BlueprintCallable)
-		void SetInputAnyControlNative(bool New);
+	void SetInputAnyControlNative(bool New);
 	UFUNCTION(BlueprintCallable)
-		void SetFocusUnitCameraNative(bool Enable, ABtlCharacterBase* Unit, USceneComponent* Part);
+	void SetFocusUnitCameraNative(bool Enable, ABtlCharacterBase* Unit, USceneComponent* Part);
 	//UFUNCTION(BlueprintCallable)
-		//void SetFocusUnitCamera(bool Enable, ABtlCharacterBase* Unit, USceneComponent* Part);
+	//void SetFocusUnitCamera(bool Enable, ABtlCharacterBase* Unit, USceneComponent* Part);
 	UFUNCTION(BlueprintCallable)
-		void SetFocusUnit(ABtlCharacterBase* Unit);
+	void SetFocusUnit(ABtlCharacterBase* Unit);
 	UFUNCTION(BlueprintCallable)
-		void SetFocusTime(float In, float Keep, float Out);
+	void SetFocusTime(float In, float Keep, float Out);
 	UFUNCTION(BlueprintCallable)
-		void SetFocusPart(USceneComponent* Part);
+	void SetFocusPart(USceneComponent* Part);
 	UFUNCTION(BlueprintCallable)
-		void SetFocusLocationState(EBtlCameraFocusLocationState State);
+	void SetFocusLocationState(EBtlCameraFocusLocationState State);
 	UFUNCTION(BlueprintCallable)
-		void SetFocusLocationCameraNative(bool Enable, const FVector& Location, float Distance, float InTime, float keepTime, float EndTime);
+	void SetFocusLocationCameraNative(bool Enable, const FVector& Location, float Distance, float InTime,
+	                                  float keepTime, float EndTime);
 	//UFUNCTION(BlueprintCallable)k
-		//void SetFocusLocationCamera(bool Enable, const FVector& Location, float Distance, float InTime, float keepTime, float EndTime);
+	//void SetFocusLocationCamera(bool Enable, const FVector& Location, float Distance, float InTime, float keepTime, float EndTime);
 	UFUNCTION(BlueprintCallable)
-		void SetFocusLocation(const FVector& Location);
+	void SetFocusLocation(const FVector& Location);
 	UFUNCTION(BlueprintCallable)
-		void SetFocusDistance(float Distance);
+	void SetFocusDistance(float Distance);
 	UFUNCTION(BlueprintCallable)
-		void SetExternalYawOverrideNative(bool UseOverride, float OverrideYaw);
+	void SetExternalYawOverrideNative(bool UseOverride, float OverrideYaw);
 	UFUNCTION(BlueprintCallable)
-		void SetExternalYawOffsetNative(float YawOffset);
+	void SetExternalYawOffsetNative(float YawOffset);
 	UFUNCTION(BlueprintCallable)
-		void SetExternalPitchOverrideNative(bool UseOverride, float OverridePitch);
+	void SetExternalPitchOverrideNative(bool UseOverride, float OverridePitch);
 	UFUNCTION(BlueprintCallable)
-		void SetExternalPitchOffsetNative(float PitchOffset);
+	void SetExternalPitchOffsetNative(float PitchOffset);
 	UFUNCTION(BlueprintCallable)
-		void SetExternalDistanceOverrideNative(bool UseOverride, float OverrideDistance);
+	void SetExternalDistanceOverrideNative(bool UseOverride, float OverrideDistance);
 	UFUNCTION(BlueprintCallable)
-		void SetExternalAimOffsetNative(bool UseOverride, float AimOffset);
+	void SetExternalAimOffsetNative(bool UseOverride, float AimOffset);
 	UFUNCTION(BlueprintCallable)
-		void SetEnableInputYawNative(bool Enable);
+	void SetEnableInputYawNative(bool Enable);
 	UFUNCTION(BlueprintCallable)
-		void SetEnableInputHeightNative(bool Enable);
+	void SetEnableInputHeightNative(bool Enable);
 	UFUNCTION(BlueprintCallable)
-		void SetDistanceInterpolateValueNative(float Value);
+	void SetDistanceInterpolateValueNative(float Value);
 	UFUNCTION(BlueprintCallable)
-		void SetDefaultFOV(float FOV);
+	void SetDefaultFOV(float FOV);
 	UFUNCTION(BlueprintCallable)
-		void SetDefaultAimOffsetHeight(float Height);
+	void SetDefaultAimOffsetHeight(float Height);
 	UFUNCTION(BlueprintCallable)
-		void SetCameraYaw(float Value);
+	void SetCameraYaw(float Value);
 	UFUNCTION(BlueprintCallable)
-		void SetCameraHeight(float Value);
+	void SetCameraHeight(float Value);
 	UFUNCTION(BlueprintCallable)
-		void SetBoostAttackUnit(ABtlCharacterBase* Unit);
+	void SetBoostAttackUnit(ABtlCharacterBase* Unit);
 	UFUNCTION(BlueprintCallable)
-		void SetBoostAttackTimer(float Time);
+	void SetBoostAttackTimer(float Time);
 	UFUNCTION(BlueprintCallable)
-		void SetActiveFlag(bool Enable, EBtlBitFlagCategory Category);
+	void SetActiveFlag(bool Enable, EBtlBitFlagCategory Category);
 	UFUNCTION(BlueprintCallable)
-		void SavedPrevPointsNative(const FVector& AimPoint, const FVector& CamPoint);
+	void SavedPrevPointsNative(const FVector& AimPoint, const FVector& CamPoint);
 	UFUNCTION(BlueprintCallable)
-		void ReturnBeforeFocusUnitNative();
+	void ReturnBeforeFocusUnitNative();
 	UFUNCTION(BlueprintCallable)
-		void ReturnBeforeFocusUnit();
+	void ReturnBeforeFocusUnit();
 	UFUNCTION(BlueprintCallable)
-		void ResetCameraNative();
+	void ResetCameraNative();
 	UFUNCTION(BlueprintCallable)
-		void ResetCameraInstantNative();
+	void ResetCameraInstantNative();
 	UFUNCTION(BlueprintCallable)
-		void PushMode(EBtlCameraMode CameraMode);
+	void PushMode(EBtlCameraMode CameraMode);
 	UFUNCTION(BlueprintCallable)
-		void PopMode();
+	void PopMode();
 	UFUNCTION(BlueprintCallable)
-		void LookupNormalNative2(const FVector& AimPoint, const FVector& CamPoint, FVector& oAimPoint, FVector& oCamPoint);
+	void LookupNormalNative2(const FVector& AimPoint, const FVector& CamPoint, FVector& oAimPoint, FVector& oCamPoint);
 	UFUNCTION(BlueprintCallable)
-		void LookupNormalNative(FVector& AimPoint, FVector& CamPoint);
+	void LookupNormalNative(FVector& AimPoint, FVector& CamPoint);
 	UFUNCTION(BlueprintCallable)
-		bool IsUseCutsceneToNormalInterpolate();
+	bool IsUseCutsceneToNormalInterpolate();
 	UFUNCTION(BlueprintCallable)
-		bool IsUseAutoResetTargetAngleRange();
+	bool IsUseAutoResetTargetAngleRange();
 	UFUNCTION(BlueprintCallable)
-		bool IsActiveFlag();
+	bool IsActiveFlag();
 	UFUNCTION(BlueprintCallable)
-		bool GetRewindFlag();
+	bool GetRewindFlag();
 	UFUNCTION(BlueprintCallable)
-		float GetResetCameraProcessTime();
+	float GetResetCameraProcessTime();
 	UFUNCTION(BlueprintCallable)
-		float GetResetCameraInterpolateTime();
+	float GetResetCameraInterpolateTime();
 	UFUNCTION(BlueprintCallable)
-		bool GetResetCameraFlag();
+	bool GetResetCameraFlag();
 	UFUNCTION(BlueprintCallable)
-		bool GetResetCameraCutsceneEndFlag();
+	bool GetResetCameraCutsceneEndFlag();
 	UFUNCTION(BlueprintCallable)
-		ABtlCharacterBase* GetOverlimitUnit();
+	ABtlCharacterBase* GetOverlimitUnit();
 	UFUNCTION(BlueprintCallable)
-		FRotator GetOffsetRotation();
+	FRotator GetOffsetRotation();
 	UFUNCTION(BlueprintCallable)
-		FVector GetOffsetLocation();
+	FVector GetOffsetLocation();
 	UFUNCTION(BlueprintCallable)
-		EBtlCameraMode GetMode();
+	EBtlCameraMode GetMode();
 	UFUNCTION(BlueprintCallable)
-		bool GetInterpolateIgnoreFlag();
+	bool GetInterpolateIgnoreFlag();
 	UFUNCTION(BlueprintCallable)
-		ABtlCharacterBase* GetInspirationUnit();
+	ABtlCharacterBase* GetInspirationUnit();
 	/*UFUNCTION(BlueprintCallable)
 		TArray<AActor&> GetIgnoreBlockingActors();*/
 	UFUNCTION(BlueprintCallable)
-		ABtlCharacterBase* GetFocusUnit();
+	ABtlCharacterBase* GetFocusUnit();
 	UFUNCTION(BlueprintCallable)
-		USceneComponent* GetFocusPart();
+	USceneComponent* GetFocusPart();
 	UFUNCTION(BlueprintCallable)
-		float GetFocusOutTime();
+	float GetFocusOutTime();
 	UFUNCTION(BlueprintCallable)
-		EBtlCameraFocusLocationState GetFocusLocationState();
+	EBtlCameraFocusLocationState GetFocusLocationState();
 	UFUNCTION(BlueprintCallable)
-		FVector GetFocusLocation();
+	FVector GetFocusLocation();
 	UFUNCTION(BlueprintCallable)
-		float GetFocusKeepTime();
+	float GetFocusKeepTime();
 	UFUNCTION(BlueprintCallable)
-		float GetFocusInTime();
+	float GetFocusInTime();
 	UFUNCTION(BlueprintCallable)
-		float GetFocusDistance();
+	float GetFocusDistance();
 	UFUNCTION(BlueprintCallable)
-		EBtlCameraEasingState GetEasingStateNative(float Time, float InTime, float keepTime, float outTime);
+	EBtlCameraEasingState GetEasingStateNative(float Time, float InTime, float keepTime, float outTime);
 	UFUNCTION(BlueprintCallable)
-		float GetDistanceFromDistanceTable(int DistanceTableScore);
+	float GetDistanceFromDistanceTable(int DistanceTableScore);
 	UFUNCTION(BlueprintCallable)
-		float GetDefaultFOV();
+	float GetDefaultFOV();
 	UFUNCTION(BlueprintCallable)
-		float GetDefaultAimOffsetHeight();
+	float GetDefaultAimOffsetHeight();
 	UFUNCTION(BlueprintCallable)
-		FVector GetCamPointNormalNative2(const FVector& AimPoint, const FVector& CamDirectionXY);
+	FVector GetCamPointNormalNative2(const FVector& AimPoint, const FVector& CamDirectionXY);
 	UFUNCTION(BlueprintCallable)
-		FVector GetCamPointNormalNative(const FVector& AimPoint, const FVector& CamDirectionXY);
+	FVector GetCamPointNormalNative(const FVector& AimPoint, const FVector& CamDirectionXY);
 	UFUNCTION(BlueprintCallable)
-		FVector GetCamDirectionNormalNative(float Yaw);
+	FVector GetCamDirectionNormalNative(float Yaw);
 	UFUNCTION(BlueprintCallable)
-		FVector GetAimPointNormalNative();
+	FVector GetAimPointNormalNative();
 	UFUNCTION(BlueprintCallable)
-		FVector GetAimOffsetFromDistanceTable(int DistanceTableScore);
+	FVector GetAimOffsetFromDistanceTable(int DistanceTableScore);
 	UFUNCTION(BlueprintCallable)
-		void ExecutePreBoostStrikeNative(float DeltaSeconds);
+	void ExecutePreBoostStrikeNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void ExecuteNormalNative(float DeltaSeconds);
+	void ExecuteNormalNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void ExecuteNormalBattleEndNative(float DeltaSeconds);
+	void ExecuteNormalBattleEndNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void ExecuteInitializeNative();
+	void ExecuteInitializeNative();
 	UFUNCTION(BlueprintCallable)
-		void ExecuteFocusUnitNative(float DeltaSeconds);
+	void ExecuteFocusUnitNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void ExecuteFocusLocationNative(float DeltaSeconds);
+	void ExecuteFocusLocationNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void ExecuteEasingOverlimitNative(float DeltaSeconds);
+	void ExecuteEasingOverlimitNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void ExecuteEasingInspirationNative(float DeltaSeconds);
+	void ExecuteEasingInspirationNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void ExecuteCutsceneToNative(float DeltaSeconds);
+	void ExecuteCutsceneToNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void ExecuteCounterRaidNative(float DeltaSeconds);
+	void ExecuteCounterRaidNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void ExecuteBoostAttackNative(float DeltaSeconds);
+	void ExecuteBoostAttackNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void ExecuteAutoCameraResetNative(float DeltaSeconds);
+	void ExecuteAutoCameraResetNative(float DeltaSeconds);
 	UFUNCTION(BlueprintCallable)
-		void DetectBlockingNative2(const FVector& AimPoint, const FVector& CamPoint, FVector& EscapePoint);
+	void DetectBlockingNative2(const FVector& AimPoint, const FVector& CamPoint, FVector& EscapePoint);
 	UFUNCTION(BlueprintCallable)
-		void DetectBlockingNative(FVector& AimPoint, FVector& CamPoint);
+	void DetectBlockingNative(FVector& AimPoint, FVector& CamPoint);
 	UFUNCTION(BlueprintCallable)
-		void ClearOffsetValue();
+	void ClearOffsetValue();
 	UFUNCTION(BlueprintCallable)
-		void CalculateNormalCameraNative(float DeltaSeconds, FVector& NewLocation, FRotator& NewRotation, FVector& NewAimPoint, FVector& NewCamPoint);
+	void CalculateNormalCameraNative(float DeltaSeconds, FVector& NewLocation, FRotator& NewRotation,
+	                                 FVector& NewAimPoint, FVector& NewCamPoint);
 	UFUNCTION(BlueprintCallable)
-		int CalculateDistanceTableIndex();
-
+	int CalculateDistanceTableIndex();
 };

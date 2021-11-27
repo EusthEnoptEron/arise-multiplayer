@@ -11,6 +11,7 @@
 #include <math.h>
 #include "Utilities/Pattern.h";
 #include <thread>
+#include "INI.h"
 
 #define hasFlag(x,m) ((x&m) > 0)
 
@@ -442,6 +443,13 @@ void MultiplayerMod::PostBeginPlay(std::wstring ModActorName, UE4::AActor* Actor
 		Log::Info("%p", tickFn);
 		MinHook::Add((DWORD64)tickFn, &FEngineLoop__Tick_Hook, &FEngineLoop__Tick_Orig, "FEngineLoop__Tick_Fn");
 		//Actor->CallFunctionByNameWithArguments
+
+		Watch = new filewatch::FileWatch<std::wstring>(
+			L"./MultiplayerMod.ini",
+		[this](const std::wstring& path, const filewatch::Event change_type) {
+			IniDirty = true;
+		}
+		);
 	}
 }
 
@@ -469,8 +477,42 @@ UE4::AActor* MultiplayerMod::GetControlledCharacter(int index) {
 	return parms.Result;
 }
 
+void MultiplayerMod::RefreshIni() {
+	static auto applyConfigFn = ModActor->GetFunction("OnConfigChanged");
+	ApplyConfigParams parms;
+
+	INI::PARSE_FLAGS = INI::PARSE_COMMENTS_ALL | INI::PARSE_COMMENTS_SLASH | INI::PARSE_COMMENTS_HASH;
+	INI config("MultiplayerMod.ini", true);
+
+	config.select("CAMERA");
+	parms.MinDistance = std::stof(config.get("MinDistance", "1500"));
+	parms.MaxDistance = std::stof(config.get("MaxDistance", "3000"));
+	parms.MinClip = std::stof(config.get("MinClip", "10.0"));
+	parms.MaxClip = std::stof(config.get("MaxClip", "100000.0"));
+	parms.ClipRatio = std::stof(config.get("ClipRatio", "0.5"));
+	parms.TargetOffset = std::stof(config.get("TargetOffset", "500"));
+	parms.TargetEnemies = std::stoi(config.get("TargetEnemies", "1"));
+	parms.TargetHeroes = std::stoi(config.get("TargetHeroes", "1"));
+	parms.ZoomInSpeed = std::stof(config.get("ZoomInSpeed", "1000"));
+	parms.ZoomOutSpeed = std::stof(config.get("ZoomOutSpeed", "1000"));
+	parms.ZoomInPadding = std::stof(config.get("ZoomInPadding", "0.2"));
+	parms.ZoomOutPadding = std::stof(config.get("ZoomOutPadding", "0.1"));
+	parms.RotateSpeedX = std::stof(config.get("RotateSpeedX", "60"));
+	parms.RotateSpeedY = std::stof(config.get("RotateSpeedY", "40"));
+
+	config.select("MISC");
+	parms.DebugMenu = std::stoi(config.get("DebugMenu", "0"));
+
+	ModActor->ProcessEvent(applyConfigFn, &parms);
+}
+
 void MultiplayerMod::Tick()
 {
+	if (IniDirty) {
+		Log::Info("Update INI");
+		RefreshIni();
+		IniDirty = false;
+	}
 	//ModTickParams parms = *(Frame->GetParams<ModTickParams>());
 
 	//Log::Info("Scene: %d Menu: %d", parms.Scene, parms.IsMenuOpen);

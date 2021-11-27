@@ -54,5 +54,11 @@
     <ClInclude Include="InputManager.h">
       <Filter>Mod</Filter>
     </ClInclude>
+    <ClInclude Include="FileWatch.hpp">
+      <Filter>Mod</Filter>
+    </ClInclude>
+    <ClInclude Include="INI.h">
+      <Filter>Mod</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

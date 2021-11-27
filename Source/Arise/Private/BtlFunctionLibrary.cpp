@@ -508,6 +508,11 @@ FString UBtlFunctionLibrary::GetBattleMapId()
 	return {};
 }
 
+ABtlManager* UBtlFunctionLibrary::GetBattleManager(UObject* WorldContextObject)
+{
+	return nullptr;
+}
+
 UBtlEventDispatcher* UBtlFunctionLibrary::GetBattleEventDispatcher(UObject* WorldContextObject)
 {
 	return nullptr;

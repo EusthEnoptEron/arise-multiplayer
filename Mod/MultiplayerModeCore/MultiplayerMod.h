@@ -1,11 +1,12 @@
 #pragma once
+#include "iostream"
 #include "Mod/Mod.h"
 #include "steam/isteaminput.h"
-#include "XInput.h"
-#include <time.h>
 #include "InputManager.h";
 #include "SDK.h";
 #include "SDK/BP_BtlCamera_classes.h";
+#include "FileWatch.hpp"
+
 
 typedef void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void *result);
 struct FScriptName {
@@ -19,6 +20,31 @@ struct FScriptName {
 	std::string GetName() {
 		return UE4::FName(ComparisonIndex).GetName();
 	}
+};
+
+struct ApplyConfigParams {
+
+	float MinDistance;
+	float MaxDistance;
+
+	float TargetOffset;
+	bool TargetEnemies;
+	bool TargetHeroes;
+
+	float ZoomInSpeed;
+	float ZoomOutSpeed;
+
+	float ZoomInPadding;
+	float ZoomOutPadding;
+
+	float RotateSpeedX;
+	float RotateSpeedY;
+
+	float MinClip;
+	float MaxClip;
+	float ClipRatio;
+
+	bool DebugMenu;
 };
 
 
@@ -154,13 +180,17 @@ private:
 	UE4::UFunction* GetControlledCharacterFn;
 
 
+	void RefreshIni();
+
 	int MenuCandidate = 0;
 	bool LogEverything = false;
 
 	time_t LastCheck;
 	InputManager* Manager;
 
+	filewatch::FileWatch<std::wstring> *Watch;
 
 	bool Initialized = false;
+	bool IniDirty = true;
 	void CompareDigitalStates(bool newValue, bool oldValue, bool *justPressed, bool *justReleased, const UE4::FString &name, int index);
 };
