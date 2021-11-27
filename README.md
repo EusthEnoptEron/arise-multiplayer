@@ -14,10 +14,10 @@ For progress, see [Milestones.](https://github.com/EusthEnoptEron/arise-multipla
 
 ## Known Issues
 
-- Tutorials are buggy. (#20)
-- Changing characters during battle doesn't work well. (#5)
-- Camera issues during strike attacks (#21)
-- Special abilities only partly supported (#4)
+- Tutorials are buggy. ([#20](https://github.com/EusthEnoptEron/arise-multiplayer/issues/20))
+- Changing characters during battle doesn't work well. ([#5](https://github.com/EusthEnoptEron/arise-multiplayer/issues/5))
+- Camera issues during strike attacks ([#21](https://github.com/EusthEnoptEron/arise-multiplayer/issues/21))
+- Special abilities only partly supported ([#4](https://github.com/EusthEnoptEron/arise-multiplayer/issues/4))
 
 For a complete list, see [issues](https://github.com/EusthEnoptEron/arise-multiplayer/issues)
 
