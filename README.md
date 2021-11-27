@@ -12,6 +12,15 @@ For progress, see [Milestones.](https://github.com/EusthEnoptEron/arise-multipla
 
 1. Remove the xinput1_3.dll
 
+## Known Issues
+
+- Tutorials are buggy. (#20)
+- Changing characters during battle doesn't work well. (#5)
+- Camera issues during strike attacks (#21)
+- Special abilities only partly supported (#4)
+
+For a complete list, see [issues](https://github.com/EusthEnoptEron/arise-multiplayer/issues)
+
 ## Controller Order
 
 - Player numbers are initially assigned in the order Steam reports them.
