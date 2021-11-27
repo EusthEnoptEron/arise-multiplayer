@@ -3,6 +3,14 @@ Mod that adds multiplayer to Tales of Arise
 
 For progress, see [Milestones.](https://github.com/EusthEnoptEron/arise-multiplayer/milestones)
 
+## Installing
+
+1. Extract files to the game data folder.
+2. Start the game. 
+
+## Disabling
+
+1. Remove the xinput1_3.dll
 
 ## Controller Order
 
