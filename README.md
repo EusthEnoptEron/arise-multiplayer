@@ -10,6 +10,8 @@ For progress, see [Milestones.](https://github.com/EusthEnoptEron/arise-multipla
 
 During battle, controllers will automatically be assigned to the characters. See below for details on the order.
 
+If `xinput1_3.dll` already exists because you installed another mod, skip the file and launch UnrealEngineModLauncher.exe before starting the game.
+
 ## Disabling
 
 1. Remove the xinput1_3.dll
