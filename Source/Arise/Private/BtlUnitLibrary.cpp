@@ -7,3 +7,8 @@ ABtlCharacterBase* UBtlUnitLibrary::GetPartyUnitByPartyId(EArisePartyID PartyId)
 ABtlCharacterBase* UBtlUnitLibrary::GetPartyUnitByOrder(EPCOrder Order) { return nullptr; };
 ABtlCharacterBase* UBtlUnitLibrary::GetPartyUnit(const FName& UnitID) { return nullptr; }
 
+ABtlCharacterBase* UBtlUnitLibrary::GetPlayerControlledUnit()
+{
+	return nullptr;
+}
+

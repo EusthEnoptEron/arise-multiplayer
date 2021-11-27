@@ -20,6 +20,7 @@
 
 FNativeFuncPtr *MultiplayerMod::GNatives;
 
+
 FEngineLoop__Tick_Fn FEngineLoop__Tick_Orig;
 void FEngineLoop__Tick_Hook(void* thisptr)
 {
@@ -179,6 +180,18 @@ void K2_IsBtlButtonRepeatedHook(UE4::UObject* Context, UE4::FFrame& Stack, void*
 	K2_IsBtlButtonRepeated(Context, Stack, ret);
 };
 
+FNativeFuncPtr GetPlayerOperation;
+void GetPlayerOperationHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
+	
+	Log::Info("GetPlayerOperation: %s (%s)", Context->GetName().c_str(), Stack.Object->GetName().c_str());
+	UE4::FFrame* frame = &Stack;
+	while (frame != nullptr) {
+		Log::Info("%s::%s", frame->Object->GetName().c_str(), frame->Node->GetName().c_str());
+		frame = frame->PreviousFrame;
+	}
+	Log::Info("");
+	GetPlayerOperation(Context, Stack, ret);
+};
 
 FNativeFuncPtr K2_GetPlayerController;
 void K2_GetPlayerControllerHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
@@ -235,6 +248,12 @@ void MultiplayerMod::InitializeMod()
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlUnitLibrary.GetPlayerControlledUnit")->GetFunction()),
 		&GetPlayerControlledUnitHook, &GetPlayerControlledUnit, "GetPlayerControlledUnit");
+
+	//MinHook::Add((DWORD_PTR)
+	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.GetPlayerOperation")->GetFunction()),
+	//	&GetPlayerOperationHook, &GetPlayerOperation, "GetPlayerOperation");
+
+	
 	//MinHook::Add((DWORD_PTR)
 	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonJustPressed")->GetFunction()),
 	//	&K2_IsBtlButtonJustPressedHook, &K2_IsBtlButtonJustPressed, "K2_IsBtlButtonJustPressed");
@@ -311,8 +330,8 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 		auto name = Frame->Node->GetName();
 
 		// Make sure that our own functions get the real values
-		int tempCurrentPlayer = CurrentPlayer;
-		CurrentPlayer = 0;
+		/*int tempCurrentPlayer = CurrentPlayer;
+		CurrentPlayer = 0;*/
 
 		if (name == "OnBeginBattle") {
 			InputManager::GetInstance()->SetRerouteControllers(true);
@@ -321,7 +340,7 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 			InputManager::GetInstance()->SetRerouteControllers(false);
 			ResetNearClippingPlane(); // To be sure
 		}
-		else if (name == "OnSubStateStart") {
+		else if (name == "Native_OnSubStateStart") {
 			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
 			if (state == SDK::EBattleState::StateMenu) {
 				for (int i = 0; i < 4; i++) {
@@ -336,14 +355,14 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 				}
 			}
 		}
-		else if (name == "OnSubStateEnd") {
+		else if (name == "Native_OnSubStateEnd") {
 			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
 			if (state == SDK::EBattleState::StateMenu) {
 				InputManager::GetInstance()->SetFirstPlayer(0);
 				ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
 			}
 		}
-		else if (name == "OnBeginChangeTarget") {
+		else if (name == "Native_OnBeginChangeTarget") {
 			for (int i = 0; i < 4; i++) {
 				if (OldStates[i].IsTarget) {
 					Log::Info("Change first player: %d", i);
@@ -356,7 +375,7 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 			}
 			//InputManager::GetInstance()->SetRerouteControllers(true);
 		}
-		else if (name == "OnEndChangeTarget") {
+		else if (name == "Native_OnEndChangeTarget") {
 			InputManager::GetInstance()->SetFirstPlayer(0);
 			ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
 			//InputManager::GetInstance()->SetRerouteControllers(false);
@@ -368,7 +387,7 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 			ResetNearClippingPlane();
 		}
 
-		CurrentPlayer = tempCurrentPlayer;
+		//CurrentPlayer = tempCurrentPlayer;
 	}
 }
 
@@ -510,6 +529,7 @@ void MultiplayerMod::Tick()
 
 		CurrentPlayer = 0;
 	}
+	std::swap(OldStates, NewStates);
 
 
 	float x = 0.0f, y = 0.0f;
@@ -528,5 +548,6 @@ void MultiplayerMod::Tick()
 	BP_OnCameraAngle(UE4::FVector2D(x, y));
 
 
-	std::swap(OldStates, NewStates);
+	static auto modTickFn = ModActor->GetFunction("ModTick");
+	ModActor->ProcessEvent(modTickFn, nullptr);
 }

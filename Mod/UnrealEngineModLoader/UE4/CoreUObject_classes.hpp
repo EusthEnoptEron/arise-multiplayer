@@ -542,6 +542,30 @@ namespace UE4
 		uint8_t* Code; //0x0020 
 		uint8_t* Locals; //0x0028
 
+		UEProperty* MostRecentProperty;
+		uint8_t* MostRecentPropertyAddress;
+
+		///** The execution flow stack for compiled Kismet code */
+		uint32_t PrimaryData[8];
+		uint8_t* SecondaryData;
+		int32_t ArrayNum;
+		int32_t ArrayMax;
+
+		///** Previous frame on the stack */
+		FFrame* PreviousFrame;
+
+		/** contains information on any out parameters */
+		uint8_t* OutParms;
+
+		/** If a class is compiled in then this is set to the property chain for compiled-in functions. In that case, we follow the links to setup the args instead of executing by code. */
+		UField* PropertyChainForCompiledIn;
+
+		/** Currently executed native function */
+		UFunction* CurrentNativeFunction;
+
+		bool bArrayContextFailed;
+
+
 		template<typename T>
 		T* GetParams() { return (T*)Locals; }
 
