@@ -18,12 +18,14 @@ If `xinput1_3.dll` already exists because you installed another mod, skip the fi
 
 ## Known Issues
 
-- Tutorials are buggy. ([#20](https://github.com/EusthEnoptEron/arise-multiplayer/issues/20))
+- Tutorials might be buggy. ([#20](https://github.com/EusthEnoptEron/arise-multiplayer/issues/20))
 - Changing characters during battle doesn't work well. ([#5](https://github.com/EusthEnoptEron/arise-multiplayer/issues/5))
-- Camera issues during strike attacks ([#21](https://github.com/EusthEnoptEron/arise-multiplayer/issues/21))
 - Special abilities only partly supported ([#4](https://github.com/EusthEnoptEron/arise-multiplayer/issues/4))
+- Mystic artes don't seem to work ([#22](https://github.com/EusthEnoptEron/arise-multiplayer/issues/22))
 
 For a complete list, see [issues](https://github.com/EusthEnoptEron/arise-multiplayer/issues)
+
+Please comment or add new issues if you encounter any that haven't been reported yet.
 
 ## Controller Order
 
