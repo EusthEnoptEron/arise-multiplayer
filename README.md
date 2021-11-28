@@ -14,7 +14,7 @@ If `xinput1_3.dll` already exists because you installed another mod, skip the fi
 
 ## Disabling
 
-1. Remove the xinput1_3.dll
+1. Remove xinput1_3.dll
 
 ## Known Issues
 
