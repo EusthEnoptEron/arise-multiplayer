@@ -21,6 +21,13 @@ namespace UE4
 		UClass* GetClass() const;
 		UObject* GetOuter() const;
 
+		void* Vtable;                                                   // 0x0000(0x0000) NOT AUTO-GENERATED PROPERTY
+		int32_t                                            ObjectFlags;                                              // 0x0008(0x0000) NOT AUTO-GENERATED PROPERTY
+		int32_t                                            InternalIndex;                                            // 0x000C(0x0000) NOT AUTO-GENERATED PROPERTY
+		class UClass* Class;                                                    // 0x0010(0x0000) NOT AUTO-GENERATED PROPERTY
+		FName                                              Name;                                                     // 0x0018(0x0000) NOT AUTO-GENERATED PROPERTY
+		class UObject* Outer;
+
 		static inline bool IsChunkedArray()
 		{
 			return GameProfile::SelectedGameProfile.IsUsingFChunkedFixedUObjectArray;

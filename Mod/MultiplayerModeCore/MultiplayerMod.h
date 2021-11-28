@@ -44,6 +44,10 @@ struct ApplyConfigParams {
 	float MaxClip;
 	float ClipRatio;
 
+	float FieldOfView;
+	float TargetSpeed;
+	float TargetRadius;
+
 	bool DebugMenu;
 };
 

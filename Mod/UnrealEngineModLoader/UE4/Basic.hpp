@@ -284,18 +284,18 @@ public:
 class FNameEntry
 {
 public:
+	int32_t Index;
+	char UnknownData00[0x04];
+	FNameEntry* HashNext;
+	union
+	{
+		char AnsiName[1024];
+		wchar_t WideName[1024];
+	};
+
 	inline const char* GetAnsiName() const
 	{
-		char buf[1024];
-		if (GameProfile::SelectedGameProfile.IsUsing4_22)
-		{
-			Read((byte*)this + 0xC, buf, 1024);
-		}
-		else
-		{
-			Read((byte*)this + 0x10, buf, 1024);
-		}
-		return buf;
+		return AnsiName;
 	}
 };
 

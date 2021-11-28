@@ -236,7 +236,7 @@ void MultiplayerMod::InitializeMod()
 
 	UseMenuButton = true; // Allows Mod Loader To Show Button
 	InputManager::Initialize();
-	
+
 	MinHook::Init();
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBtlAxisValue")->GetFunction()), 
@@ -499,6 +499,9 @@ void MultiplayerMod::RefreshIni() {
 	parms.ZoomOutPadding = std::stof(config.get("ZoomOutPadding", "0.1"));
 	parms.RotateSpeedX = std::stof(config.get("RotateSpeedX", "60"));
 	parms.RotateSpeedY = std::stof(config.get("RotateSpeedY", "40"));
+	parms.FieldOfView = std::stof(config.get("FieldOfView", "75"));
+	parms.TargetSpeed = std::stof(config.get("TargetSpeed", "3"));
+	parms.TargetRadius = std::stof(config.get("TargetRadius", "500"));
 
 	config.select("MISC");
 	parms.DebugMenu = std::stoi(config.get("DebugMenu", "0"));
