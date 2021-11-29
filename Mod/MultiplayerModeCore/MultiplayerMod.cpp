@@ -235,7 +235,6 @@ void MultiplayerMod::InitializeMod()
 	//Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonJustPressed
 
 	UseMenuButton = true; // Allows Mod Loader To Show Button
-	InputManager::Initialize();
 
 	MinHook::Init();
 	MinHook::Add((DWORD_PTR)
@@ -250,6 +249,8 @@ void MultiplayerMod::InitializeMod()
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlUnitLibrary.GetPlayerControlledUnit")->GetFunction()),
 		&GetPlayerControlledUnitHook, &GetPlayerControlledUnit, "GetPlayerControlledUnit");
 
+	auto tickFn = Pattern::Find("48 8B C4 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 78 FD FF FF");
+	MinHook::Add((DWORD64)tickFn, &FEngineLoop__Tick_Hook, &FEngineLoop__Tick_Orig, "FEngineLoop__Tick_Fn");
 	//MinHook::Add((DWORD_PTR)
 	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.GetPlayerOperation")->GetFunction()),
 	//	&GetPlayerOperationHook, &GetPlayerOperation, "GetPlayerOperation");
@@ -409,6 +410,8 @@ void MultiplayerMod::ResetNearClippingPlane() {
 
 void MultiplayerMod::InitGameState()
 {
+	InputManager::Initialize();
+	InputManager::GetInstance()->Refresh(NewStates);
 }
 
 void MultiplayerMod::BeginPlay(UE4::AActor* Actor)
@@ -438,10 +441,7 @@ void MultiplayerMod::PostBeginPlay(std::wstring ModActorName, UE4::AActor* Actor
 
 		IsBattleSceneFn = UE4::UObject::FindObject<UE4::UFunction>("Function BP_GameFunctionLibrary.BP_GameFunctionLibrary_C.GameFunc_IsBattelScene");
 		functionLibClazz = UE4::UObject::FindObject<UE4::UClass>("BlueprintGeneratedClass BP_GameFunctionLibrary.BP_GameFunctionLibrary_C");
-
-		auto tickFn = Pattern::Find("48 8B C4 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 78 FD FF FF");
-		Log::Info("%p", tickFn);
-		MinHook::Add((DWORD64)tickFn, &FEngineLoop__Tick_Hook, &FEngineLoop__Tick_Orig, "FEngineLoop__Tick_Fn");
+		
 		//Actor->CallFunctionByNameWithArguments
 
 		Watch = new filewatch::FileWatch<std::wstring>(
@@ -511,6 +511,8 @@ void MultiplayerMod::RefreshIni() {
 
 void MultiplayerMod::Tick()
 {
+	if (ModActor == nullptr) return; // not yet initialized
+
 	if (IniDirty) {
 		Log::Info("Update INI");
 		RefreshIni();

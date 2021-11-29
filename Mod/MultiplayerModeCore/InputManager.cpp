@@ -119,16 +119,17 @@ void InputManager::ActivateActionSetHook(ISteamInput* self, InputHandle_t inputH
 	InputManager* instance = InputManager::GetInstance();
 
 	// Workaround because the custom InputProcesses seem to interfere with the activated action sets
-	if (inputHandle == instance->Controllers[instance->FirstPlayerIndex] || !instance->_rerouteControllers) {
-		if (actionSetHandle == instance->AS_Battle) {
-			if (instance->_preventBattleInput || (instance->UpdateCounter - instance->_lastDifferentActionSet) < 2) {
-				return; // Abort
+	if (instance->Controllers.size() > 0) {
+		if (inputHandle == instance->Controllers[instance->FirstPlayerIndex] || !instance->_rerouteControllers) {
+			if (actionSetHandle == instance->AS_Battle) {
+				if (instance->_preventBattleInput || (instance->UpdateCounter - instance->_lastDifferentActionSet) < 2) {
+					return; // Abort
+				}
+			}
+			else {
+				instance->_lastDifferentActionSet = instance->UpdateCounter;
 			}
 		}
-		else {
-			instance->_lastDifferentActionSet = instance->UpdateCounter;
-		}
-
 	}
 
 	ActivateActionSet(self, inputHandle, actionSetHandle);
