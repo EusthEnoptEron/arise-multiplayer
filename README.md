@@ -1,4 +1,4 @@
-# Tales of Arie: Local Co-Op Mod
+# Tales of Arise: Local Co-Op Mod
 
 ![Assets/Sample.jpg](Assets/Sample.jpg)
 
