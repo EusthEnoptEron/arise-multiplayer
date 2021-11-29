@@ -75,3 +75,5 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 Compile/*
+
+Manifest_*
