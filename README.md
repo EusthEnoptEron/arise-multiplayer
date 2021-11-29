@@ -9,11 +9,12 @@ For progress, see [Milestones.](https://github.com/EusthEnoptEron/arise-multipla
 ## Installing
 
 1. Extract files to the game data folder.
-2. Start the game. 
+2. Start the game.
 
 During battle, controllers will automatically be assigned to the characters. See below for details on the order.
 
-If `xinput1_3.dll` already exists because you installed another mod, skip the file and launch UnrealEngineModLauncher.exe before starting the game.
+If `xinput1_3.dll` already exists because you installed another mod, skip the file and launch
+UnrealEngineModLauncher.exe before starting the game.
 
 ## Disabling
 
@@ -23,7 +24,8 @@ If `xinput1_3.dll` already exists because you installed another mod, skip the fi
 
 - Mystic artes don't seem to work ([#22](https://github.com/EusthEnoptEron/arise-multiplayer/issues/22))
 - Sometimes crashes on startup. ([#29](https://github.com/EusthEnoptEron/arise-multiplayer/issues/29))
-- Changing characters during battle doesn't work well. ([#5](https://github.com/EusthEnoptEron/arise-multiplayer/issues/5))
+- Changing characters during battle doesn't work
+  well. ([#5](https://github.com/EusthEnoptEron/arise-multiplayer/issues/5))
 - Special abilities only partly supported ([#4](https://github.com/EusthEnoptEron/arise-multiplayer/issues/4))
 
 For a complete list, see [issues](https://github.com/EusthEnoptEron/arise-multiplayer/issues)
@@ -40,12 +42,13 @@ Please comment or add new issues if you encounter any that haven't been reported
 
 ### Overworld Controls
 
-Outside of battle, all controllers are treated equally and can steer the main character and navigate through menus.
-This mirrors the default behavior of the game and allows for taking turns without passing around a controller.
+Outside of battle, all controllers are treated equally and can steer the main character and navigate through menus. This
+mirrors the default behavior of the game and allows for taking turns without passing around a controller.
 
 ### Battle Controls
 
-During battle, each player gets to control their own character. Make sure that P1 (= the flag) is assigned to the top party member.
+During battle, each player gets to control their own character. Make sure that P1 (= the flag) is assigned to the top
+party member.
 
 The other characters are assigned like so:
 
@@ -57,4 +60,11 @@ The other characters are assigned like so:
 
 ## Customizing the Camera
 
-The camera is still very much a work in progress. You can however tweak it to your liking by editing the `MultiplayerMod.ini` file that comes with the mod. Updates will be applied immediately.
+The camera is still very much a work in progress. You can however tweak it to your liking by editing
+the `MultiplayerMod.ini` file that comes with the mod. Updates will be applied immediately.
+
+## Sources
+
+Provided in the spirit of open source.
+
+Don't expect any quality, though, since this is an active process of trial and error.
