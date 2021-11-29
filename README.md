@@ -51,3 +51,7 @@ The other characters are assigned like so:
 | P2     | Left  |
 | P3     | Right |
 | P4     | Bottom |
+
+### Customizing the Camera
+
+The camera is still very much a work in progress. You can however tweak it to your liking by editing the `MultiplayerMod.ini` file that comes with the mod. Updates will be applied immediately.
