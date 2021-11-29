@@ -135,7 +135,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;EXAMPLEMOD_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)MinHook\;$(SolutionDir)UE4;$(SolutionDir)UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;C:\Program Files\Epic Games\UE_4.25\Engine\Source\ThirdParty\Windows\DirectX\Include;$(ProjectDir)Libs\Arise-SDK\src;$(SolutionDir)INI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)MinHook\;$(SolutionDir)UE4;$(SolutionDir)UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;$(ProjectDir)Libs\Arise-SDK\src;$(SolutionDir)INI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
@@ -145,8 +145,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(SolutionDir)MinHook\lib\libMinHook-x64-v141-mtd.lib;$(ProjectDir)Libs\steamworks\redistributable_bin\win64\steam_api64.lib;C:\Program Files\Epic Games\UE_4.25\Engine\Source\ThirdParty\Windows\DirectX\Lib\x64\XInput.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)Libs\steamworks\redistributable_bin;C:\Program Files\Epic Games\UE_4.25\Engine\Source\ThirdParty\Windows\DirectX\Lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(SolutionDir)MinHook\lib\libMinHook-x64-v141-mtd.lib;$(ProjectDir)Libs\steamworks\redistributable_bin\win64\steam_api64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libs\steamworks\redistributable_bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
