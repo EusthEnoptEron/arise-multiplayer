@@ -21,11 +21,10 @@ If `xinput1_3.dll` already exists because you installed another mod, skip the fi
 
 ## Known Issues
 
+- Mystic artes don't seem to work ([#22](https://github.com/EusthEnoptEron/arise-multiplayer/issues/22))
 - Sometimes crashes on startup. ([#29](https://github.com/EusthEnoptEron/arise-multiplayer/issues/29))
-- Tutorials might be buggy. ([#20](https://github.com/EusthEnoptEron/arise-multiplayer/issues/20))
 - Changing characters during battle doesn't work well. ([#5](https://github.com/EusthEnoptEron/arise-multiplayer/issues/5))
 - Special abilities only partly supported ([#4](https://github.com/EusthEnoptEron/arise-multiplayer/issues/4))
-- Mystic artes don't seem to work ([#22](https://github.com/EusthEnoptEron/arise-multiplayer/issues/22))
 
 For a complete list, see [issues](https://github.com/EusthEnoptEron/arise-multiplayer/issues)
 
