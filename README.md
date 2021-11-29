@@ -1,4 +1,7 @@
-# arise-multiplayer
+# Tales of Arie: Local Co-Op Mod
+
+![Assets/Sample.jpg](Assets/Sample.jpg)
+
 Mod that adds multiplayer to Tales of Arise
 
 For progress, see [Milestones.](https://github.com/EusthEnoptEron/arise-multiplayer/milestones)
