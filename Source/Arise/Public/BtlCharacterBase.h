@@ -7,6 +7,7 @@
 #include "Enums.h"
 #include "BtlActionProcessor.h"
 #include "BtlStatusViewModelBase.h"
+#include "BtlUnitScriptComponent.h"
 #include "Btl_AIControllerBase.h"
 #include "Btl_Camera.h"
 #include "BtlCharacterBase.generated.h"
@@ -68,6 +69,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DestroyBtlAIController();
 
+	UFUNCTION(BlueprintCallable)
+	bool SetOverLimit(bool Enable);
+	
+	UFUNCTION(BlueprintCallable)
+	UBtlUnitScriptComponent* GetUnitScriptComponent();
 
 	UPROPERTY(BlueprintReadWrite)
 	/*UBtlStatusViewModelBase*/UBtlStatusViewModelBase* ViewModel;

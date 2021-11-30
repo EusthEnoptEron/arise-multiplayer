@@ -12,6 +12,7 @@
 #include "Utilities/Pattern.h";
 #include <thread>
 #include "INI.h"
+#include "Tracer.h"
 
 #define hasFlag(x,m) ((x&m) > 0)
 
@@ -25,8 +26,33 @@ FNativeFuncPtr *MultiplayerMod::GNatives;
 FEngineLoop__Tick_Fn FEngineLoop__Tick_Orig;
 void FEngineLoop__Tick_Hook(void* thisptr)
 {
+
 	FEngineLoop__Tick_Orig(thisptr);
 	((MultiplayerMod*)Mod::ModRef)->Tick();
+}
+
+APlayerController__PrePostProcessInputFn APlayerController__PreProcessInput;
+void APlayerController__PreProcessInputHook(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused) {
+	auto instance = (MultiplayerMod*)(Mod::ModRef);
+
+	for (int i = 0; i < MAX_CONTROLLERS; i++) {
+		if (instance->Controllers[i] == thisptr) {
+			InputManager::GetInstance()->SetIndex(i);
+			instance->CurrentPlayer = i;
+			break;
+		}
+	}
+
+	APlayerController__PreProcessInput(thisptr, DeltaTime, bGamePaused);
+}
+
+APlayerController__PrePostProcessInputFn APlayerController__PostProcessInput;
+void APlayerController__PostProcessInputHook(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused) {
+	APlayerController__PostProcessInput(thisptr, DeltaTime, bGamePaused);
+	InputManager::GetInstance()->SetIndex(0);
+
+	auto instance = (MultiplayerMod*)(Mod::ModRef);
+	instance->CurrentPlayer = 0;
 }
 
 void MultiplayerMod::CompareDigitalStates(bool newValue, bool oldValue, bool* justPressed, bool* justReleased, const UE4::FString &name, int index) {
@@ -77,7 +103,6 @@ std::string GetName(UE4::FFrame& Stack) {
 FNativeFuncPtr GetPlayerControlledUnit;
 void GetPlayerControlledUnitHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
 	GetPlayerControlledUnit(Context, Stack, result);
-
 	auto mod = ((MultiplayerMod*)(Mod::ModRef));
 
 	if (mod->CurrentPlayer > 0) {
@@ -134,12 +159,32 @@ void SetActiveCameraHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
 //
 //FNativeFuncPtr K2_ExecuteProcess;
 //void K2_ExecuteProcessHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
-//	Log::Info("Start: %d", std::this_thread::get_id());
+//	Log::Info("Start: %s", Stack.Node->GetName().c_str());
 //
 //	K2_ExecuteProcess(Context, Stack, ret);
 //	Log::Info("End");
 //
 //};
+
+int indentation = 0;
+bool logging = false;
+FNativeFuncPtr ReceiveBeginProcess;
+void ReceiveBeginProcessHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
+	//static auto thread_id = std::this_thread::get_id();
+	//auto current_thread_id = std::this_thread::get_id();
+
+	//if (current_thread_id != thread_id || !logging) {
+		ReceiveBeginProcess(Context, Stack, ret);
+		/*return;
+	}
+
+	Log::Info("%s%s::%s", std::string(indentation, ' ').c_str(), Stack.Object->GetName().c_str(), Stack.Node->GetName().c_str());
+	indentation += 2;
+	ReceiveBeginProcess(Context, Stack, ret);
+	indentation -= 2;*/
+	//Log::Info("End");
+
+};
 
 FNativeFuncPtr K2_IsBtlButtonJustPressed;
 void K2_IsBtlButtonJustPressedHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
@@ -208,9 +253,16 @@ void K2_GetPlayerControllerHook(UE4::UObject* Context, UE4::FFrame& Stack, void*
 		Log::Info("");
 	}*/
 
-
-
 	K2_GetPlayerController(Context, Stack, result);
+
+	static bool hooked = false;
+	if (!hooked) {
+		Log::Info("Hooking PlayerController at %p", *((void**)result));
+		APlayerController__PreProcessInput = (APlayerController__PrePostProcessInputFn)HookMethod((LPVOID) * ((void**)result), (PVOID)APlayerController__PreProcessInputHook, 0xA50);
+		APlayerController__PostProcessInput = (APlayerController__PrePostProcessInputFn)HookMethod((LPVOID)*((void**)result), (PVOID)APlayerController__PostProcessInputHook, 0xA58);
+
+		hooked = true;
+	}
 }
 
 FNativeFuncPtr ChangeAriseGameScene;
@@ -226,6 +278,12 @@ void ChangeAriseGameSceneHook(UE4::UObject* Context, UE4::FFrame& Stack, void* r
 void MultiplayerMod::InitializeMod()
 {
 	UE4::InitSDK();
+	//SDK::InitSdk("Tales of Arise", GameProfile::SelectedGameProfile.GObject, GameProfile::SelectedGameProfile.GName, GameProfile::SelectedGameProfile.ProcessEvent);
+
+	SDK::UObject::GObjects = (SDK::FUObjectArray*)GameProfile::SelectedGameProfile.GObject;
+	SDK::FName::GNames = (SDK::TNameEntryArray*)GameProfile::SelectedGameProfile.GName;
+	SDK::UObject::ProcessEventPtr = (SDK::ProcessEventFn)GameProfile::SelectedGameProfile.ProcessEvent;
+
 	SetupHooks();
 
 	auto offset = (DWORD64)GetModuleHandleW(0);
@@ -269,13 +327,19 @@ void MultiplayerMod::InitializeMod()
 	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonRepeated")->GetFunction()),
 	//	&K2_IsBtlButtonRepeatedHook, &K2_IsBtlButtonRepeated, "K2_IsBtlButtonRepeated");
 
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.K2_ExecuteProcess")->GetFunction()),
-	//	&K2_ExecuteProcessHook, &K2_ExecuteProcess, "K2_ExecuteProcess");
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.K2_GetPlayerController")->GetFunction()),
-	//	&K2_GetPlayerControllerHook, &K2_GetPlayerController, "K2_GetPlayerController");
+	void* ProcessInterals = UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.ReceiveBeginProcess")->GetFunction();
 
+	/*MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.ReceiveBeginProcess")->GetFunction()),
+		&ReceiveBeginProcessHook, &ReceiveBeginProcess, "ReceiveBeginProcess");*/
+
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.K2_GetPlayerController")->GetFunction()),
+		&K2_GetPlayerControllerHook, &K2_GetPlayerController, "K2_GetPlayerController");
+
+
+
+	Tracer::GetInstance()->Hook();
 	/*MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function BP_AriseGamemode.BP_AriseGamemode_C.ChangeAriseGameScene")->GetFunction()),
 		&ChangeAriseGameSceneHook, &ChangeAriseGameScene, "ChangeAriseGameScene");*/
@@ -311,7 +375,9 @@ void MultiplayerMod::OnAnalogAction(int index, const UE4::FString &name, float x
 void MultiplayerMod::OnControllerConnected(int index) {
 	Log::Info("Controller connected: %d", index);
 	ModActor->ProcessEvent(OnControllerConnectedFn, &index);
+	Controllers[index] = GetController(index);
 }
+
 void MultiplayerMod::OnControllerDisconnected(int index) {
 	Log::Info("Controller disconnected: %d", index);
 	ModActor->ProcessEvent(OnControllerDisconnectedFn, &index);
@@ -391,6 +457,17 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 
 		//CurrentPlayer = tempCurrentPlayer;
 	}
+
+	if (Frame->Node->GetName() == "LogInfo") {
+		struct param {
+			UE4::FString Prefix;
+			UE4::FString Param;
+		};
+
+		param * parms = Frame->GetParams<param>();
+
+		Log::Info("[Player] %s%s", parms->Prefix.IsValid() ? parms->Prefix.ToString().c_str() : "", parms->Param.IsValid() ? parms->Param.ToString().c_str() : "");
+	}
 }
 
 // FF FF FF FF ?? ?? ?? ?? 84 3C EB F0 F7 7F 00 00 20 46 21 F1
@@ -455,7 +532,9 @@ void MultiplayerMod::PostBeginPlay(std::wstring ModActorName, UE4::AActor* Actor
 
 void MultiplayerMod::OnModMenuButtonPressed()
 {
-	LogEverything = !LogEverything;
+	Tracer::GetInstance()->Toggle();
+	//logging = !logging;
+	//LogEverything = !LogEverything;
 }
 
 void MultiplayerMod::DrawImGui()
@@ -473,6 +552,15 @@ UE4::AActor* MultiplayerMod::GetControlledCharacter(int index) {
 
 	GetControlledCharacterParms parms = { index, nullptr};
 	ModActor->ProcessEvent(GetControlledCharacterFn, &parms);
+
+	return parms.Result;
+}
+
+UE4::APlayerController* MultiplayerMod::GetController(int index) {
+	static auto GetControllerFn = ModActor->GetFunction("GetMultiControllerFn");
+
+	GetControllerParms parms = { index, nullptr};
+	ModActor->ProcessEvent(GetControllerFn, &parms);
 
 	return parms.Result;
 }
@@ -547,32 +635,32 @@ void MultiplayerMod::Tick()
 
 		CurrentPlayer = i;
 
-		CompareDigitalStates(newState.IsCameraReset, oldState.IsCameraReset, &(justPressed.IsCameraReset), &(justReleased.IsCameraReset), Actions::BATTLE_CAMERA_RESET, i);
-		CompareDigitalStates(newState.IsMenu, oldState.IsMenu, &(justPressed.IsMenu), &(justReleased.IsMenu), Actions::BATTLE_MENU, i);
-		CompareDigitalStates(newState.IsStrikeAttack0, oldState.IsStrikeAttack0, &(justPressed.IsStrikeAttack0), &(justReleased.IsStrikeAttack0), Actions::BATTLE_STRIKE_ATTACK_0, i);
-		CompareDigitalStates(newState.IsStrikeAttack1, oldState.IsStrikeAttack1, &(justPressed.IsStrikeAttack1), &(justReleased.IsStrikeAttack1), Actions::BATTLE_STRIKE_ATTACK_1, i);
-		CompareDigitalStates(newState.IsStrikeAttack2, oldState.IsStrikeAttack2, &(justPressed.IsStrikeAttack2), &(justReleased.IsStrikeAttack2), Actions::BATTLE_STRIKE_ATTACK_2, i);
-		CompareDigitalStates(newState.IsStrikeAttack3, oldState.IsStrikeAttack3, &(justPressed.IsStrikeAttack3), &(justReleased.IsStrikeAttack3), Actions::BATTLE_STRIKE_ATTACK_3, i);
-		CompareDigitalStates(newState.IsPause, oldState.IsPause, &(justPressed.IsPause), &(justReleased.IsPause), Actions::BATTLE_PAUSE, i);
-		CompareDigitalStates(newState.IsArts0, oldState.IsArts0, &(justPressed.IsArts0), &(justReleased.IsArts0), Actions::BATTLE_BASE_ARTS_0, i);
-		CompareDigitalStates(newState.IsArts1, oldState.IsArts1, &(justPressed.IsArts1), &(justReleased.IsArts1), Actions::BATTLE_BASE_ARTS_1, i);
-		CompareDigitalStates(newState.IsArts2, oldState.IsArts2, &(justPressed.IsArts2), &(justReleased.IsArts2), Actions::BATTLE_BASE_ARTS_2, i);
-		CompareDigitalStates(newState.IsJump, oldState.IsJump, &(justPressed.IsJump), &(justReleased.IsJump), Actions::BATTLE_BASE_JUMP, i);
-		CompareDigitalStates(newState.IsTarget, oldState.IsTarget, &(justPressed.IsTarget), &(justReleased.IsTarget), Actions::BATTLE_BASE_TARGET, i);
-		CompareDigitalStates(newState.IsTarget, oldState.IsTarget, &(justPressed.IsTarget), &(justReleased.IsTarget), Actions::BATTLE_BASE_TARGET_QUICK, i);
-		CompareDigitalStates(newState.IsSwap, oldState.IsSwap, &(justPressed.IsSwap), &(justReleased.IsSwap), Actions::BATTLE_BASE_SWAP, i);
-		CompareDigitalStates(newState.IsAttack, oldState.IsAttack, &(justPressed.IsAttack), &(justReleased.IsAttack), Actions::BATTLE_BASE_ATTACK, i);
-		CompareDigitalStates(newState.IsGuard, oldState.IsGuard, &(justPressed.IsGuard), &(justReleased.IsGuard), Actions::BATTLE_BASE_GUARD, i);
+		//CompareDigitalStates(newState.IsCameraReset, oldState.IsCameraReset, &(justPressed.IsCameraReset), &(justReleased.IsCameraReset), Actions::BATTLE_CAMERA_RESET, i);
+		//CompareDigitalStates(newState.IsMenu, oldState.IsMenu, &(justPressed.IsMenu), &(justReleased.IsMenu), Actions::BATTLE_MENU, i);
+		//CompareDigitalStates(newState.IsStrikeAttack0, oldState.IsStrikeAttack0, &(justPressed.IsStrikeAttack0), &(justReleased.IsStrikeAttack0), Actions::BATTLE_STRIKE_ATTACK_0, i);
+		//CompareDigitalStates(newState.IsStrikeAttack1, oldState.IsStrikeAttack1, &(justPressed.IsStrikeAttack1), &(justReleased.IsStrikeAttack1), Actions::BATTLE_STRIKE_ATTACK_1, i);
+		//CompareDigitalStates(newState.IsStrikeAttack2, oldState.IsStrikeAttack2, &(justPressed.IsStrikeAttack2), &(justReleased.IsStrikeAttack2), Actions::BATTLE_STRIKE_ATTACK_2, i);
+		//CompareDigitalStates(newState.IsStrikeAttack3, oldState.IsStrikeAttack3, &(justPressed.IsStrikeAttack3), &(justReleased.IsStrikeAttack3), Actions::BATTLE_STRIKE_ATTACK_3, i);
+		//CompareDigitalStates(newState.IsPause, oldState.IsPause, &(justPressed.IsPause), &(justReleased.IsPause), Actions::BATTLE_PAUSE, i);
+		//CompareDigitalStates(newState.IsArts0, oldState.IsArts0, &(justPressed.IsArts0), &(justReleased.IsArts0), Actions::BATTLE_BASE_ARTS_0, i);
+		//CompareDigitalStates(newState.IsArts1, oldState.IsArts1, &(justPressed.IsArts1), &(justReleased.IsArts1), Actions::BATTLE_BASE_ARTS_1, i);
+		//CompareDigitalStates(newState.IsArts2, oldState.IsArts2, &(justPressed.IsArts2), &(justReleased.IsArts2), Actions::BATTLE_BASE_ARTS_2, i);
+		//CompareDigitalStates(newState.IsJump, oldState.IsJump, &(justPressed.IsJump), &(justReleased.IsJump), Actions::BATTLE_BASE_JUMP, i);
+		//CompareDigitalStates(newState.IsTarget, oldState.IsTarget, &(justPressed.IsTarget), &(justReleased.IsTarget), Actions::BATTLE_BASE_TARGET, i);
+		//CompareDigitalStates(newState.IsTarget, oldState.IsTarget, &(justPressed.IsTarget), &(justReleased.IsTarget), Actions::BATTLE_BASE_TARGET_QUICK, i);
+		//CompareDigitalStates(newState.IsSwap, oldState.IsSwap, &(justPressed.IsSwap), &(justReleased.IsSwap), Actions::BATTLE_BASE_SWAP, i);
+		//CompareDigitalStates(newState.IsAttack, oldState.IsAttack, &(justPressed.IsAttack), &(justReleased.IsAttack), Actions::BATTLE_BASE_ATTACK, i);
+		//CompareDigitalStates(newState.IsGuard, oldState.IsGuard, &(justPressed.IsGuard), &(justReleased.IsGuard), Actions::BATTLE_BASE_GUARD, i);
 
-		if (newState.Move.bActive)
-		{
-			OnAnalogAction(i, Actions::BATTLE_MOVE, newState.Move.x, newState.Move.y);
-		}
+		//if (newState.Move.bActive)
+		//{
+		//	OnAnalogAction(i, Actions::BATTLE_MOVE, newState.Move.x, newState.Move.y);
+		//}
 
-		if (newState.CameraAngle.bActive)
-		{
-			OnAnalogAction(i, Actions::BATTLE_CAMERA_ANGLE, newState.CameraAngle.x, newState.CameraAngle.y);
-		}
+		//if (newState.CameraAngle.bActive)
+		//{
+		//	OnAnalogAction(i, Actions::BATTLE_CAMERA_ANGLE, newState.CameraAngle.x, newState.CameraAngle.y);
+		//}
 
 		CurrentPlayer = 0;
 	}

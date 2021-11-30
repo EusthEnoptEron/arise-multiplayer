@@ -135,7 +135,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;EXAMPLEMOD_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)MinHook\;$(SolutionDir)UE4;$(SolutionDir)UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;$(ProjectDir)Libs\Arise-SDK\src;$(SolutionDir)INI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)MinHook\;$(SolutionDir)UE4;$(SolutionDir)UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;$(ProjectDir)Libs\Arise-SDK\src;$(SolutionDir)INI;$(ProjectDir)Libs\Arise-SDK\src\SDK;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
@@ -154,8 +154,9 @@
     <ClCompile Include="..\UnrealEngineModLoader\UE4\CoreUObject_functions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="Libs\Arise-SDK\src\SDK\Basic.cpp" />
     <ClCompile Include="MultiplayerMod.cpp" />
+    <ClCompile Include="SDK.cpp" />
+    <ClCompile Include="Tracer.cpp" />
     <ClCompile Include="VMTHook.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -164,6 +165,7 @@
     <ClInclude Include="INI.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="MultiplayerMod.h" />
+    <ClInclude Include="Tracer.h" />
     <ClInclude Include="VMTHook.h" />
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,11 @@ ABtlCharacterBase::ABtlCharacterBase()
 
 }
 
+UBtlUnitScriptComponent* ABtlCharacterBase::GetUnitScriptComponent()
+{
+	return nullptr;
+}
+
 // Called when the game starts or when spawned
 void ABtlCharacterBase::BeginPlay()
 {
@@ -67,6 +72,12 @@ void ABtlCharacterBase::SetBtlAIController(class ABtl_AIControllerBase* AIContro
 void ABtlCharacterBase::SetAIFlag(bool Enable, EBtlBitFlagCategory Category) {}
 
 void ABtlCharacterBase::DestroyBtlAIController() {}
+
+bool ABtlCharacterBase::SetOverLimit(bool Enable)
+{
+	return false;
+}
+
 //
 //int ABtlCharacterBase::GetCoreHp(class UBtlDamageSphereComponent* CoreCollision) {
 //	return 0;

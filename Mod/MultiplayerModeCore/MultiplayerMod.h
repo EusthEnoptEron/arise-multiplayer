@@ -7,7 +7,6 @@
 #include "SDK/BP_BtlCamera_classes.h";
 #include "FileWatch.hpp"
 
-
 typedef void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void *result);
 struct FScriptName {
 	/** Index into the Names array (used to find String portion of the string/number pair used for comparison) */
@@ -82,6 +81,13 @@ struct GetControlledCharacterParms {
 	UE4::AActor* Result;
 };
 
+struct GetControllerParms {
+	int Index;
+	UE4::APlayerController* Result;
+};
+
+const int MAX_CONTROLLERS = 10;
+
 
 namespace Actions {
 	const UE4::FString BATTLE_CAMERA_RESET = L"BATTLE_CAMERA_RESET";
@@ -106,6 +112,9 @@ namespace Actions {
 }
 
 typedef void(*FEngineLoop__Tick_Fn)(void* thisptr);
+typedef void(*APlayerController__PrePostProcessInputFn)(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused);
+typedef void(*APlayerController__PlayerTick)(UE4::APlayerController* thisptr, float DeltaTime);
+
 
 class MultiplayerMod : public Mod
 {
@@ -165,9 +174,14 @@ public:
 	GamepadState NewStates[4] = { 0 };
 	GamepadState JustPressed[4] = { 0 };
 	GamepadState JustReleased[4] = { 0 };
+
+	// Array of MultiPlayerControllers
+	void* Controllers[MAX_CONTROLLERS];
+
 	UE4::AActor* ModActor;
 
 	UE4::AActor* GetControlledCharacter(int index);
+	UE4::APlayerController* GetController(int index);
 	int CurrentPlayer = 0;
 
 private:
@@ -183,6 +197,7 @@ private:
 	UE4::UFunction* OnRestoreFirstPlayerFn;
 	UE4::UFunction* GetControlledCharacterFn;
 
+	std::vector<int> PlayerStack;
 
 	void RefreshIni();
 

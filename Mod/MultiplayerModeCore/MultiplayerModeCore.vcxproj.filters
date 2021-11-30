@@ -14,9 +14,6 @@
     <Filter Include="VMTHook">
       <UniqueIdentifier>{4c384f7a-42a5-4b76-8438-44fb5a7ac2be}</UniqueIdentifier>
     </Filter>
-    <Filter Include="SDK">
-      <UniqueIdentifier>{cc6e4333-e6f9-4939-9cf3-2e8fad93fbce}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -37,8 +34,11 @@
     <ClCompile Include="InputManager.cpp">
       <Filter>Mod</Filter>
     </ClCompile>
-    <ClCompile Include="Libs\Arise-SDK\src\SDK\Basic.cpp">
-      <Filter>SDK</Filter>
+    <ClCompile Include="SDK.cpp">
+      <Filter>Mod</Filter>
+    </ClCompile>
+    <ClCompile Include="Tracer.cpp">
+      <Filter>Mod</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -58,6 +58,9 @@
       <Filter>Mod</Filter>
     </ClInclude>
     <ClInclude Include="INI.h">
+      <Filter>Mod</Filter>
+    </ClInclude>
+    <ClInclude Include="Tracer.h">
       <Filter>Mod</Filter>
     </ClInclude>
   </ItemGroup>

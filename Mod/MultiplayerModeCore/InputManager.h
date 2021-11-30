@@ -72,6 +72,10 @@ public:
 		_preventBattleInput = val;
 	}
 
+	void SetIndex(int index) {
+		ActiveIndex = index;
+	}
+
 	static ISteamInput *GetInput() {
 		return GetInstance()->Input;
 	}
@@ -112,6 +116,7 @@ private:
 	int InputHandleCount;
 	std::vector<InputHandle_t> Controllers;
 	int FirstPlayerIndex;
+	int ActiveIndex;
 
 	unsigned long UpdateCounter = 0;
 

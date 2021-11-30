@@ -230,11 +230,11 @@ namespace Hooks
 		Log::Info("ScanLoadedPaks Setup");
 		MinHook::Add(GameProfile::SelectedGameProfile.GameStateInit, &HookedFunctions::hookInitGameState, &HookedFunctions::origInitGameState, "AGameModeBase::InitGameState");
 		MinHook::Add(GameProfile::SelectedGameProfile.BeginPlay, &HookedFunctions::hookBeginPlay, &HookedFunctions::origBeginPlay, "AActor::BeginPlay");
-		//LoaderUI::GetUI()->CreateUILogicThread();
-		//if (!GameProfile::SelectedGameProfile.bDelayGUISpawn)
-		//{
-		//	LoaderUI::HookDX();
-		//}
+		LoaderUI::GetUI()->CreateUILogicThread();
+		if (!GameProfile::SelectedGameProfile.bDelayGUISpawn)
+		{
+			LoaderUI::HookDX();
+		}
 		return NULL;
 	}
 
