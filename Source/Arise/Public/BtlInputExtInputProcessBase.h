@@ -154,4 +154,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void RegisterInputEvent(const FName& InButtonName, EBtlInputEventType Type, const FButtonCallback& Event);
+
+	UFUNCTION(BlueprintCallable)
+	static ABtlInputExtInputProcessBase* K2_GetBattleInputProcess(UObject* WorldContextObject);
+
 };

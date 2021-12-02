@@ -185,6 +185,9 @@ public:
 
 	UE4::APawn* GetControlledCharacter(int index);
 	UE4::APlayerController* GetController(int index);
+	UE4::APlayerController* GetControllerOfCharacter(UE4::APawn *pawn);
+	int GetPlayerIndex(UE4::APlayerController* playerController);
+
 	int CurrentPlayer = 0;
 
 private:

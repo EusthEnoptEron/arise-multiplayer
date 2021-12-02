@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Enums.h"
 #include "BtlActionProcessor.h"
+#include "BtlStatusComponent.h"
 #include "BtlStatusViewModelBase.h"
 #include "BtlUnitScriptComponent.h"
 #include "Btl_AIControllerBase.h"
@@ -74,7 +75,10 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	UBtlUnitScriptComponent* GetUnitScriptComponent();
-
+	
+	UFUNCTION(BlueprintCallable)
+	UBtlStatusComponent* GetStatus();
+	
 	UPROPERTY(BlueprintReadWrite)
 	/*UBtlStatusViewModelBase*/UBtlStatusViewModelBase* ViewModel;
 	/*
