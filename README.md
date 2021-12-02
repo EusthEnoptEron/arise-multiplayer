@@ -4,7 +4,7 @@
 
 Mod that adds multiplayer to Tales of Arise
 
-For progress, see [Milestones.](https://github.com/EusthEnoptEron/arise-multiplayer/milestones)
+For progress, see [Milestones](https://github.com/EusthEnoptEron/arise-multiplayer/milestones) and the [Project page](https://github.com/EusthEnoptEron/arise-multiplayer/projects/1).
 
 ## Installing
 
