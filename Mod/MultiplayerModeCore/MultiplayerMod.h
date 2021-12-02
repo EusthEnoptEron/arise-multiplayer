@@ -78,7 +78,7 @@ struct ModTickParams {
 
 struct GetControlledCharacterParms {
 	int Index;
-	UE4::AActor* Result;
+	UE4::APawn* Result;
 };
 
 struct GetControllerParms {
@@ -168,6 +168,9 @@ public:
 	void BP_OnCameraAngle(UE4::FVector2D angle);
 
 
+	bool OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret);
+	void OnAfterVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret);
+
 	static FNativeFuncPtr *GNatives;
 
 	GamepadState OldStates[4] = { 0 };
@@ -180,7 +183,7 @@ public:
 
 	UE4::AActor* ModActor;
 
-	UE4::AActor* GetControlledCharacter(int index);
+	UE4::APawn* GetControlledCharacter(int index);
 	UE4::APlayerController* GetController(int index);
 	int CurrentPlayer = 0;
 
