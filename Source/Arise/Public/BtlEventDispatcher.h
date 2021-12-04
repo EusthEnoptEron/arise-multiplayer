@@ -8,6 +8,9 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBattleEventDelegate);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FChangeOperatiopnCaracterEventDelegate, class ABtlCharacterBase*,
+                                             PrevOperationUnit, class ABtlCharacterBase*, NowOperationUnit);
+
 /**
  * 
  */
@@ -86,7 +89,7 @@ class ARISE_API UBtlEventDispatcher : public UObject
 	// 0x0178(0x0010) (ZeroConstructor, InstancedReference, BlueprintAssignable)
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FBattleEventDelegate OnChangeOperationCharacter;
+	FChangeOperatiopnCaracterEventDelegate OnChangeOperationCharacter;
 	// 0x0188(0x0010) (ZeroConstructor, InstancedReference, BlueprintAssignable)
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)

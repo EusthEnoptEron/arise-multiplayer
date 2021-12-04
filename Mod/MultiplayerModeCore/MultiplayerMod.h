@@ -124,9 +124,9 @@ public:
 	MultiplayerMod()
 	{
 		ModName = "MultiplayerMod"; // Mod Name -- If Using BP ModActor, Should Be The Same Name As Your Pak
-		ModVersion = "0.9.0"; // Mod Version
+		ModVersion = "1.0.0-SNAPSHOT"; // Mod Version
 		ModDescription = "Adds local multiplayer to Tales of Arise."; // Mod Description
-		ModAuthors = "Eusthron"; // Mod Author
+		ModAuthors = "EusthEnoptEron"; // Mod Author
 		ModLoaderVersion = "2.0.2";
 
 		// Dont Touch The Internal Stuff
@@ -179,7 +179,8 @@ public:
 	GamepadState JustReleased[4] = { 0 };
 
 	// Array of MultiPlayerControllers
-	void* Controllers[MAX_CONTROLLERS];
+	UE4::APlayerController* Controllers[MAX_CONTROLLERS] = { nullptr };
+	UE4::AActor* InputProcesses[MAX_CONTROLLERS] = { nullptr };
 
 	UE4::AActor* ModActor;
 
@@ -187,6 +188,9 @@ public:
 	UE4::APlayerController* GetController(int index);
 	UE4::APlayerController* GetControllerOfCharacter(UE4::APawn *pawn);
 	int GetPlayerIndex(UE4::APlayerController* playerController);
+
+	UE4::APlayerController* GetControllerFromInputProcessor(UE4::AActor *inputProcess);
+	int GetPlayerIndexFromInputProcessor(UE4::AActor* inputProcess);
 
 	int CurrentPlayer = 0;
 

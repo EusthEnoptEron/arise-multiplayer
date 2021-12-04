@@ -59,7 +59,7 @@ public:
     }
 
     void OnEnter(std::string functionName);
-    void OnExit();
+    void OnExit(long durationNano);
 
     void *GetPointer(UE4::UFunction* function);
 

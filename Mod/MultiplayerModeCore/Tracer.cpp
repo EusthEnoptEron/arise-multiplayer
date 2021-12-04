@@ -20,8 +20,11 @@ void EX_VirtualFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* res
 	Result = *(FScriptName*)Stack.Code;
 
 	tracer->OnEnter(Context->GetName() + "::" + Result.GetName());
+	auto begin = std::chrono::high_resolution_clock::now();
 	EX_VirtualFunction(Context, Stack, result);
-	tracer->OnExit();
+	auto end = std::chrono::high_resolution_clock::now();
+
+	tracer->OnExit(std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
 }
 
 FNativeFuncPtr EX_FinalFunction;
@@ -41,8 +44,11 @@ void EX_FinalFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* resul
 	auto fn = (UE4::UFunction *)TempCode;
 
 	tracer->OnEnter(Context->GetName() + "::" + fn->GetName());
+	auto begin = std::chrono::high_resolution_clock::now();
 	EX_FinalFunction(Context, Stack, result);
-	tracer->OnExit();
+	auto end = std::chrono::high_resolution_clock::now();
+
+	tracer->OnExit(std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
 }
 
 
@@ -59,8 +65,14 @@ void Tracer::OnEnter(std::string functionName) {
 	_indentation += 2;
 }
 
-void Tracer::OnExit() {
+void Tracer::OnExit(long durationNano) {
 	_indentation -= 2;
+	_file << std::string(_indentation, ' ');
+	_file << "^--";
+	_file << durationNano;
+	_file << "ns";
+	_file << "\n";
+
 }
 
 void Tracer::Start() {
