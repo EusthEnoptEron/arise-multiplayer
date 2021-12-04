@@ -20,9 +20,33 @@
 //ActivateActionSet_t origActivateActionSet;
 
 
-FNativeFuncPtr *MultiplayerMod::GNatives;
+FNativeFuncPtr* MultiplayerMod::GNatives;
 
 
+UE4::UClass* FastGetClass(UE4::UObject* obj) {
+	return (UE4::UClass*)((SDK::UObject*)(obj))->Class;
+}
+
+UE4::UStruct* FastGetSuperField(UE4::UStruct* obj) {
+	return (UE4::UStruct*)((SDK::UStruct*)(obj))->SuperField;
+}
+
+bool FastIsA(UE4::UObject* obj, UE4::UClass* cmp)
+{
+	for (auto super = FastGetClass(obj); super; super = static_cast<UE4::UClass*>(FastGetSuperField(super)))
+	{
+		if (super == cmp)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// #######################
+//  Main tick hook
+// #######################
 FEngineLoop__Tick_Fn FEngineLoop__Tick_Orig;
 void FEngineLoop__Tick_Hook(void* thisptr)
 {
@@ -36,7 +60,11 @@ void FEngineLoop__Tick_Hook(void* thisptr)
 	Tracer::GetInstance()->OnEndTick();
 #endif
 }
+// -----------------------
 
+// #######################
+//  Hooks to feed input
+// #######################
 APlayerController__PrePostProcessInputFn APlayerController__PreProcessInput;
 void APlayerController__PreProcessInputHook(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused) {
 	auto instance = (MultiplayerMod*)(Mod::ModRef);
@@ -61,7 +89,9 @@ void APlayerController__PostProcessInputHook(UE4::APlayerController* thisptr, co
 	instance->CurrentPlayer = 0;
 }
 
-void MultiplayerMod::CompareDigitalStates(bool newValue, bool oldValue, bool* justPressed, bool* justReleased, const UE4::FString &name, int index) {
+// ---------------------------
+
+void MultiplayerMod::CompareDigitalStates(bool newValue, bool oldValue, bool* justPressed, bool* justReleased, const UE4::FString& name, int index) {
 	if (newValue != oldValue) {
 		if (newValue) {
 			*justPressed = true;
@@ -141,23 +171,23 @@ UE4::APlayerController* FindPlayerController(const UE4::FFrame& Stack) {
 	auto frame = &Stack;
 	while (frame != nullptr) {
 		auto obj = frame->Object;
-		
-		if (obj->IsA(derivedInputStateComponentClazz)) {
+
+		if (FastIsA(obj, derivedInputStateComponentClazz)) {
 			UE4::AActor* inputProcessPointer = nullptr;
 			obj->ProcessEvent(getOwnerFn, &inputProcessPointer);
 
 			return mod->GetControllerFromInputProcessor(inputProcessPointer);
 		}
 
-		if (obj->IsA(btlProcessorClazz)) {
+		if (FastIsA(obj, btlProcessorClazz)) {
 			return mod->GetControllerFromInputProcessor((UE4::AActor*)obj);
 		}
 
-		if (obj->IsA(btlCharacterClazz)) {
-			return mod->GetControllerOfCharacter((UE4::APawn *)obj);
+		if (FastIsA(obj, btlCharacterClazz)) {
+			return mod->GetControllerOfCharacter((UE4::APawn*)obj);
 		}
 
-		if (obj->IsA(unitScriptClazz)) {
+		if (FastIsA(obj, unitScriptClazz)) {
 			UE4::APawn* unitPointer = nullptr;
 			UE4::APlayerController* playerController = nullptr;
 
@@ -197,6 +227,46 @@ UE4::AActor* FindCharacter(const UE4::FFrame& Stack) {
 }
 
 //Function Engine.GameplayStatics.GetPlayerController(int index) => APlayerController
+
+FNativeFuncPtr ABtlCharacterBase__SetTemporaryTargetCharacter;
+void ABtlCharacterBase__SetTemporaryTargetCharacterHook(UE4::UObject* Context, UE4::FFrame& Stack, void *result) {
+	ABtlCharacterBase__SetTemporaryTargetCharacter(Context, Stack, result);
+
+	// Replace if we have a better one
+	auto mod = ((MultiplayerMod*)(Mod::ModRef));
+
+	static auto getTargetCharacterFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.GetTargetCharacter");
+	// 	class ABtlCharacterBase* GetTargetCharacter(bool IgnoreTemporary);
+	struct params {
+		bool IgnoreTemporary;
+		SDK::ABtlCharacterBase* ReturnValue;
+	};
+
+	if (mod->IsSettingUpStrikeAttack) {
+		Log::Info("Whee %s, %s, %s", Context->GetName().c_str(), Stack.Object->GetName().c_str(), Stack.Node->GetName().c_str());
+
+		auto targetRef = (SDK::ABtlCharacterBase *)Context;
+		auto states = mod->OldStates;
+		for (int i = 0; i < 4; i++) {
+			if (states[i].IsStrikeAttack0 || states[i].IsStrikeAttack1 || states[i].IsStrikeAttack2 || states[i].IsStrikeAttack3) {
+				auto chara = mod->GetControlledCharacter(i);
+				if (chara != nullptr) {
+
+					params parms = { true, nullptr };
+					chara->ProcessEvent(getTargetCharacterFn, &parms);
+
+					if (parms.ReturnValue != nullptr) {
+						targetRef->TemporaryTargetCharacter = parms.ReturnValue;
+						Log::Info("Replaced target with target of %s", chara->GetName().c_str());
+					}
+					return;
+				}
+			}
+		}
+	}
+}
+
+
 
 FNativeFuncPtr GameplayStatics__GetPlayerController;
 void GameplayStatics__GetPlayerControllerHook(UE4::UObject* Context, UE4::FFrame& Stack, UE4::APlayerController** result) {
@@ -249,7 +319,7 @@ void GetBtlAxisValueHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result
 		if ("BATTLE_MOVE_FORWARD_BACKWARD" == nameString) {
 			*((float*)result) = mod->OldStates[id].Move.y;
 		}
-		else if("BATTLE_MOVE_LEFT_RIGHT" == nameString) {
+		else if ("BATTLE_MOVE_LEFT_RIGHT" == nameString) {
 			*((float*)result) = mod->OldStates[id].Move.x;
 		}
 		else if ("BATTLE_TARGET_CHANGE_LEFT" == nameString) {
@@ -264,7 +334,7 @@ void GetBtlAxisValueHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result
 	}
 	else {
 
-	
+
 	}
 }
 
@@ -368,7 +438,7 @@ void K2_IsBtlButtonRepeatedHook(UE4::UObject* Context, UE4::FFrame& Stack, void*
 
 FNativeFuncPtr GetPlayerOperation;
 void GetPlayerOperationHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
-	
+
 	Log::Info("GetPlayerOperation: %s (%s)", Context->GetName().c_str(), Stack.Object->GetName().c_str());
 	UE4::FFrame* frame = &Stack;
 	while (frame != nullptr) {
@@ -399,7 +469,7 @@ void K2_GetPlayerControllerHook(UE4::UObject* Context, UE4::FFrame& Stack, void*
 	if (!hooked) {
 		Log::Info("Hooking PlayerController at %p", *((void**)result));
 		APlayerController__PreProcessInput = (APlayerController__PrePostProcessInputFn)HookMethod((LPVOID) * ((void**)result), (PVOID)APlayerController__PreProcessInputHook, 0xA50);
-		APlayerController__PostProcessInput = (APlayerController__PrePostProcessInputFn)HookMethod((LPVOID)*((void**)result), (PVOID)APlayerController__PostProcessInputHook, 0xA58);
+		APlayerController__PostProcessInput = (APlayerController__PrePostProcessInputFn)HookMethod((LPVOID) * ((void**)result), (PVOID)APlayerController__PostProcessInputHook, 0xA58);
 
 		hooked = true;
 	}
@@ -436,13 +506,13 @@ void MultiplayerMod::InitializeMod()
 
 	MinHook::Init();
 	MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBtlAxisValue")->GetFunction()), 
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBtlAxisValue")->GetFunction()),
 		&GetBtlAxisValueHook, &GetBtlAxisValue, "K2_GetBtlAxisValue");
 
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCameraLibrary.SetActiveCamera")->GetFunction()),
 		&SetActiveCameraHook, &SetActiveCamera, "SetActiveCamera");
-	
+
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlUnitLibrary.GetPlayerControlledUnit")->GetFunction()),
 		&GetPlayerControlledUnitHook, &GetPlayerControlledUnit, "GetPlayerControlledUnit");
@@ -456,6 +526,12 @@ void MultiplayerMod::InitializeMod()
 		&K2_GetBattleInputProcessHook, &K2_GetBattleInputProcess, "K2_GetBattleInputProcess");
 
 
+	// BUGGY?
+	//MinHook::Add((DWORD_PTR)
+	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.SetTemporaryTargetCharacter")->GetFunction()),
+	//	&ABtlCharacterBase__SetTemporaryTargetCharacterHook, &ABtlCharacterBase__SetTemporaryTargetCharacter, "SetTemporaryTargetCharacter");
+
+
 
 	auto tickFn = Pattern::Find("48 8B C4 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 78 FD FF FF");
 	MinHook::Add((DWORD64)tickFn, &FEngineLoop__Tick_Hook, &FEngineLoop__Tick_Orig, "FEngineLoop__Tick_Fn");
@@ -463,7 +539,7 @@ void MultiplayerMod::InitializeMod()
 	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.GetPlayerOperation")->GetFunction()),
 	//	&GetPlayerOperationHook, &GetPlayerOperation, "GetPlayerOperation");
 
-	
+
 	//MinHook::Add((DWORD_PTR)
 	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonJustPressed")->GetFunction()),
 	//	&K2_IsBtlButtonJustPressedHook, &K2_IsBtlButtonJustPressed, "K2_IsBtlButtonJustPressed");
@@ -493,18 +569,18 @@ void MultiplayerMod::InitializeMod()
 		(UE4::UObject::FindObject<UE4::UFunction>("Function BP_AriseGamemode.BP_AriseGamemode_C.ChangeAriseGameScene")->GetFunction()),
 		&ChangeAriseGameSceneHook, &ChangeAriseGameScene, "ChangeAriseGameScene");*/
 
-	
+
 
 }
 
-void MultiplayerMod::OnAction(int index, const UE4::FString &name) {
+void MultiplayerMod::OnAction(int index, const UE4::FString& name) {
 	DigitalActionParam parm = { index, name };
 
 	ModActor->ProcessEvent(OnActionFn, &parm);
 }
 
 
-void MultiplayerMod::OnActionPressed(int index, const UE4::FString &name) {
+void MultiplayerMod::OnActionPressed(int index, const UE4::FString& name) {
 	DigitalActionParam parm = { index, name };
 
 #if ENABLE_TRACING
@@ -514,7 +590,7 @@ void MultiplayerMod::OnActionPressed(int index, const UE4::FString &name) {
 	ModActor->ProcessEvent(OnActionPressedFn, &parm);
 }
 
-void MultiplayerMod::OnActionReleased(int index, const UE4::FString &name) {
+void MultiplayerMod::OnActionReleased(int index, const UE4::FString& name) {
 	DigitalActionParam parm = { index, name };
 
 #if ENABLE_TRACING
@@ -524,7 +600,7 @@ void MultiplayerMod::OnActionReleased(int index, const UE4::FString &name) {
 	ModActor->ProcessEvent(OnActionReleasedFn, &parm);
 }
 
-void MultiplayerMod::OnAnalogAction(int index, const UE4::FString &name, float x, float y) {
+void MultiplayerMod::OnAnalogAction(int index, const UE4::FString& name, float x, float y) {
 	AnalogActionParam parm = { index, name, x, y };
 
 	ModActor->ProcessEvent(OnAnalogActionFn, &parm);
@@ -567,7 +643,7 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 	if (Frame->Node == Native_SetProcess) {
 
 		int index = GetPlayerIndex((UE4::APlayerController*)(Frame->Object));
-		UE4::AActor *process = *(Frame->GetParams<UE4::AActor*>());
+		UE4::AActor* process = *(Frame->GetParams<UE4::AActor*>());
 
 		InputProcesses[index] = process;
 
@@ -645,7 +721,7 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 			UE4::FString Param;
 		};
 
-		param * parms = Frame->GetParams<param>();
+		param* parms = Frame->GetParams<param>();
 
 		Log::Info("[Player] %s%s", parms->Prefix.IsValid() ? parms->Prefix.ToString().c_str() : "", parms->Param.IsValid() ? parms->Param.ToString().c_str() : "");
 	}
@@ -671,44 +747,56 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		auto params = *Stack.GetParams<JustParams>();
 
 		//if (params.JustGuard) {
-			int index = GetPlayerIndex(GetControllerOfCharacter(params.DmgActor));
+		int index = GetPlayerIndex(GetControllerOfCharacter(params.DmgActor));
 
-			if (index > 0) {
-				int _player = CurrentPlayer;
-				CurrentPlayer = index;
-
-				Log::Info("Set player: %d", index);
-
-				ProcessInternal(Context, Stack, ret);
-
-				CurrentPlayer = _player;
-
-				return false;
-			}
-		//}
-	}
-	else 
-		if (Stack.Node == DerivedInputStateComponent__OnOperationUnitChanged)
-	{
-		// Ignore if this unit is controlled by ourselves
-		static auto getOwnerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Engine.ActorComponent.GetOwner");
-		UE4::AActor *owner; // InputProcess
-		Stack.Object->ProcessEvent(getOwnerFn, &owner);
-
-		int index = GetPlayerIndexFromInputProcessor(owner);
 		if (index > 0) {
-			// Ignore!
-			Log::Info("Ignore operationunitchanged event");
+			int _player = CurrentPlayer;
+			CurrentPlayer = index;
+
+			Log::Info("Set player: %d", index);
+
+			ProcessInternal(Context, Stack, ret);
+
+			CurrentPlayer = _player;
+
 			return false;
 		}
-
+		//}
 	}
+	else
+		if (Stack.Node == DerivedInputStateComponent__OnOperationUnitChanged)
+		{
+			// Ignore if this unit is controlled by ourselves
+			static auto getOwnerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Engine.ActorComponent.GetOwner");
+			UE4::AActor* owner; // InputProcess
+			Stack.Object->ProcessEvent(getOwnerFn, &owner);
+
+			int index = GetPlayerIndexFromInputProcessor(owner);
+			if (index > 0) {
+				// Ignore!
+				Log::Info("Ignore operationunitchanged event");
+				return false;
+			}
+
+		}
+
+	static auto BP_BtlCharacterBase__UseStrikeResource = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.UseStrikeResource");
+	if (Stack.Node == BP_BtlCharacterBase__UseStrikeResource) {
+		IsSettingUpStrikeAttack = true;
+		Log::Info("Preparing for strike attack");
+		ProcessInternal(Context, Stack, ret);
+		Log::Info("Preparing for strike attack done");
+
+		IsSettingUpStrikeAttack = false;
+		return false;
+	}
+
 	return true;
 
 }
 
 void MultiplayerMod::OnAfterVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
-	
+
 }
 
 // FF FF FF FF ?? ?? ?? ?? 84 3C EB F0 F7 7F 00 00 20 46 21 F1
@@ -721,7 +809,7 @@ void MultiplayerMod::SetNearClippingPlane(float nearPlane) {
 }
 
 void MultiplayerMod::ResetNearClippingPlane() {
-	Log::Info("Set clipping plane to: %f" , GNearOriginal);
+	Log::Info("Set clipping plane to: %f", GNearOriginal);
 	*GNearClippingPlane = GNearOriginal;
 }
 
@@ -760,12 +848,12 @@ void MultiplayerMod::PostBeginPlay(std::wstring ModActorName, UE4::AActor* Actor
 
 		IsBattleSceneFn = UE4::UObject::FindObject<UE4::UFunction>("Function BP_GameFunctionLibrary.BP_GameFunctionLibrary_C.GameFunc_IsBattelScene");
 		functionLibClazz = UE4::UObject::FindObject<UE4::UClass>("BlueprintGeneratedClass BP_GameFunctionLibrary.BP_GameFunctionLibrary_C");
-		
+
 		//Actor->CallFunctionByNameWithArguments
 
 		Watch = new filewatch::FileWatch<std::wstring>(
 			L"./MultiplayerMod.ini",
-		[this](const std::wstring& path, const filewatch::Event change_type) {
+			[this](const std::wstring& path, const filewatch::Event change_type) {
 			IniDirty = true;
 		}
 		);
@@ -783,7 +871,7 @@ void MultiplayerMod::DrawImGui()
 {
 }
 
-void MultiplayerMod::BP_OnCameraAngle(UE4::FVector2D angle) 
+void MultiplayerMod::BP_OnCameraAngle(UE4::FVector2D angle)
 {
 	static auto fn = ModActor->GetFunction("BP_OnCameraAngle");
 	ModActor->ProcessEvent(fn, &angle);
@@ -792,7 +880,7 @@ void MultiplayerMod::BP_OnCameraAngle(UE4::FVector2D angle)
 UE4::APawn* MultiplayerMod::GetControlledCharacter(int index) {
 	if (GetControlledCharacterFn == nullptr) return nullptr;
 
-	GetControlledCharacterParms parms = { index, nullptr};
+	GetControlledCharacterParms parms = { index, nullptr };
 	ModActor->ProcessEvent(GetControlledCharacterFn, &parms);
 
 	return parms.Result;
@@ -801,7 +889,7 @@ UE4::APawn* MultiplayerMod::GetControlledCharacter(int index) {
 UE4::APlayerController* MultiplayerMod::GetController(int index) {
 	static auto GetControllerFn = ModActor->GetFunction("GetMultiControllerFn");
 
-	GetControllerParms parms = { index, nullptr};
+	GetControllerParms parms = { index, nullptr };
 	ModActor->ProcessEvent(GetControllerFn, &parms);
 
 	return parms.Result;

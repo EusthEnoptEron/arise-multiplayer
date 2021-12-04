@@ -193,6 +193,7 @@ public:
 	int GetPlayerIndexFromInputProcessor(UE4::AActor* inputProcess);
 
 	int CurrentPlayer = 0;
+	bool IsSettingUpStrikeAttack = false;
 
 private:
 
