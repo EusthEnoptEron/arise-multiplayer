@@ -660,7 +660,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 		auto params = *Stack.GetParams<JustParams>();
 
-		if (params.JustGuard) {
+		//if (params.JustGuard) {
 			int index = GetPlayerIndex(GetControllerOfCharacter(params.DmgActor));
 
 			if (index > 0) {
@@ -675,7 +675,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 				return false;
 			}
-		}
+		//}
 	}
 	else 
 		if (Stack.Node == DerivedInputStateComponent__OnOperationUnitChanged)
