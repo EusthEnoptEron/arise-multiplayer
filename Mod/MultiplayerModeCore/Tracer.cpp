@@ -19,12 +19,13 @@ void EX_VirtualFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* res
 	FScriptName Result;
 	Result = *(FScriptName*)Stack.Code;
 
-	tracer->OnEnter(Context->GetName() + "::" + Result.GetName());
+	auto fnName = Context->GetName() + "::" + Result.GetName();
+	tracer->OnEnter(fnName);
 	auto begin = std::chrono::high_resolution_clock::now();
 	EX_VirtualFunction(Context, Stack, result);
 	auto end = std::chrono::high_resolution_clock::now();
 
-	tracer->OnExit(std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+	tracer->OnExit(fnName, std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
 }
 
 FNativeFuncPtr EX_FinalFunction;
@@ -43,12 +44,13 @@ void EX_FinalFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* resul
 	TempCode = *(uint64_t*)Stack.Code;
 	auto fn = (UE4::UFunction *)TempCode;
 
-	tracer->OnEnter(Context->GetName() + "::" + fn->GetName());
+	auto fnName = Context->GetName() + "::" + fn->GetName();
+	tracer->OnEnter(fnName);
 	auto begin = std::chrono::high_resolution_clock::now();
 	EX_FinalFunction(Context, Stack, result);
 	auto end = std::chrono::high_resolution_clock::now();
 
-	tracer->OnExit(std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+	tracer->OnExit(fnName, std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
 }
 
 
@@ -58,25 +60,44 @@ void *Tracer::GetPointer(UE4::UFunction* function) {
 
 
 void Tracer::OnEnter(std::string functionName) {
-	_file << std::string(_indentation, ' ');
+	_instructionCounter++;
+
+	_file << std::string(_instructionStack.size() * 2, ' ');
 	_file << functionName;
 	_file << "\n";
 
-	_indentation += 2;
+	_instructionStack.push(_instructionCounter);
 }
 
-void Tracer::OnExit(long durationNano) {
-	_indentation -= 2;
-	_file << std::string(_indentation, ' ');
-	_file << "^--";
-	_file << durationNano;
-	_file << "ns";
-	_file << "\n";
+void Tracer::OnExit(std::string functionName, long durationNano) {
+	uint64_t counter = _instructionStack.top();
+	_instructionStack.pop();
+
+	if (counter != _instructionCounter) {
+		// Counter changed, so we had child instructions
+		_file << std::string(_instructionStack.size() * 2, ' ');
+		_file << "End " << functionName << " (";
+		_file << (durationNano * 1.0E-6);
+		_file << "ms)";
+		_file << "\n";
+	}
+	else {
+		// Counter didn't change, so put on same line
+		_file.seekp(-2, _file.cur);
+		_file << " (";
+		_file << (durationNano * 1.0E-6);
+		_file << "ms)";
+		_file << "\n";
+	}
 
 }
 
 void Tracer::Start() {
 	if (_isTracing) return;
+
+	// Reset
+	_instructionStack.empty();
+	_instructionCounter = 0;
 
 	_file.open("trace.txt", std::ios::trunc | std::ios::out);
 	_isTracing = true;
@@ -87,6 +108,27 @@ void Tracer::Stop() {
 
 	_isTracing = false;
 	_file.close();
+}
+
+void Tracer::OnBeginTick() {
+	if (!_isTracing) return;
+
+	OnEnter("Tick");
+	_tickStartTime = std::chrono::high_resolution_clock::now();
+}
+
+void Tracer::OnEndTick() {
+	if (!_isTracing || _instructionStack.size() == 0) return;
+
+	auto end = std::chrono::high_resolution_clock::now();
+
+	OnExit("Tick", std::chrono::duration_cast<std::chrono::nanoseconds>(end - _tickStartTime).count());
+}
+
+void Tracer::OnEvent(std::string evt) {
+	_file << std::string(_instructionStack.size() * 2, ' ');
+	_file << evt;
+	_file << "\n";
 }
 
 void Tracer::Hook()

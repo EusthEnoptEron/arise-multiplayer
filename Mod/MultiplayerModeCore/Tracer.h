@@ -3,6 +3,7 @@
 #include "Mod/Mod.h"
 #include <fstream>
 #include "MultiplayerMod.h"
+#include <stack>
 
 template <typename CT, typename ... A> struct function
     : public function<decltype(&CT::operator())(A...)> {};
@@ -58,8 +59,12 @@ public:
         else Stop();
     }
 
+    void OnBeginTick();
+    void OnEndTick();
+    void OnEvent(std::string evt);
+
     void OnEnter(std::string functionName);
-    void OnExit(long durationNano);
+    void OnExit(std::string functionName, long durationNano);
 
     void *GetPointer(UE4::UFunction* function);
 
@@ -76,8 +81,12 @@ private:
     bool _isTracing = false;
     int _indentation = 0;
     std::map<std::string, void *> _functionTable;
+    std::stack<uint64_t> _instructionStack;
 
+    uint64_t _instructionCounter = 0;
     static FNativeFuncPtr* _GNatives;
 
+
+    std::chrono::time_point<std::chrono::steady_clock> _tickStartTime;
 };
 
