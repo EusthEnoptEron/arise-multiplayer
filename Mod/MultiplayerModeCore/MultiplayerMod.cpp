@@ -343,18 +343,39 @@ void K2_GetBattleInputProcessHook(UE4::UObject* Context, UE4::FFrame& Stack, UE4
 	K2_GetBattleInputProcess(Context, Stack, result);
 	Log::Info("GetBattleInputProcess (%s)", Stack.Node->GetName().c_str());
 
+	auto mod = ((MultiplayerMod*)Mod::ModRef);
+
 	auto playerController = FindPlayerController(Stack);
 	if (playerController != nullptr) {
-
-		auto mod = ((MultiplayerMod*)Mod::ModRef);
-
 		int index = mod->GetPlayerIndex(playerController);
 		Log::Info("Candidate? %d", index);
 
 		if (index > 0) {
 			Log::Info("Replace Input Process => %d", index);
 			*result = mod->InputProcesses[index];
+			return;
 		}
+	}
+
+	if (mod->InputProcesses[0] != nullptr && *result != mod->InputProcesses[0]) {
+		*result = mod->InputProcesses[0];
+	}
+}
+
+FNativeFuncPtr K2_GetBattlePCController;
+void K2_GetBattlePCControllerHook(UE4::UObject* Context, UE4::FFrame& Stack, UE4::AActor** result) {
+	K2_GetBattlePCController(Context, Stack, result);
+	Log::Info("K2_GetBattlePCController (%s)", Stack.Node->GetName().c_str());
+
+	auto mod = ((MultiplayerMod*)Mod::ModRef);
+
+	auto playerController = FindPlayerController(Stack);
+	if (playerController != nullptr) {
+		*result = playerController;
+	}
+
+	if (mod->Controllers[0] != nullptr && *result != mod->Controllers[0]) {
+		*result = mod->Controllers[0];
 	}
 }
 
@@ -525,6 +546,13 @@ void MultiplayerMod::InitializeMod()
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattleInputProcess")->GetFunction()),
 		&K2_GetBattleInputProcessHook, &K2_GetBattleInputProcess, "K2_GetBattleInputProcess");
 
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattlePCController")->GetFunction()),
+		&K2_GetBattlePCControllerHook, &K2_GetBattlePCController, "K2_GetBattlePCController");
+
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.K2_GetPlayerController")->GetFunction()),
+		&K2_GetPlayerControllerHook, &K2_GetPlayerController, "K2_GetPlayerController");
 
 	// BUGGY?
 	//MinHook::Add((DWORD_PTR)
@@ -557,10 +585,6 @@ void MultiplayerMod::InitializeMod()
 
 	MinHook::Add((DWORD_PTR)ProcessInterals,
 		&ProcessInternalHook, &ProcessInternal, "ProcessInternal");
-
-	MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.K2_GetPlayerController")->GetFunction()),
-		&K2_GetPlayerControllerHook, &K2_GetPlayerController, "K2_GetPlayerController");
 
 #if ENABLE_TRACING
 	Tracer::GetInstance()->Hook();
@@ -657,15 +681,40 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 		// Make sure that our own functions get the real values
 		/*int tempCurrentPlayer = CurrentPlayer;
 		CurrentPlayer = 0;*/
+		static auto ModActor__OnBeginBattle = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnBeginBattle");
+		static auto ModActor__OnEndBattle = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnEndBattle");
+		static auto ModActor__Native_OnSubStateStart = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnSubStateStart");
+		static auto ModActor__Native_OnSubStateEnd = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnSubStateEnd");
+		static auto ModActor__Native_OnBeginChangeTarget = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnBeginChangeTarget");
+		static auto ModActor__Native_OnEndChangeTarget = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnEndChangeTarget");
+		static auto ModActor__Native_SetNearClippingPlane = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_SetNearClippingPlane");
+		static auto ModActor__Native_ResetNearClippingPlane = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_ResetNearClippingPlane");
 
-		if (name == "OnBeginBattle") {
+
+		if (Frame->Node == ModActor__OnBeginBattle) {
 			InputManager::GetInstance()->SetRerouteControllers(true);
+
+			static auto K2_GetBattleInputProcessFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattleInputProcess");
+
+			// Keep reference to first player input process
+			struct GetBattleInputArgs {
+				UE4::UObject* WorldContext;
+				UE4::AActor* InputProcess;
+			};
+
+			GetBattleInputArgs args = { ModActor, nullptr };
+			ModActor->ProcessEvent(K2_GetBattleInputProcessFn, &args);
+			InputProcesses[0] = args.InputProcess;
+			Controllers[0] = GetController(0);
 		}
-		else if (name == "OnEndBattle") {
+		else if (Frame->Node == ModActor__OnEndBattle) {
 			InputManager::GetInstance()->SetRerouteControllers(false);
 			ResetNearClippingPlane(); // To be sure
+
+			Controllers[0] = nullptr;
+			InputProcesses[0] = nullptr;
 		}
-		else if (name == "Native_OnSubStateStart") {
+		else if (Frame->Node == ModActor__Native_OnSubStateStart) {
 			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
 			if (state == SDK::EBattleState::StateMenu) {
 				for (int i = 0; i < 4; i++) {
@@ -680,14 +729,14 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 				}
 			}
 		}
-		else if (name == "Native_OnSubStateEnd") {
+		else if (Frame->Node == ModActor__Native_OnSubStateEnd) {
 			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
 			if (state == SDK::EBattleState::StateMenu) {
 				InputManager::GetInstance()->SetFirstPlayer(0);
 				ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
 			}
 		}
-		else if (name == "Native_OnBeginChangeTarget") {
+		else if (Frame->Node == ModActor__Native_OnBeginChangeTarget) {
 			for (int i = 0; i < 4; i++) {
 				if (OldStates[i].IsTarget) {
 					Log::Info("Change first player: %d", i);
@@ -700,15 +749,15 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 			}
 			//InputManager::GetInstance()->SetRerouteControllers(true);
 		}
-		else if (name == "Native_OnEndChangeTarget") {
+		else if (Frame->Node == ModActor__Native_OnEndChangeTarget) {
 			InputManager::GetInstance()->SetFirstPlayer(0);
 			ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
 			//InputManager::GetInstance()->SetRerouteControllers(false);
 		}
-		else if (name == "Native_SetNearClippingPlane") {
+		else if (Frame->Node == ModActor__Native_SetNearClippingPlane) {
 			SetNearClippingPlane(*Frame->GetParams<float>());
 		}
-		else if (name == "Native_ResetNearClippingPlane") {
+		else if (Frame->Node == ModActor__Native_ResetNearClippingPlane) {
 			ResetNearClippingPlane();
 		}
 
@@ -740,13 +789,12 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 	if (Stack.Node == BtlCharacterBase__JustStepProcess || Stack.Node == BtlCharacterBase__JustGuardProcess) {
 		// Called on enemy, with our character as argument
 		// void JustStepProcess(class ABtlCharacterBase* DmgActor, bool& JustStep);
-		// void JustGuardProcess(class ABtlCharacterBase* DmgActor, bool* JustGuard);
+		// void JustGuardProcess(class ABtlCharacterBase* DmgActor, bool& JustGuard);
 
 
 
 		auto params = *Stack.GetParams<JustParams>();
 
-		//if (params.JustGuard) {
 		int index = GetPlayerIndex(GetControllerOfCharacter(params.DmgActor));
 
 		if (index > 0) {
@@ -761,7 +809,6 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 			return false;
 		}
-		//}
 	}
 	else
 		if (Stack.Node == DerivedInputStateComponent__OnOperationUnitChanged)

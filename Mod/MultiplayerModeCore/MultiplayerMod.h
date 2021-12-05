@@ -210,6 +210,7 @@ private:
 
 	std::vector<int> PlayerStack;
 
+
 	void RefreshIni();
 
 	int MenuCandidate = 0;
