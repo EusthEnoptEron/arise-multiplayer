@@ -4,7 +4,7 @@
 
 Mod that adds multiplayer to Tales of Arise
 
-For progress, see [Milestones](https://github.com/EusthEnoptEron/arise-multiplayer/milestones) and the [Project page](https://github.com/EusthEnoptEron/arise-multiplayer/projects/1).
+For progress, see <!-- [Milestones](https://github.com/EusthEnoptEron/arise-multiplayer/milestones) and--> the [Project page](https://github.com/EusthEnoptEron/arise-multiplayer/projects/1).
 
 ## Installing
 
@@ -62,9 +62,3 @@ The other characters are assigned like so:
 
 The camera is still very much a work in progress. You can however tweak it to your liking by editing
 the `MultiplayerMod.ini` file that comes with the mod. Updates will be applied immediately.
-
-## Sources
-
-Provided in the spirit of open source.
-
-Don't expect any quality, though, since this is an active process of trial and error.
