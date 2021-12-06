@@ -62,6 +62,7 @@ public:
 		return FirstPlayerIndex;
 	}
 	void SetRerouteControllers(bool reroute) {
+		Log::Info("Set rerouting: %d", reroute);
 		_rerouteControllers = reroute;
 	}
 	bool IsRerouteControllers() {

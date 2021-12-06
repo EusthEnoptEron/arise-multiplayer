@@ -164,5 +164,6 @@ int InputManager::GetConnectedControllersHook(ISteamInput* self, STEAM_OUT_ARRAY
 }
 
 void InputManager::SetFirstPlayer(int index) {
+	Log::Info("Set first player: %d", index);
 	FirstPlayerIndex = index;
 }

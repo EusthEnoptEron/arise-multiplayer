@@ -21,6 +21,11 @@ UBtlStatusComponent* ABtlCharacterBase::GetStatus()
 	return nullptr;
 }
 
+bool ABtlCharacterBase::IsDead()
+{
+	return false;
+}
+
 // Called when the game starts or when spawned
 void ABtlCharacterBase::BeginPlay()
 {

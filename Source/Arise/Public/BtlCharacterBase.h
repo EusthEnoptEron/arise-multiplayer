@@ -78,6 +78,10 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	UBtlStatusComponent* GetStatus();
+
+
+	UFUNCTION(BlueprintCallable)
+	bool IsDead();
 	
 	UPROPERTY(BlueprintReadWrite)
 	/*UBtlStatusViewModelBase*/UBtlStatusViewModelBase* ViewModel;

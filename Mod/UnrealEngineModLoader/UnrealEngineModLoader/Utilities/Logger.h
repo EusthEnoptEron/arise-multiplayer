@@ -54,8 +54,11 @@ private:
 		SetConsoleTextAttribute(hConsole, 7);
 		fprintf(LOG_STREAM, "] %s\n", output.c_str());
 
-		//LogArray.push_back(output);
-		//Log::DumpLog();
+#if ENABLE_TRACING
+		LogArray.push_back(output);
+		Log::DumpLog();
+#endif
+	
 	}
 
 public:

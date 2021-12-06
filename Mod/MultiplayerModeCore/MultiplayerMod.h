@@ -5,6 +5,7 @@
 #include "InputManager.h";
 #include "SDK.h";
 #include "SDK/BP_BtlCamera_classes.h";
+#include "SDK/STR_BtlHudVisible_structs.h";
 #include "FileWatch.hpp"
 
 typedef void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void *result);
@@ -19,6 +20,13 @@ struct FScriptName {
 	std::string GetName() {
 		return UE4::FName(ComparisonIndex).GetName();
 	}
+};
+
+struct FOutParmRec
+{
+	UE4::UField* Property;
+	uint8_t* PropAddr;
+	FOutParmRec* NextOutParm;
 };
 
 struct ApplyConfigParams {

@@ -241,9 +241,9 @@ FNativeFuncPtr BattleResume;
 void BattleResumeHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
 	static auto onBeforePauseFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnBeforePause");
 
-	((MultiplayerMod*)(Mod::ModRef))->ModActor->ProcessEvent(onBeforePauseFn, nullptr);
-
 	BattleResume(Context, Stack, result);
+
+	((MultiplayerMod*)(Mod::ModRef))->ModActor->ProcessEvent(onBeforePauseFn, nullptr);
 }
 
 
@@ -330,10 +330,11 @@ void GetPlayerControlledUnitHook(UE4::UObject* Context, UE4::FFrame& Stack, void
 
 FNativeFuncPtr GetBtlAxisValue;
 void GetBtlAxisValueHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
-	int id = static_cast<int>(((UE4::AActor*)Context)->GetActorLocation().X);
 	std::string nameString = GetName(Stack);
 	GetBtlAxisValue(Context, Stack, result);
+	
 	auto mod = ((MultiplayerMod*)Mod::ModRef);
+	int id = mod->GetPlayerIndexFromInputProcessor((UE4::AActor *)Context);
 
 	if (id > 0 && InputManager::GetInstance()->IsRerouteControllers()) {
 
@@ -679,8 +680,10 @@ bool MultiplayerMod::IsBattleScene() {
 
 void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 {
+	auto currentFn = Frame->Node;
+
 	static auto BindUnitEvent = UE4::UObject::FindObject<UE4::UFunction>("Function BP_DerivedInputStateComponent.BP_DerivedInputStateComponent_C.BindUnitEvent");
-	if (Frame->Node == BindUnitEvent) {
+	if (currentFn == BindUnitEvent) {
 		Log::Info("%s [%s] (BindUnitEvent)", obj->GetName().c_str(), obj->GetClass()->GetName().c_str());
 
 		UE4::FFrame* frame = Frame;
@@ -692,7 +695,7 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 	}
 
 	static auto Native_SetProcess = UE4::UObject::FindObject<UE4::UFunction>("Function MultiPlayerController.MultiPlayerController_C.Native_SetProcess");
-	if (Frame->Node == Native_SetProcess) {
+	if (currentFn == Native_SetProcess) {
 
 		int index = GetPlayerIndex((UE4::APlayerController*)(Frame->Object));
 		UE4::AActor* process = *(Frame->GetParams<UE4::AActor*>());
@@ -704,8 +707,6 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 	}
 
 	if (Frame->Object == ModActor) {
-		auto name = Frame->Node->GetName();
-
 		// Make sure that our own functions get the real values
 		/*int tempCurrentPlayer = CurrentPlayer;
 		CurrentPlayer = 0;*/
@@ -718,31 +719,65 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 		static auto ModActor__Native_SetNearClippingPlane = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_SetNearClippingPlane");
 		static auto ModActor__Native_ResetNearClippingPlane = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_ResetNearClippingPlane");
 
+		if (ModActor__OnBeginBattle == nullptr) {
+			Log::Error("ModActor__OnBeginBattle not found");
+		}
+		if (ModActor__OnEndBattle == nullptr) {
+			Log::Error("ModActor__OnEndBattle not found");
+		}
+		if (ModActor__Native_OnSubStateStart == nullptr) {
+			Log::Error("ModActor__Native_OnSubStateStart not found");
+		}
+		if (ModActor__Native_OnSubStateEnd == nullptr) {
+			Log::Error("ModActor__Native_OnSubStateEnd not found");
+		}
+		if (ModActor__Native_OnBeginChangeTarget == nullptr) {
+			Log::Error("ModActor__Native_OnBeginChangeTarget not found");
+		}
+		if (ModActor__Native_OnEndChangeTarget == nullptr) {
+			Log::Error("ModActor__Native_OnEndChangeTarget not found");
+		}
+		if (ModActor__Native_SetNearClippingPlane == nullptr) {
+			Log::Error("ModActor__Native_SetNearClippingPlane not found");
+		}
+		if (ModActor__Native_ResetNearClippingPlane == nullptr) {
+			Log::Error("ModActor__Native_ResetNearClippingPlane not found");
+		}
 
-		if (Frame->Node == ModActor__OnBeginBattle) {
+		if (currentFn == ModActor__OnBeginBattle) {
 			InputManager::GetInstance()->SetRerouteControllers(true);
 
+			Log::Info("On Begin Battle");
+
 			static auto K2_GetBattleInputProcessFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattleInputProcess");
+			static auto K2_GetBattlePCControllerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattlePCController");
 
 			// Keep reference to first player input process
 			struct GetBattleInputArgs {
 				UE4::UObject* WorldContext;
-				UE4::AActor* InputProcess;
+				UE4::AActor* Result;
 			};
 
 			GetBattleInputArgs args = { ModActor, nullptr };
 			ModActor->ProcessEvent(K2_GetBattleInputProcessFn, &args);
-			InputProcesses[0] = args.InputProcess;
-			Controllers[0] = GetController(0);
+			InputProcesses[0] = args.Result;
+			Log::Info("Setting first player process: %p (%s)", InputProcesses[0], InputProcesses[0]->GetName().c_str());
+
+			ModActor->ProcessEvent(K2_GetBattlePCControllerFn, &args);
+			Controllers[0] = (UE4::APlayerController *)args.Result;
+			Log::Info("Setting first player controller: %p (%s)", Controllers[0], Controllers[0]->GetName().c_str());
 		}
-		else if (Frame->Node == ModActor__OnEndBattle) {
+		else if (currentFn == ModActor__OnEndBattle) {
 			InputManager::GetInstance()->SetRerouteControllers(false);
+
+			Log::Info("On End Battle");
+
 			ResetNearClippingPlane(); // To be sure
 
 			Controllers[0] = nullptr;
 			InputProcesses[0] = nullptr;
 		}
-		else if (Frame->Node == ModActor__Native_OnSubStateStart) {
+		else if (currentFn == ModActor__Native_OnSubStateStart) {
 			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
 			if (state == SDK::EBattleState::StateMenu) {
 				for (int i = 0; i < 4; i++) {
@@ -757,14 +792,14 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 				}
 			}
 		}
-		else if (Frame->Node == ModActor__Native_OnSubStateEnd) {
+		else if (currentFn == ModActor__Native_OnSubStateEnd) {
 			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
 			if (state == SDK::EBattleState::StateMenu) {
 				InputManager::GetInstance()->SetFirstPlayer(0);
 				ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
 			}
 		}
-		else if (Frame->Node == ModActor__Native_OnBeginChangeTarget) {
+		else if (currentFn == ModActor__Native_OnBeginChangeTarget) {
 			for (int i = 0; i < 4; i++) {
 				if (OldStates[i].IsTarget) {
 					Log::Info("Change first player: %d", i);
@@ -777,15 +812,15 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 			}
 			//InputManager::GetInstance()->SetRerouteControllers(true);
 		}
-		else if (Frame->Node == ModActor__Native_OnEndChangeTarget) {
+		else if (currentFn == ModActor__Native_OnEndChangeTarget) {
 			InputManager::GetInstance()->SetFirstPlayer(0);
 			ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
 			//InputManager::GetInstance()->SetRerouteControllers(false);
 		}
-		else if (Frame->Node == ModActor__Native_SetNearClippingPlane) {
+		else if (currentFn == ModActor__Native_SetNearClippingPlane) {
 			SetNearClippingPlane(*Frame->GetParams<float>());
 		}
-		else if (Frame->Node == ModActor__Native_ResetNearClippingPlane) {
+		else if (currentFn == ModActor__Native_ResetNearClippingPlane) {
 			ResetNearClippingPlane();
 		}
 
@@ -854,17 +889,77 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 			}
 
 		}
+	static auto Native_GetHudVisibility = UE4::UObject::FindObject<UE4::UFunction>("Function BP_ModHelper.BP_ModHelper_C.Native_GetHudVisibility");
 
-	static auto BP_BtlCharacterBase__UseStrikeResource = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.UseStrikeResource");
-	if (Stack.Node == BP_BtlCharacterBase__UseStrikeResource) {
-		IsSettingUpStrikeAttack = true;
-		Log::Info("Preparing for strike attack");
-		ProcessInternal(Context, Stack, ret);
-		Log::Info("Preparing for strike attack done");
+	if (Stack.Node == Native_GetHudVisibility) {
+		struct params {
+			UE4::FString Input;
+			SDK::ESlateVisibility Visibility;
+		};
 
-		IsSettingUpStrikeAttack = false;
+		static auto fn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlFunctionLibrary.GetUIManager");
+
+		SDK::ABattleUIManager* uiManager;
+		Context->ProcessEvent(fn, &uiManager);
+
+		static auto fn2 = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BattleHudHelper.BP_BattleHudHelper_C.GetHudVisible");
+		struct UBP_BattleHudHelper_C_GetHudVisible_Params
+		{
+			SDK::FName                                       RowName;                                                  // (BlueprintVisible, BlueprintReadOnly, Parm, ZeroConstructor, IsPlainOldData)
+			UE4::UObject* __WorldContext;                                           // (BlueprintVisible, BlueprintReadOnly, Parm, ZeroConstructor, IsPlainOldData)
+			SDK::FSTR_BtlHudVisible                          Result;                                                   // (Parm, OutParm)
+		};
+
+
+		UBP_BattleHudHelper_C_GetHudVisible_Params args = {
+			uiManager->HudVisiblePresetLabel.Label,
+			Context
+		};
+
+		Context->ProcessEvent(fn2, &args);
+
+		auto inputString = Stack.GetParams<UE4::FString>()->ToString();
+		bool visible = false;
+
+		if (inputString == "Target") {
+			visible = args.Result.TargetBar_13_83206C884702689F60AAC6AF3DF8818C;
+		}
+		else if (inputString == "PlayerBar") {
+			visible = args.Result.OperationBar_12_5EEA505A4C436902CEE0C8B6EEE41597;
+		}
+		else if (inputString == "ArtsHelp") {
+
+			visible = args.Result.ArtsHelpText_15_86BBD9224BA6A4D3FB62968F8B2CC8F8;
+		}
+		else {
+			Log::Info("Unknown: %s", inputString.c_str());
+		}
+
+		auto ret2 = ((FOutParmRec*)Stack.OutParms)->PropAddr;
+		
+		// I have no idea why this isn't just ret
+		*ret2 = static_cast<uint8_t>(visible ? SDK::ESlateVisibility::Visible : SDK::ESlateVisibility::Hidden);
 		return false;
 	}
+	//static auto BP_BtlCharacterBase__UseStrikeResource = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.UseStrikeResource");
+	//if (Stack.Node == BP_BtlCharacterBase__UseStrikeResource) {
+	//	IsSettingUpStrikeAttack = true;
+	//	Log::Info("Preparing for strike attack");
+	//	ProcessInternal(Context, Stack, ret);
+	//	Log::Info("Preparing for strike attack done");
+
+	//	IsSettingUpStrikeAttack = false;
+	//	return false;
+	//}
+	//static auto BP_BattleHudHelper__GetHudVisible = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BattleHudHelper.BP_BattleHudHelper_C.GetHudVisible");
+	//if (Stack.Node == BP_BattleHudHelper__GetHudVisible) {
+	//	Log::Info("GetHUDVisibility");
+	//	auto name = *Stack.GetParams<UE4::FName>();
+	//	Log::Info("GetHUDVisibility(%s)", name.GetName().c_str());
+	//	return true;
+	//}
+	//
+
 
 	return true;
 
@@ -872,6 +967,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 void MultiplayerMod::OnAfterVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
 
+	
 }
 
 // FF FF FF FF ?? ?? ?? ?? 84 3C EB F0 F7 7F 00 00 20 46 21 F1
@@ -1041,6 +1137,15 @@ void MultiplayerMod::Tick()
 
 	//InputManager::GetInstance()->SetPreventBattleInput(parms.Scene != 3);
 	InputManager::GetInstance()->Refresh(NewStates);
+
+	if (Controllers[0] == Controllers[1] && Controllers[0] != nullptr) {
+		Log::Info("STRANGE REFERENCES");
+	}
+
+	if (InputProcesses[0] == InputProcesses[1] && InputProcesses[0] != nullptr) {
+		Log::Info("STRANGE REFERENCES 2");
+	}
+
 
 	// Compare
 	for (int i = 1; i < 4; i++) {
