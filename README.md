@@ -20,7 +20,7 @@ UnrealEngineModLauncher.exe before starting the game.
 
 1. Remove xinput1_3.dll
 
-## Known Issues
+## Known Issues (0.9)
 
 - Mystic artes don't seem to work ([#22](https://github.com/EusthEnoptEron/arise-multiplayer/issues/22))
 - Sometimes crashes on startup. ([#29](https://github.com/EusthEnoptEron/arise-multiplayer/issues/29))
