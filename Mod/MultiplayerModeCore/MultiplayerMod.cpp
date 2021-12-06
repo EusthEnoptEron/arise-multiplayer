@@ -226,8 +226,28 @@ UE4::AActor* FindCharacter(const UE4::FFrame& Stack) {
 	return nullptr;
 }
 
-//Function Engine.GameplayStatics.GetPlayerController(int index) => APlayerController
+//Function Arise.BtlManager.BattlePause
+FNativeFuncPtr BattlePause;
+void BattlePauseHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
+	static auto onBeforePauseFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnBeforePause");
+	
+	((MultiplayerMod*)(Mod::ModRef))->ModActor->ProcessEvent(onBeforePauseFn, nullptr);
 
+	BattlePause(Context, Stack, result);
+}
+
+// Function Arise.BtlManager.BattleResume
+FNativeFuncPtr BattleResume;
+void BattleResumeHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
+	static auto onBeforePauseFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnBeforePause");
+
+	((MultiplayerMod*)(Mod::ModRef))->ModActor->ProcessEvent(onBeforePauseFn, nullptr);
+
+	BattleResume(Context, Stack, result);
+}
+
+
+//Function Engine.GameplayStatics.GetPlayerController(int index) => APlayerController
 FNativeFuncPtr ABtlCharacterBase__SetTemporaryTargetCharacter;
 void ABtlCharacterBase__SetTemporaryTargetCharacterHook(UE4::UObject* Context, UE4::FFrame& Stack, void *result) {
 	ABtlCharacterBase__SetTemporaryTargetCharacter(Context, Stack, result);
@@ -241,11 +261,12 @@ void ABtlCharacterBase__SetTemporaryTargetCharacterHook(UE4::UObject* Context, U
 		bool IgnoreTemporary;
 		SDK::ABtlCharacterBase* ReturnValue;
 	};
+	Log::Info("Whoo %s, %s, %s", Context->GetName().c_str(), Stack.Object->GetName().c_str(), Stack.Node->GetName().c_str());
 
 	if (mod->IsSettingUpStrikeAttack) {
 		Log::Info("Whee %s, %s, %s", Context->GetName().c_str(), Stack.Object->GetName().c_str(), Stack.Node->GetName().c_str());
 
-		auto targetRef = (SDK::ABtlCharacterBase *)Context;
+		/*auto targetRef = (SDK::ABtlCharacterBase *)Context;
 		auto states = mod->OldStates;
 		for (int i = 0; i < 4; i++) {
 			if (states[i].IsStrikeAttack0 || states[i].IsStrikeAttack1 || states[i].IsStrikeAttack2 || states[i].IsStrikeAttack3) {
@@ -262,7 +283,7 @@ void ABtlCharacterBase__SetTemporaryTargetCharacterHook(UE4::UObject* Context, U
 					return;
 				}
 			}
-		}
+		}*/
 	}
 }
 
@@ -554,12 +575,19 @@ void MultiplayerMod::InitializeMod()
 		(UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.K2_GetPlayerController")->GetFunction()),
 		&K2_GetPlayerControllerHook, &K2_GetPlayerController, "K2_GetPlayerController");
 
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlManager.BattlePause")->GetFunction()),
+		&BattlePauseHook, &BattlePause, "BattlePause");
+
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlManager.BattleResume")->GetFunction()),
+		&BattleResumeHook, &BattleResume, "BattleResume");
+
+	//
 	// BUGGY?
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.SetTemporaryTargetCharacter")->GetFunction()),
-	//	&ABtlCharacterBase__SetTemporaryTargetCharacterHook, &ABtlCharacterBase__SetTemporaryTargetCharacter, "SetTemporaryTargetCharacter");
-
-
+	/*MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.SetTemporaryTargetCharacter")->GetFunction()),
+		&ABtlCharacterBase__SetTemporaryTargetCharacterHook, &ABtlCharacterBase__SetTemporaryTargetCharacter, "SetTemporaryTargetCharacter");*/
 
 	auto tickFn = Pattern::Find("48 8B C4 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 78 FD FF FF");
 	MinHook::Add((DWORD64)tickFn, &FEngineLoop__Tick_Hook, &FEngineLoop__Tick_Orig, "FEngineLoop__Tick_Fn");
