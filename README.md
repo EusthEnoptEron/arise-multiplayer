@@ -24,6 +24,7 @@ UnrealEngineModLauncher.exe before starting the game.
 
 - Changing characters during battle doesn't work
   well. ([#5](https://github.com/EusthEnoptEron/arise-multiplayer/issues/5))
+- Causes issues in some of the bonus dungeons / bosses
 
 For a complete list, see [issues](https://github.com/EusthEnoptEron/arise-multiplayer/issues)
 
