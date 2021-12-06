@@ -20,13 +20,10 @@ UnrealEngineModLauncher.exe before starting the game.
 
 1. Remove xinput1_3.dll
 
-## Known Issues (0.9)
+## Known Issues
 
-- Mystic artes don't seem to work ([#22](https://github.com/EusthEnoptEron/arise-multiplayer/issues/22))
-- Sometimes crashes on startup. ([#29](https://github.com/EusthEnoptEron/arise-multiplayer/issues/29))
 - Changing characters during battle doesn't work
   well. ([#5](https://github.com/EusthEnoptEron/arise-multiplayer/issues/5))
-- Special abilities only partly supported ([#4](https://github.com/EusthEnoptEron/arise-multiplayer/issues/4))
 
 For a complete list, see [issues](https://github.com/EusthEnoptEron/arise-multiplayer/issues)
 
