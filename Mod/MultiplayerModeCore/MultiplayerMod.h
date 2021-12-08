@@ -6,6 +6,10 @@
 #include "SDK.h";
 #include "SDK/BP_BtlCamera_classes.h";
 #include "SDK/STR_BtlHudVisible_structs.h";
+#include "SDK/TO14_StateEnum_MNU_SAV_structs.h";
+#include "SDK/TO14_ProcessEnum_MNU_SAV_structs.h";
+#include "SDK/TO14_ModeEnum_MNU_SAV_structs.h";
+#include "SDK/TO14_BPI_GUI_MNU_SAV_classes.h";
 #include "FileWatch.hpp"
 
 typedef void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void *result);

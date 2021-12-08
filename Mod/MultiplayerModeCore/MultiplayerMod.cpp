@@ -301,6 +301,35 @@ void GameplayStatics__GetPlayerControllerHook(UE4::UObject* Context, UE4::FFrame
 	}
 }
 
+//Function Arise.BtlCharacterBase.GetPlayerOperation
+FNativeFuncPtr GetPlayerOperation;
+void GetPlayerOperationHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* result) {
+	auto ctx = (SDK::ABtlCharacterBase*)Context;
+	auto controller = ctx->Controller;
+	auto mod = ((MultiplayerMod*)(Mod::ModRef));
+
+	GetPlayerOperation(Context, Stack, result);
+
+	if (controller != nullptr && mod->GetPlayerIndex((UE4::APlayerController*)controller) > 0) {
+		*result = true;
+	}
+}
+
+
+//Function Arise.BtlCharacterBase.IsAutoOperation
+FNativeFuncPtr IsAutoOperation;
+void IsAutoOperationHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* result) {
+	auto ctx = (SDK::ABtlCharacterBase*)Context;
+	auto controller = ctx->Controller;
+	auto mod = ((MultiplayerMod*)(Mod::ModRef));
+
+	IsAutoOperation(Context, Stack, result);
+
+	if (controller != nullptr && mod->GetPlayerIndex((UE4::APlayerController*)controller) > 0) {
+		*result = false;
+	}
+}
+
 
 FNativeFuncPtr GetPlayerControlledUnit;
 void GetPlayerControlledUnitHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
@@ -325,6 +354,9 @@ void GetPlayerControlledUnitHook(UE4::UObject* Context, UE4::FFrame& Stack, void
 			Log::Info("Swap character (alternative)");
 			*(UE4::AActor**)result = charaPointer;
 		}
+		//else if(mod->Controllers[0] != nullptr) {
+		//	*(SDK::AActor**)result =((SDK::APlayerController*)mod->Controllers[0])->Pawn;
+		//}
 	}
 }
 
@@ -479,18 +511,6 @@ void K2_IsBtlButtonRepeatedHook(UE4::UObject* Context, UE4::FFrame& Stack, void*
 	K2_IsBtlButtonRepeated(Context, Stack, ret);
 };
 
-FNativeFuncPtr GetPlayerOperation;
-void GetPlayerOperationHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
-
-	Log::Info("GetPlayerOperation: %s (%s)", Context->GetName().c_str(), Stack.Object->GetName().c_str());
-	UE4::FFrame* frame = &Stack;
-	while (frame != nullptr) {
-		Log::Info("%s::%s", frame->Object->GetName().c_str(), frame->Node->GetName().c_str());
-		frame = frame->PreviousFrame;
-	}
-	Log::Info("");
-	GetPlayerOperation(Context, Stack, ret);
-};
 
 FNativeFuncPtr K2_GetPlayerController;
 void K2_GetPlayerControllerHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
@@ -583,6 +603,14 @@ void MultiplayerMod::InitializeMod()
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlManager.BattleResume")->GetFunction()),
 		&BattleResumeHook, &BattleResume, "BattleResume");
+
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.GetPlayerOperation")->GetFunction()),
+		&GetPlayerOperationHook, &GetPlayerOperation, "GetPlayerOperation");
+
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.IsAutoOperation")->GetFunction()),
+		&IsAutoOperationHook, &IsAutoOperation, "IsAutoOperation");
 
 	//
 	// BUGGY?
@@ -680,163 +708,6 @@ bool MultiplayerMod::IsBattleScene() {
 
 void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 {
-	auto currentFn = Frame->Node;
-
-	static auto BindUnitEvent = UE4::UObject::FindObject<UE4::UFunction>("Function BP_DerivedInputStateComponent.BP_DerivedInputStateComponent_C.BindUnitEvent");
-	if (currentFn == BindUnitEvent) {
-		Log::Info("%s [%s] (BindUnitEvent)", obj->GetName().c_str(), obj->GetClass()->GetName().c_str());
-
-		UE4::FFrame* frame = Frame;
-		while (frame != nullptr) {
-			Log::Info("%s::%s", frame->Object->GetName().c_str(), frame->Node->GetName().c_str());
-			frame = frame->PreviousFrame;
-		}
-		Log::Info("");
-	}
-
-	static auto Native_SetProcess = UE4::UObject::FindObject<UE4::UFunction>("Function MultiPlayerController.MultiPlayerController_C.Native_SetProcess");
-	if (currentFn == Native_SetProcess) {
-
-		int index = GetPlayerIndex((UE4::APlayerController*)(Frame->Object));
-		UE4::AActor* process = *(Frame->GetParams<UE4::AActor*>());
-
-		InputProcesses[index] = process;
-
-		Log::Info("Set process %d to %p / %p", index, process, InputProcesses[index]);
-
-	}
-
-	if (Frame->Object == ModActor) {
-		// Make sure that our own functions get the real values
-		/*int tempCurrentPlayer = CurrentPlayer;
-		CurrentPlayer = 0;*/
-		static auto ModActor__OnBeginBattle = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnBeginBattle");
-		static auto ModActor__OnEndBattle = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnEndBattle");
-		static auto ModActor__Native_OnSubStateStart = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnSubStateStart");
-		static auto ModActor__Native_OnSubStateEnd = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnSubStateEnd");
-		static auto ModActor__Native_OnBeginChangeTarget = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnBeginChangeTarget");
-		static auto ModActor__Native_OnEndChangeTarget = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnEndChangeTarget");
-		static auto ModActor__Native_SetNearClippingPlane = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_SetNearClippingPlane");
-		static auto ModActor__Native_ResetNearClippingPlane = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_ResetNearClippingPlane");
-
-		if (ModActor__OnBeginBattle == nullptr) {
-			Log::Error("ModActor__OnBeginBattle not found");
-		}
-		if (ModActor__OnEndBattle == nullptr) {
-			Log::Error("ModActor__OnEndBattle not found");
-		}
-		if (ModActor__Native_OnSubStateStart == nullptr) {
-			Log::Error("ModActor__Native_OnSubStateStart not found");
-		}
-		if (ModActor__Native_OnSubStateEnd == nullptr) {
-			Log::Error("ModActor__Native_OnSubStateEnd not found");
-		}
-		if (ModActor__Native_OnBeginChangeTarget == nullptr) {
-			Log::Error("ModActor__Native_OnBeginChangeTarget not found");
-		}
-		if (ModActor__Native_OnEndChangeTarget == nullptr) {
-			Log::Error("ModActor__Native_OnEndChangeTarget not found");
-		}
-		if (ModActor__Native_SetNearClippingPlane == nullptr) {
-			Log::Error("ModActor__Native_SetNearClippingPlane not found");
-		}
-		if (ModActor__Native_ResetNearClippingPlane == nullptr) {
-			Log::Error("ModActor__Native_ResetNearClippingPlane not found");
-		}
-
-		if (currentFn == ModActor__OnBeginBattle) {
-			InputManager::GetInstance()->SetRerouteControllers(true);
-
-			Log::Info("On Begin Battle");
-
-			static auto K2_GetBattleInputProcessFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattleInputProcess");
-			static auto K2_GetBattlePCControllerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattlePCController");
-
-			// Keep reference to first player input process
-			struct GetBattleInputArgs {
-				UE4::UObject* WorldContext;
-				UE4::AActor* Result;
-			};
-
-			GetBattleInputArgs args = { ModActor, nullptr };
-			ModActor->ProcessEvent(K2_GetBattleInputProcessFn, &args);
-			InputProcesses[0] = args.Result;
-			Log::Info("Setting first player process: %p (%s)", InputProcesses[0], InputProcesses[0]->GetName().c_str());
-
-			ModActor->ProcessEvent(K2_GetBattlePCControllerFn, &args);
-			Controllers[0] = (UE4::APlayerController *)args.Result;
-			Log::Info("Setting first player controller: %p (%s)", Controllers[0], Controllers[0]->GetName().c_str());
-		}
-		else if (currentFn == ModActor__OnEndBattle) {
-			InputManager::GetInstance()->SetRerouteControllers(false);
-
-			Log::Info("On End Battle");
-
-			ResetNearClippingPlane(); // To be sure
-
-			Controllers[0] = nullptr;
-			InputProcesses[0] = nullptr;
-		}
-		else if (currentFn == ModActor__Native_OnSubStateStart) {
-			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
-			if (state == SDK::EBattleState::StateMenu) {
-				for (int i = 0; i < 4; i++) {
-					if (OldStates[i].IsMenu) {
-						Log::Info("Change first player: %d", i);
-						InputManager::GetInstance()->SetFirstPlayer(i);
-						if (i != 0) {
-							ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &i);
-						}
-						break;
-					}
-				}
-			}
-		}
-		else if (currentFn == ModActor__Native_OnSubStateEnd) {
-			SDK::EBattleState state = *Frame->GetParams<SDK::EBattleState>();
-			if (state == SDK::EBattleState::StateMenu) {
-				InputManager::GetInstance()->SetFirstPlayer(0);
-				ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
-			}
-		}
-		else if (currentFn == ModActor__Native_OnBeginChangeTarget) {
-			for (int i = 0; i < 4; i++) {
-				if (OldStates[i].IsTarget) {
-					Log::Info("Change first player: %d", i);
-					InputManager::GetInstance()->SetFirstPlayer(i);
-					if (i != 0) {
-						ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &i);
-					}
-					break;
-				}
-			}
-			//InputManager::GetInstance()->SetRerouteControllers(true);
-		}
-		else if (currentFn == ModActor__Native_OnEndChangeTarget) {
-			InputManager::GetInstance()->SetFirstPlayer(0);
-			ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
-			//InputManager::GetInstance()->SetRerouteControllers(false);
-		}
-		else if (currentFn == ModActor__Native_SetNearClippingPlane) {
-			SetNearClippingPlane(*Frame->GetParams<float>());
-		}
-		else if (currentFn == ModActor__Native_ResetNearClippingPlane) {
-			ResetNearClippingPlane();
-		}
-
-		//CurrentPlayer = tempCurrentPlayer;
-	}
-
-	if (Frame->Node->GetName() == "LogInfo") {
-		struct param {
-			UE4::FString Prefix;
-			UE4::FString Param;
-		};
-
-		param* parms = Frame->GetParams<param>();
-
-		Log::Info("[Player] %s%s", parms->Prefix.IsValid() ? parms->Prefix.ToString().c_str() : "", parms->Param.IsValid() ? parms->Param.ToString().c_str() : "");
-	}
 }
 
 struct JustParams {
@@ -845,6 +716,7 @@ struct JustParams {
 };
 
 bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
+	auto currentFn = Stack.Node;
 
 	static auto BtlCharacterBase__JustStepProcess = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.JustStepProcess");
 	static auto BtlCharacterBase__JustGuardProcess = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.JustGuardProcess");
@@ -941,6 +813,132 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		*ret2 = static_cast<uint8_t>(visible ? SDK::ESlateVisibility::Visible : SDK::ESlateVisibility::Hidden);
 		return false;
 	}
+
+	static auto Native_SetProcess = UE4::UObject::FindObject<UE4::UFunction>("Function MultiPlayerController.MultiPlayerController_C.Native_SetProcess");
+	if (currentFn == Native_SetProcess) {
+
+		struct params {
+			UE4::AActor* Process;
+			int Index;
+		};
+		auto args = *(Stack.GetParams<params>());
+
+		InputProcesses[args.Index] = args.Process;
+
+		Log::Info("Set process %d to %p / %p", args.Index, args.Process, InputProcesses[args.Index]);
+	}
+
+
+	if (Stack.Object == ModActor) {
+		// Make sure that our own functions get the real values
+		/*int tempCurrentPlayer = CurrentPlayer;
+		CurrentPlayer = 0;*/
+		static auto ModActor__OnBeginBattle = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnBeginBattle");
+		static auto ModActor__OnEndBattle = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnEndBattle");
+		static auto ModActor__Native_OnSubStateStart = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnSubStateStart");
+		static auto ModActor__Native_OnSubStateEnd = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnSubStateEnd");
+		static auto ModActor__Native_OnBeginChangeTarget = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnBeginChangeTarget");
+		static auto ModActor__Native_OnEndChangeTarget = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnEndChangeTarget");
+		static auto ModActor__Native_SetNearClippingPlane = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_SetNearClippingPlane");
+		static auto ModActor__Native_ResetNearClippingPlane = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_ResetNearClippingPlane");
+
+		if (currentFn == ModActor__OnBeginBattle) {
+			InputManager::GetInstance()->SetRerouteControllers(true);
+
+			Log::Info("On Begin Battle");
+
+			static auto K2_GetBattleInputProcessFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattleInputProcess");
+			static auto K2_GetBattlePCControllerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattlePCController");
+
+			// Keep reference to first playerC input process
+			struct GetBattleInputArgs {
+				UE4::UObject* WorldContext;
+				UE4::AActor* Result;
+			};
+
+			GetBattleInputArgs args = { ModActor, nullptr };
+			ModActor->ProcessEvent(K2_GetBattleInputProcessFn, &args);
+			InputProcesses[0] = args.Result;
+			Log::Info("Setting first player process: %p (%s)", InputProcesses[0], InputProcesses[0]->GetName().c_str());
+
+			ModActor->ProcessEvent(K2_GetBattlePCControllerFn, &args);
+			Controllers[0] = (UE4::APlayerController*)args.Result;
+			Log::Info("Setting first player controller: %p (%s)", Controllers[0], Controllers[0]->GetName().c_str());
+		}
+		else if (currentFn == ModActor__OnEndBattle) {
+			InputManager::GetInstance()->SetRerouteControllers(false);
+
+			Log::Info("On End Battle");
+
+			ResetNearClippingPlane(); // To be sure
+
+			Controllers[0] = nullptr;
+			InputProcesses[0] = nullptr;
+		}
+		else if (currentFn == ModActor__Native_OnSubStateStart) {
+			SDK::EBattleState state = *Stack.GetParams<SDK::EBattleState>();
+			if (state == SDK::EBattleState::StateMenu) {
+				for (int i = 0; i < 4; i++) {
+					if (OldStates[i].IsMenu) {
+						Log::Info("Change first player: %d", i);
+						InputManager::GetInstance()->SetFirstPlayer(i);
+						if (i != 0) {
+							ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &i);
+						}
+						break;
+					}
+				}
+			}
+		}
+		else if (currentFn == ModActor__Native_OnSubStateEnd) {
+			SDK::EBattleState state = *Stack.GetParams<SDK::EBattleState>();
+			if (state == SDK::EBattleState::StateMenu) {
+				InputManager::GetInstance()->SetFirstPlayer(0);
+				ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
+			}
+		}
+		else if (currentFn == ModActor__Native_OnBeginChangeTarget) {
+			for (int i = 0; i < 4; i++) {
+				if (OldStates[i].IsTarget) {
+					Log::Info("Change first player: %d", i);
+					InputManager::GetInstance()->SetFirstPlayer(i);
+					if (i != 0) {
+						ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &i);
+					}
+					break;
+				}
+			}
+			//InputManager::GetInstance()->SetRerouteControllers(true);
+		}
+		else if (currentFn == ModActor__Native_OnEndChangeTarget) {
+			InputManager::GetInstance()->SetFirstPlayer(0);
+			ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
+			//InputManager::GetInstance()->SetRerouteControllers(false);
+		}
+		else if (currentFn == ModActor__Native_SetNearClippingPlane) {
+			SetNearClippingPlane(*Stack.GetParams<float>());
+		}
+		else if (currentFn == ModActor__Native_ResetNearClippingPlane) {
+			ResetNearClippingPlane();
+		}
+
+		//CurrentPlayer = tempCurrentPlayer;
+	}
+
+
+	static auto TestWidget__LogInfo = UE4::UObject::FindObject<UE4::UFunction>("Function TestWidget.TestWidget_C.LogInfo");
+
+	if (currentFn == TestWidget__LogInfo) {
+		struct param {
+			UE4::FString Prefix;
+			UE4::FString Param;
+		};
+
+		param* parms = Stack.GetParams<param>();
+
+		Log::Info("[Player] %s%s", parms->Prefix.IsValid() ? parms->Prefix.ToString().c_str() : "", parms->Param.IsValid() ? parms->Param.ToString().c_str() : "");
+	}
+
 	//static auto BP_BtlCharacterBase__UseStrikeResource = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.UseStrikeResource");
 	//if (Stack.Node == BP_BtlCharacterBase__UseStrikeResource) {
 	//	IsSettingUpStrikeAttack = true;
@@ -1122,6 +1120,7 @@ void MultiplayerMod::RefreshIni() {
 	ModActor->ProcessEvent(applyConfigFn, &parms);
 }
 
+
 void MultiplayerMod::Tick()
 {
 	if (ModActor == nullptr) return; // not yet initialized
@@ -1131,6 +1130,7 @@ void MultiplayerMod::Tick()
 		RefreshIni();
 		IniDirty = false;
 	}
+
 	//ModTickParams parms = *(Frame->GetParams<ModTickParams>());
 
 	//Log::Info("Scene: %d Menu: %d", parms.Scene, parms.IsMenuOpen);
@@ -1145,7 +1145,6 @@ void MultiplayerMod::Tick()
 	if (InputProcesses[0] == InputProcesses[1] && InputProcesses[0] != nullptr) {
 		Log::Info("STRANGE REFERENCES 2");
 	}
-
 
 	// Compare
 	for (int i = 1; i < 4; i++) {
@@ -1189,7 +1188,6 @@ void MultiplayerMod::Tick()
 		CompareDigitalStates(newState.IsAttack, oldState.IsAttack, &(justPressed.IsAttack), &(justReleased.IsAttack), Actions::BATTLE_BASE_ATTACK, i);
 		CompareDigitalStates(newState.IsGuard, oldState.IsGuard, &(justPressed.IsGuard), &(justReleased.IsGuard), Actions::BATTLE_BASE_GUARD, i);
 #endif
-
 
 		//if (newState.Move.bActive)
 		//{
