@@ -546,7 +546,6 @@ void ChangeAriseGameSceneHook(UE4::UObject* Context, UE4::FFrame& Stack, void* r
 	ChangeAriseGameScene(Context, Stack, result);
 }
 
-
 // Only Called Once, if you need to hook shit, declare some global non changing values
 void MultiplayerMod::InitializeMod()
 {
@@ -611,6 +610,7 @@ void MultiplayerMod::InitializeMod()
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.IsAutoOperation")->GetFunction()),
 		&IsAutoOperationHook, &IsAutoOperation, "IsAutoOperation");
+
 
 	//
 	// BUGGY?
@@ -828,6 +828,15 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		Log::Info("Set process %d to %p / %p", args.Index, args.Process, InputProcesses[args.Index]);
 	}
 
+	static auto Btl_Camera__SetFocusUnitCamera = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCamera.BP_BtlCamera_C.SetFocusUnitCamera");
+	if (currentFn == Btl_Camera__SetFocusUnitCamera) {
+		Log::Info("hmm?");
+		if (CameraFrozen) {
+			Log::Info("Ignore camera");
+			return false;
+		}
+	}
+
 
 	if (Stack.Object == ModActor) {
 		// Make sure that our own functions get the real values
@@ -878,6 +887,8 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		else if (currentFn == ModActor__Native_OnSubStateStart) {
 			SDK::EBattleState state = *Stack.GetParams<SDK::EBattleState>();
 			if (state == SDK::EBattleState::StateMenu) {
+				CameraFrozen = true;
+
 				for (int i = 0; i < 4; i++) {
 					if (OldStates[i].IsMenu) {
 						Log::Info("Change first player: %d", i);
@@ -887,7 +898,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 						}
 						break;
 					}
-				}
+				}	
 			}
 		}
 		else if (currentFn == ModActor__Native_OnSubStateEnd) {
@@ -895,9 +906,12 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 			if (state == SDK::EBattleState::StateMenu) {
 				InputManager::GetInstance()->SetFirstPlayer(0);
 				ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
+
+				CameraFrozen = false;
 			}
 		}
 		else if (currentFn == ModActor__Native_OnBeginChangeTarget) {
+			CameraFrozen = true;
 			for (int i = 0; i < 4; i++) {
 				if (OldStates[i].IsTarget) {
 					Log::Info("Change first player: %d", i);
@@ -913,6 +927,8 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		else if (currentFn == ModActor__Native_OnEndChangeTarget) {
 			InputManager::GetInstance()->SetFirstPlayer(0);
 			ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
+
+			CameraFrozen = false;
 			//InputManager::GetInstance()->SetRerouteControllers(false);
 		}
 		else if (currentFn == ModActor__Native_SetNearClippingPlane) {
@@ -927,16 +943,20 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 
 	static auto TestWidget__LogInfo = UE4::UObject::FindObject<UE4::UFunction>("Function TestWidget.TestWidget_C.LogInfo");
+	static auto TestWidget__Native_Win = UE4::UObject::FindObject<UE4::UFunction>("Function TestWidget.TestWidget_C.Native_Win");
 
 	if (currentFn == TestWidget__LogInfo) {
 		struct param {
-			UE4::FString Prefix;
-			UE4::FString Param;
+			UE4::FString A;
+			UE4::FString B;
 		};
 
 		param* parms = Stack.GetParams<param>();
 
-		Log::Info("[Player] %s%s", parms->Prefix.IsValid() ? parms->Prefix.ToString().c_str() : "", parms->Param.IsValid() ? parms->Param.ToString().c_str() : "");
+		//Log::Info("[Player] %s%s", parms->A.IsValid() ? parms->A.ToString().c_str() : "", parms->B.IsValid() ? parms->B.ToString().c_str() : "");
+	}
+	else if (currentFn == TestWidget__Native_Win) {
+		((SDK::UBtlFunctionLibrary*)ModActor)->STATIC_GetBattleManager((SDK::AActor*)ModActor)->MetaScript->SetBattleWin(0.0f);
 	}
 
 	//static auto BP_BtlCharacterBase__UseStrikeResource = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.UseStrikeResource");

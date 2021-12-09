@@ -125,8 +125,9 @@ namespace Hooks
 											}
 										}
 										bIsProcessInternalsHooked = true;
-										if (GameProfile::SelectedGameProfile.ProcessInternals)
-											MinHook::Add(GameProfile::SelectedGameProfile.ProcessInternals, &HookedFunctions::hookProcessFunction, &HookedFunctions::origProcessFunction, "ProcessBlueprintFunctions");
+										if (GameProfile::SelectedGameProfile.ProcessInternals) {
+											//MinHook::Add(GameProfile::SelectedGameProfile.ProcessInternals, &HookedFunctions::hookProcessFunction, &HookedFunctions::origProcessFunction, "ProcessBlueprintFunctions");
+										}
 										else
 											Log::Warn("ProcessBlueprintFunctions could not be located! Mod Loader Functionality Will be Limited!");
 									}

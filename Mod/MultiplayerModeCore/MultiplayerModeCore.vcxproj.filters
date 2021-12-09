@@ -40,6 +40,15 @@
     <ClCompile Include="Tracer.cpp">
       <Filter>Mod</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Arise_functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Engine_functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\CoreUObject_functions2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp">
