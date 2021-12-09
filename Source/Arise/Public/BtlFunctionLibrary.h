@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BattleUIManager.h"
 #include "BtlCharacterBase.h"
+#include "BtlDebugCommand.h"
 #include "BtlEventDispatcher.h"
 #include "BtlManager.h"
 #include "BtlStateManager.h"
@@ -384,7 +385,10 @@ class ARISE_API UBtlFunctionLibrary : public UBlueprintFunctionLibrary
 	UFUNCTION(BlueprintCallable)
 	static float GetDifferenceYaw(AActor* From, AActor* To);
 	// UBtlTargetCursorComponent* GetDefaultTargetCursorComponent(ABtlCharacterBase* Target);
-	// ABtlDebugCommand* GetDebugCommand(UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintCallable)
+	static ABtlDebugCommand* GetDebugCommand(UObject* WorldContextObject);
+	
 	// ETacticsIndex GetCurrentTactics();
 	// UBtlStateMain* GetCurrentStateMain();
 	// ABtlCollisionManager* GetCollisionManager(UObject* WorldContextObject);

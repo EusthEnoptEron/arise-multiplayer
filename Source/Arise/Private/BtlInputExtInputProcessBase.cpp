@@ -39,3 +39,8 @@ void ABtlInputExtInputProcessBase::OnChangeAriseGameState(EAriseGameState Change
 void ABtlInputExtInputProcessBase::RegisterInputEvent(const FName& InButtonName, EBtlInputEventType Type, const FButtonCallback& Event) {
 
 }
+
+ABtlInputExtInputProcessBase* ABtlInputExtInputProcessBase::K2_GetBattleInputProcess(UObject* WorldContextObject)
+{
+	return nullptr;
+}

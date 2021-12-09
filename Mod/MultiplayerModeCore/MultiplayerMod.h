@@ -3,10 +3,14 @@
 #include "Mod/Mod.h"
 #include "steam/isteaminput.h"
 #include "InputManager.h";
-#include "SDK.h";
-#include "SDK/BP_BtlCamera_classes.h";
+#include "../SDK.h";
+#include "../SDK/BP_BtlCamera_classes.h";
+#include "../SDK/STR_BtlHudVisible_structs.h";
+#include "../SDK/TO14_StateEnum_MNU_SAV_structs.h";
+#include "../SDK/TO14_ProcessEnum_MNU_SAV_structs.h";
+#include "../SDK/TO14_ModeEnum_MNU_SAV_structs.h";
+#include "../SDK/TO14_BPI_GUI_MNU_SAV_classes.h";
 #include "FileWatch.hpp"
-
 
 typedef void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void *result);
 struct FScriptName {
@@ -20,6 +24,13 @@ struct FScriptName {
 	std::string GetName() {
 		return UE4::FName(ComparisonIndex).GetName();
 	}
+};
+
+struct FOutParmRec
+{
+	UE4::UField* Property;
+	uint8_t* PropAddr;
+	FOutParmRec* NextOutParm;
 };
 
 struct ApplyConfigParams {
@@ -79,8 +90,15 @@ struct ModTickParams {
 
 struct GetControlledCharacterParms {
 	int Index;
-	UE4::AActor* Result;
+	UE4::APawn* Result;
 };
+
+struct GetControllerParms {
+	int Index;
+	UE4::APlayerController* Result;
+};
+
+const int MAX_CONTROLLERS = 10;
 
 
 namespace Actions {
@@ -106,6 +124,9 @@ namespace Actions {
 }
 
 typedef void(*FEngineLoop__Tick_Fn)(void* thisptr);
+typedef void(*APlayerController__PrePostProcessInputFn)(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused);
+typedef void(*APlayerController__PlayerTick)(UE4::APlayerController* thisptr, float DeltaTime);
+
 
 class MultiplayerMod : public Mod
 {
@@ -115,9 +136,9 @@ public:
 	MultiplayerMod()
 	{
 		ModName = "MultiplayerMod"; // Mod Name -- If Using BP ModActor, Should Be The Same Name As Your Pak
-		ModVersion = "0.9.0"; // Mod Version
+		ModVersion = "1.0.0-SNAPSHOT"; // Mod Version
 		ModDescription = "Adds local multiplayer to Tales of Arise."; // Mod Description
-		ModAuthors = "Eusthron"; // Mod Author
+		ModAuthors = "EusthEnoptEron"; // Mod Author
 		ModLoaderVersion = "2.0.2";
 
 		// Dont Touch The Internal Stuff
@@ -159,17 +180,33 @@ public:
 	void BP_OnCameraAngle(UE4::FVector2D angle);
 
 
+	bool OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret);
+	void OnAfterVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret);
+
 	static FNativeFuncPtr *GNatives;
 
 	GamepadState OldStates[4] = { 0 };
 	GamepadState NewStates[4] = { 0 };
 	GamepadState JustPressed[4] = { 0 };
 	GamepadState JustReleased[4] = { 0 };
+
+	// Array of MultiPlayerControllers
+	UE4::APlayerController* Controllers[MAX_CONTROLLERS] = { nullptr };
+	UE4::AActor* InputProcesses[MAX_CONTROLLERS] = { nullptr };
+
 	UE4::AActor* ModActor;
 
-	UE4::AActor* GetControlledCharacter(int index);
-	int CurrentPlayer = 0;
+	UE4::APawn* GetControlledCharacter(int index);
+	UE4::APlayerController* GetController(int index);
+	UE4::APlayerController* GetControllerOfCharacter(UE4::APawn *pawn);
+	int GetPlayerIndex(UE4::APlayerController* playerController);
 
+	UE4::APlayerController* GetControllerFromInputProcessor(UE4::AActor *inputProcess);
+	int GetPlayerIndexFromInputProcessor(UE4::AActor* inputProcess);
+
+	int CurrentPlayer = 0;
+	bool IsSettingUpStrikeAttack = false;
+	bool CameraFrozen = false;
 private:
 
 	UE4::UFunction* OnActionFn;
@@ -182,6 +219,8 @@ private:
 	UE4::UFunction* OnChangeFirstPlayerTemporarilyFn;
 	UE4::UFunction* OnRestoreFirstPlayerFn;
 	UE4::UFunction* GetControlledCharacterFn;
+
+	std::vector<int> PlayerStack;
 
 
 	void RefreshIni();

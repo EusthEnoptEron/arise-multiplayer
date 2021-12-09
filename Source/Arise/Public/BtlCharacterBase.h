@@ -6,7 +6,9 @@
 #include "GameFramework/Character.h"
 #include "Enums.h"
 #include "BtlActionProcessor.h"
+#include "BtlStatusComponent.h"
 #include "BtlStatusViewModelBase.h"
+#include "BtlUnitScriptComponent.h"
 #include "Btl_AIControllerBase.h"
 #include "Btl_Camera.h"
 #include "BtlCharacterBase.generated.h"
@@ -68,7 +70,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DestroyBtlAIController();
 
+	UFUNCTION(BlueprintCallable)
+	bool SetOverLimit(bool Enable);
+	
+	UFUNCTION(BlueprintCallable)
+	UBtlUnitScriptComponent* GetUnitScriptComponent();
+	
+	UFUNCTION(BlueprintCallable)
+	UBtlStatusComponent* GetStatus();
 
+
+	UFUNCTION(BlueprintCallable)
+	bool IsDead();
+	
 	UPROPERTY(BlueprintReadWrite)
 	/*UBtlStatusViewModelBase*/UBtlStatusViewModelBase* ViewModel;
 	/*

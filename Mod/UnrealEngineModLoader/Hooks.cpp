@@ -125,8 +125,9 @@ namespace Hooks
 											}
 										}
 										bIsProcessInternalsHooked = true;
-										if (GameProfile::SelectedGameProfile.ProcessInternals)
-											MinHook::Add(GameProfile::SelectedGameProfile.ProcessInternals, &HookedFunctions::hookProcessFunction, &HookedFunctions::origProcessFunction, "ProcessBlueprintFunctions");
+										if (GameProfile::SelectedGameProfile.ProcessInternals) {
+											//MinHook::Add(GameProfile::SelectedGameProfile.ProcessInternals, &HookedFunctions::hookProcessFunction, &HookedFunctions::origProcessFunction, "ProcessBlueprintFunctions");
+										}
 										else
 											Log::Warn("ProcessBlueprintFunctions could not be located! Mod Loader Functionality Will be Limited!");
 									}
@@ -230,11 +231,14 @@ namespace Hooks
 		Log::Info("ScanLoadedPaks Setup");
 		MinHook::Add(GameProfile::SelectedGameProfile.GameStateInit, &HookedFunctions::hookInitGameState, &HookedFunctions::origInitGameState, "AGameModeBase::InitGameState");
 		MinHook::Add(GameProfile::SelectedGameProfile.BeginPlay, &HookedFunctions::hookBeginPlay, &HookedFunctions::origBeginPlay, "AActor::BeginPlay");
-		//LoaderUI::GetUI()->CreateUILogicThread();
-		//if (!GameProfile::SelectedGameProfile.bDelayGUISpawn)
-		//{
-		//	LoaderUI::HookDX();
-		//}
+
+#if ENABLE_TRACING
+		LoaderUI::GetUI()->CreateUILogicThread();
+		if (!GameProfile::SelectedGameProfile.bDelayGUISpawn)
+		{
+			LoaderUI::HookDX();
+		}
+#endif
 		return NULL;
 	}
 

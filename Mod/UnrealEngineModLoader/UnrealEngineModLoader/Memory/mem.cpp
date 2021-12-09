@@ -2,15 +2,16 @@
 #include <tchar.h>
 #include <process.h>
 
+
 bool Read(void* address, void* buffer, unsigned long long size)
 {
-	auto hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, _getpid());
+	static auto hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, _getpid());
 	return ReadProcessMemory(hProcess, address, buffer, size, nullptr);
 }
 
 bool Write(void* address, void* buffer, unsigned long long size)
 {
-	auto hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, _getpid());
+	static auto hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, _getpid());
 	return WriteProcessMemory(hProcess, address, buffer, size, nullptr);
 }
 

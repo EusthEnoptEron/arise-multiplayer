@@ -498,6 +498,11 @@ float UBtlFunctionLibrary::GetDifferenceYaw(AActor* From, AActor* To)
 	return 0;
 }
 
+ABtlDebugCommand* UBtlFunctionLibrary::GetDebugCommand(UObject* WorldContextObject)
+{
+	return nullptr;
+}
+
 FVector UBtlFunctionLibrary::GetClosestIn4Directions(ABtlCharacterBase* Unit, const FVector& Check)
 {
 	return {};

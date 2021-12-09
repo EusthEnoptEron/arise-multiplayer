@@ -71,7 +71,7 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 		// Ignore first one (or its override). Is passed on to game.
 		if (!(index == 0 || index == FirstPlayerIndex || !_rerouteControllers))
 		{
-			Input->ActivateActionSet(handle, AS_Battle);
+			//Input->ActivateActionSet(handle, AS_Battle);
 			// Make sure battoru is active
 
 		}
@@ -139,6 +139,7 @@ int InputManager::GetConnectedControllersHook(ISteamInput* self, STEAM_OUT_ARRAY
 {
 	InputManager* instance = InputManager::GetInstance();
 	if (!instance->_rerouteControllers) {
+		// Return everything as is
 		return GetConnectedControllers(self, handlesOut);
 	}
 
@@ -147,7 +148,9 @@ int InputManager::GetConnectedControllersHook(ISteamInput* self, STEAM_OUT_ARRAY
 
 	if (instance->Controllers.size() > 0) {
 		// Return the first controller if found
-		InputHandle_t firstHandle = instance->Controllers[instance->FirstPlayerIndex];
+		InputHandle_t firstHandle = instance->Controllers[instance->ActiveIndex == 0
+			? instance->FirstPlayerIndex
+		    : instance->ActiveIndex];
 
 		for (int i = 0; i < instance->InputHandleCount; i++) {
 			if (instance->InputHandles[i] == firstHandle) {
@@ -161,5 +164,6 @@ int InputManager::GetConnectedControllersHook(ISteamInput* self, STEAM_OUT_ARRAY
 }
 
 void InputManager::SetFirstPlayer(int index) {
+	Log::Info("Set first player: %d", index);
 	FirstPlayerIndex = index;
 }

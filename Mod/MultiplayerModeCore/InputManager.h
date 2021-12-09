@@ -62,6 +62,7 @@ public:
 		return FirstPlayerIndex;
 	}
 	void SetRerouteControllers(bool reroute) {
+		Log::Info("Set rerouting: %d", reroute);
 		_rerouteControllers = reroute;
 	}
 	bool IsRerouteControllers() {
@@ -70,6 +71,10 @@ public:
 
 	void SetPreventBattleInput(bool val) {
 		_preventBattleInput = val;
+	}
+
+	void SetIndex(int index) {
+		ActiveIndex = index;
 	}
 
 	static ISteamInput *GetInput() {
@@ -112,6 +117,7 @@ private:
 	int InputHandleCount;
 	std::vector<InputHandle_t> Controllers;
 	int FirstPlayerIndex;
+	int ActiveIndex;
 
 	unsigned long UpdateCounter = 0;
 
