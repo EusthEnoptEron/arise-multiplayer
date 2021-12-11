@@ -58,5 +58,13 @@ The other characters are assigned like so:
 
 ## Customizing the Camera
 
-The camera is still very much a work in progress. You can however tweak it to your liking by editing
-the `MultiplayerMod.ini` file that comes with the mod. Updates will be applied immediately.
+The camera is still a work in progress. You can however tweak it to your liking by editing
+a `MultiplayerMod.ini` file that you place at `...\steamapps\common\Tales of Arise\Arise\Binaries\Win64\MultiplayerMod.ini`. The folder already contains an example file -- simply rename it and delete the `.example` part.
+
+**Hot-reloads when changes are made.**
+ 
+## P2: "I want to walk around with *my* character outside of battles!"
+
+If you're taking turns with who plays the base game, and you want to use your own character, set `AutoChangeCharas` to `1` in the config (see [Customizing the Camera](#customizing-the-camera)).
+
+Now when you press "Reset Camera 2" (default is left bumper), you will immediately switch to the character you would control in battle.
