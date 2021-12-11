@@ -32,7 +32,8 @@ struct GamepadState {
 	bool IsSwap;
 	bool IsAttack;
 	bool IsGuard;
-
+	bool IsChangeChara;
+	
 	InputAnalogActionData_t Move;
 	InputAnalogActionData_t CameraAngle;
 };
@@ -80,6 +81,8 @@ public:
 	static ISteamInput *GetInput() {
 		return GetInstance()->Input;
 	}
+
+	bool IsMenuPressed(int index);
 private:
 	InputManager() {
 		Input = SteamInput();
@@ -106,6 +109,7 @@ private:
 		AD_BaseSwap = Input->GetDigitalActionHandle("BATTLE_BASE_SWAP");
 		AD_BaseAttack = Input->GetDigitalActionHandle("BATTLE_BASE_ATTACK");
 		AD_BaseGuard = Input->GetDigitalActionHandle("BATTLE_BASE_GUARD");
+		AD_MapCameraReset = Input->GetDigitalActionHandle("MAP_CAMERA_RESET_SUB");
 
 		AA_Move = Input->GetAnalogActionHandle("BATTLE_MOVE");
 		AA_CameraAngle = Input->GetAnalogActionHandle("BATTLE_CAMERA_ANGLE");
@@ -128,6 +132,7 @@ private:
 	static void ActivateActionSetHook(ISteamInput* self, InputHandle_t inputHandle, InputActionSetHandle_t actionSetHandle);
 
 	int GetIndexForController(InputHandle_t handle);
+	InputHandle_t GetControllerForIndex(int index);
 
 	InputActionSetHandle_t AS_Battle;
 	InputDigitalActionHandle_t AD_CameraReset;
@@ -145,6 +150,8 @@ private:
 	InputDigitalActionHandle_t AD_BaseSwap;
 	InputDigitalActionHandle_t AD_BaseAttack;
 	InputDigitalActionHandle_t AD_BaseGuard;
+
+	InputDigitalActionHandle_t AD_MapCameraReset;
 
 	InputAnalogActionHandle_t AA_Move;
 	InputAnalogActionHandle_t AA_CameraAngle;

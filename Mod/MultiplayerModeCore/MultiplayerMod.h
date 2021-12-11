@@ -1,5 +1,6 @@
 #pragma once
 #include "iostream"
+#include <string>
 #include "Mod/Mod.h"
 #include "steam/isteaminput.h"
 #include "InputManager.h";
@@ -9,7 +10,7 @@
 #include "../SDK/TO14_StateEnum_MNU_SAV_structs.h";
 #include "../SDK/TO14_ProcessEnum_MNU_SAV_structs.h";
 #include "../SDK/TO14_ModeEnum_MNU_SAV_structs.h";
-#include "../SDK/TO14_BPI_GUI_MNU_SAV_classes.h";
+#include "../SDK/TO14_BPI_GUI_MNU_SAV_classes.h"
 #include "FileWatch.hpp"
 
 typedef void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void *result);
@@ -58,6 +59,9 @@ struct ApplyConfigParams {
 	float FieldOfView;
 	float TargetSpeed;
 	float TargetRadius;
+
+	float MinPitch;
+	float MaxPitch;
 
 	bool DebugMenu;
 };
@@ -127,6 +131,8 @@ typedef void(*FEngineLoop__Tick_Fn)(void* thisptr);
 typedef void(*APlayerController__PrePostProcessInputFn)(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused);
 typedef void(*APlayerController__PlayerTick)(UE4::APlayerController* thisptr, float DeltaTime);
 
+const std::string INI_FILE_LOCATION = "./MultiplayerMod.ini";
+const std::wstring INI_FILE_LOCATION_W = L"./MultiplayerMod.ini";
 
 class MultiplayerMod : public Mod
 {
@@ -207,6 +213,8 @@ public:
 	int CurrentPlayer = 0;
 	bool IsSettingUpStrikeAttack = false;
 	bool CameraFrozen = false;
+
+	void OnBeforePause();
 private:
 
 	UE4::UFunction* OnActionFn;
@@ -219,14 +227,19 @@ private:
 	UE4::UFunction* OnChangeFirstPlayerTemporarilyFn;
 	UE4::UFunction* OnRestoreFirstPlayerFn;
 	UE4::UFunction* GetControlledCharacterFn;
+	UE4::UFunction* OnBeforePauseFn;
+
 
 	std::vector<int> PlayerStack;
 
+
+	void ChangePartyTop(int index);
 
 	void RefreshIni();
 
 	int MenuCandidate = 0;
 	bool LogEverything = false;
+	bool AutoChangeCharas = false;
 
 	time_t LastCheck;
 	InputManager* Manager;

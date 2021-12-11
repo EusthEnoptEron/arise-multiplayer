@@ -32,6 +32,12 @@ int InputManager::GetIndexForController(InputHandle_t handle) {
 	return Controllers.size() - 1;
 }
 
+InputHandle_t InputManager::GetControllerForIndex(int index) {
+	if (Controllers.size() <= index) return 0;
+
+	return Controllers[index];
+}
+
 void InputManager::RemoveObsoleteControllers() {
 	for (int i = 0; i < Controllers.size(); i++) {
 		if (Controllers[i] != 0) {
@@ -77,6 +83,7 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 		}
 
 		GamepadState state = { 0 };
+
 		state.Handle = handle;
 		state.IsConnected = true;
 		state.LastUpdated = UpdateCounter;
@@ -98,6 +105,9 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 
 		state.Move = Input->GetAnalogActionData(handle, AA_Move);
 		state.CameraAngle = Input->GetAnalogActionData(handle, AA_CameraAngle);
+
+		state.IsChangeChara = Input->GetDigitalActionData(handle, AD_MapCameraReset).bState;
+
 		//
 		if (index < 4) {
 			gamepads[index] = state;
@@ -113,6 +123,13 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 	}
 	
 	//SteamAPI_ReleaseCurrentThreadMemory();
+}
+
+bool InputManager::IsMenuPressed(int index) {
+	auto handle = GetControllerForIndex(index);
+	if (handle == 0) return false;
+
+	return Input->GetDigitalActionData(handle, AD_Menu).bState;
 }
 
 void InputManager::ActivateActionSetHook(ISteamInput* self, InputHandle_t inputHandle, InputActionSetHandle_t actionSetHandle) {
