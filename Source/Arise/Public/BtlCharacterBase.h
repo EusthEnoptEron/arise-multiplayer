@@ -13,6 +13,7 @@
 #include "Btl_Camera.h"
 #include "BtlCharacterBase.generated.h"
 
+class UBtlTargetCursorComponent;
 UCLASS()
 class ARISE_API ABtlCharacterBase : public ACharacter
 {
@@ -22,6 +23,8 @@ public:
 	// Sets default values for this character's properties
 	ABtlCharacterBase();
 
+	UPROPERTY(BlueprintReadWrite)
+	UBtlTargetCursorComponent *TargetComponent;
 
 protected:
 	// Called when the game starts or when spawned
