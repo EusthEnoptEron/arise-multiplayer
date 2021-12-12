@@ -1,10 +1,14 @@
 #include "Tracer.h"
 #include "Utilities/MinHook.h"
 
+#define MAX_uint16		((uint16)	0xffff)
+
 Tracer* Tracer::_Instance;
 FNativeFuncPtr* Tracer::_GNatives;
 
 FNativeFuncPtr EX_VirtualFunction;
+
+
 void EX_VirtualFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
 	auto tracer = Tracer::GetInstance();
 
@@ -20,12 +24,25 @@ void EX_VirtualFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* res
 	Result = *(FScriptName*)Stack.Code;
 
 	auto fnName = Context->GetName() + "::" + Result.GetName();
+	auto fn = tracer->GetFunction((SDK::UObject *)Context, Result.GetName());
+
 	tracer->OnEnter(fnName);
 	auto begin = std::chrono::high_resolution_clock::now();
 	EX_VirtualFunction(Context, Stack, result);
 	auto end = std::chrono::high_resolution_clock::now();
 
-	tracer->OnExit(fnName, std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+	std::string suffix = "";
+	if (fn != nullptr && fn->ReturnValueOffset != MAX_uint16) {
+		for (UPropertyEx* Property = (UPropertyEx*)fn->Children;  Property && (Property->PropertyFlags & (CPF_Parm)) == CPF_Parm; Property = (UPropertyEx*)Property->Next) {
+			if ((Property->PropertyFlags & (CPF_ReturnParm)) == CPF_ReturnParm) {
+
+				suffix = " => " + tracer->ToString((SDK::UProperty*)Property, result);
+			}
+		}
+	}
+
+
+	tracer->OnExit(fnName, suffix, std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
 }
 
 FNativeFuncPtr EX_FinalFunction;
@@ -42,15 +59,26 @@ void EX_FinalFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* resul
 
 	uint64_t TempCode;
 	TempCode = *(uint64_t*)Stack.Code;
-	auto fn = (UE4::UFunction *)TempCode;
+	auto fn = (SDK::UFunction *)TempCode;
 
 	auto fnName = Context->GetName() + "::" + fn->GetName();
+
 	tracer->OnEnter(fnName);
 	auto begin = std::chrono::high_resolution_clock::now();
 	EX_FinalFunction(Context, Stack, result);
 	auto end = std::chrono::high_resolution_clock::now();
 
-	tracer->OnExit(fnName, std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+	std::string suffix = "";
+	if (fn != nullptr && fn->ReturnValueOffset != MAX_uint16) {
+		for (UPropertyEx* Property = (UPropertyEx*)fn->Children; Property && (Property->PropertyFlags & (CPF_Parm)) == CPF_Parm; Property = (UPropertyEx*)Property->Next) {
+			if ((Property->PropertyFlags & (CPF_ReturnParm)) == CPF_ReturnParm) {
+				suffix = " => " + tracer->ToString((SDK::UProperty*)Property, result);
+			}
+		}
+	}
+
+
+	tracer->OnExit(fnName, "", std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
 }
 
 
@@ -69,7 +97,7 @@ void Tracer::OnEnter(std::string functionName) {
 	_instructionStack.push(_instructionCounter);
 }
 
-void Tracer::OnExit(std::string functionName, long durationNano) {
+void Tracer::OnExit(std::string functionName, std::string suffix, long durationNano) {
 	uint64_t counter = _instructionStack.top();
 	_instructionStack.pop();
 
@@ -79,6 +107,7 @@ void Tracer::OnExit(std::string functionName, long durationNano) {
 		_file << "End " << functionName << " (";
 		_file << (durationNano * 1.0E-6);
 		_file << "ms)";
+		_file << suffix;
 		_file << "\n";
 	}
 	else {
@@ -87,6 +116,7 @@ void Tracer::OnExit(std::string functionName, long durationNano) {
 		_file << " (";
 		_file << (durationNano * 1.0E-6);
 		_file << "ms)";
+		_file << suffix;
 		_file << "\n";
 	}
 
@@ -122,7 +152,7 @@ void Tracer::OnEndTick() {
 
 	auto end = std::chrono::high_resolution_clock::now();
 
-	OnExit("Tick", std::chrono::duration_cast<std::chrono::nanoseconds>(end - _tickStartTime).count());
+	OnExit("Tick", "", std::chrono::duration_cast<std::chrono::nanoseconds>(end - _tickStartTime).count());
 }
 
 void Tracer::OnEvent(std::string evt) {
@@ -173,4 +203,69 @@ void Tracer::Hook()
 	//		}
 	//	}
 	//}
+}
+
+
+std::string Tracer::ToString(SDK::UProperty* prop, void *result) {
+	//Log::Info("=> %s", Property->Class->GetName());
+	if (prop->IsA(SDK::UBoolProperty::StaticClass())) {
+		return (*(bool*)result) ? "true" : "false";
+	}
+	else if(prop->IsA(SDK::UFloatProperty::StaticClass())) {
+		return std::to_string((*(float*)result));
+	}
+	else if (prop->IsA(SDK::UIntProperty::StaticClass())) {
+		return std::to_string((*(int32*)result));
+	}
+	else if (prop->IsA(SDK::UByteProperty::StaticClass())) {
+		return std::to_string((*(uint8*)result));
+	}
+	else if (prop->IsA(SDK::UStructProperty::StaticClass())) {
+		return prop->Class->GetName();
+	}
+	else if (prop->IsA(SDK::UObjectProperty::StaticClass())) {
+		return (*(SDK::UObject**)result)->GetName();
+	}
+	else if (prop->IsA(SDK::UStrProperty::StaticClass())) {
+		return ((SDK::FString*)result)->ToString();
+	}
+	else {
+		return prop->Class->GetName();
+	}
+	//fnName = fnName + " => ???";
+	//break;
+}
+
+SDK::UFunction* Tracer::GetFunction(SDK::UObject* owner, std::string name)
+{
+	std::string fullName = owner->GetName() + "::" + name;
+
+	auto result = _fnTable.find(fullName);
+	if (result != _fnTable.end()) {
+		return result->second;
+	}
+
+	auto chunkArray = UE4::UObject::GObjects->GetAsChunckArray();
+	for (int i = 0; i < chunkArray.Num(); ++i)
+	{
+		auto object = (SDK::UObject*)chunkArray.GetByIndex(i).Object;
+
+		if (object == nullptr)
+		{
+			continue;
+		}
+
+		if (object->Outer == owner->Class)
+		{
+			if (object->GetName() == name)
+			{
+				_fnTable[fullName] = (SDK::UFunction*)object;
+				return (SDK::UFunction*)object;
+			}
+		}
+
+	}
+
+	_fnTable[fullName] = nullptr;
+	return nullptr;
 }

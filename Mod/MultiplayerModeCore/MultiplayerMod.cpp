@@ -1190,7 +1190,7 @@ void MultiplayerMod::RefreshIni() {
 	parms.RotateSpeedY = std::stof(config.get("RotateSpeedY", "40"));
 	parms.FieldOfView = std::stof(config.get("FieldOfView", "60"));
 	parms.TargetSpeed = std::stof(config.get("TargetSpeed", "0.75"));
-	parms.TargetRadius = std::stof(config.get("TargetRadius", "5000"));
+	parms.TargetRadius = std::stof(config.get("TargetRadius", "50000"));
 	parms.MinPitch = std::stof(config.get("MinPitch", "-75"));
 	parms.MaxPitch = std::stof(config.get("MaxPitch", "-1"));
 
