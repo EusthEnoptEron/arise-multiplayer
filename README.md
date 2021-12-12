@@ -22,7 +22,6 @@ UnrealEngineModLauncher.exe before starting the game.
 
 ## Known Issues
 
-- Might cause issues in some of the later dungeons / bosses
 - Strike Attacks always use the P1 target
 
 For a complete list, see [issues](https://github.com/EusthEnoptEron/arise-multiplayer/issues)
