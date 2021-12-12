@@ -438,15 +438,50 @@ void SetActiveCameraHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
 
 	SetActiveCamera(Context, Stack, ret);
 }
-//
-//FNativeFuncPtr K2_ExecuteProcess;
-//void K2_ExecuteProcessHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
-//	Log::Info("Start: %s", Stack.Node->GetName().c_str());
-//
-//	K2_ExecuteProcess(Context, Stack, ret);
-//	Log::Info("End");
-//
-//};
+
+FNativeFuncPtr IsAutoStepable;
+void IsAutoStepableHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* ret) {
+	IsAutoStepable(Context, Stack, ret);
+
+	if (*ret) {
+		auto semiautoComponent = (SDK::UBtlSemiautoComponent*)Context;
+		auto ownerActor = semiautoComponent->GetOwner();
+		auto mod = ((MultiplayerMod*)Mod::ModRef);
+
+		if (mod->IsControlledCharacter((UE4::AActor *)ownerActor, true)) {
+			auto mainController = (SDK::APlayerController*)mod->Controllers[0];
+			if (mainController != nullptr) {
+				auto character = (SDK::ABtlCharacterBase*)((SDK::APlayerController*)mod->Controllers[0])->K2_GetPawn();
+				*ret = character->GetSemiautoComponent()->IsAutoStepable();
+				return;
+			}
+
+			*ret = false;
+		}
+	}
+}
+
+FNativeFuncPtr IsAutoGuardable;
+void IsAutoGuardableHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* ret) {
+	IsAutoGuardable(Context, Stack, ret);
+
+	if (*ret) {
+		auto semiautoComponent = (SDK::UBtlSemiautoComponent*)Context;
+		auto ownerActor = semiautoComponent->GetOwner();
+		auto mod = ((MultiplayerMod*)Mod::ModRef);
+
+		if (mod->IsControlledCharacter((UE4::AActor*)ownerActor, true)) {
+			auto mainController = (SDK::APlayerController*)mod->Controllers[0];
+			if (mainController != nullptr) {
+				auto character = (SDK::ABtlCharacterBase*)((SDK::APlayerController*)mod->Controllers[0])->K2_GetPawn();
+				*ret = character->GetSemiautoComponent()->IsAutoStepable();
+				return;
+			}
+
+			*ret = false;
+		}
+	}
+}
 
 FNativeFuncPtr ProcessInternal;
 void ProcessInternalHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
@@ -563,14 +598,20 @@ void MultiplayerMod::InitializeMod()
 	UseMenuButton = true; // Allows Mod Loader To Show Button
 
 	MinHook::Init();
+
+	// Feed our own axis input into the game
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBtlAxisValue")->GetFunction()),
 		&GetBtlAxisValueHook, &GetBtlAxisValue, "K2_GetBtlAxisValue");
 
+	// Get battle camera as soon as possible
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCameraLibrary.SetActiveCamera")->GetFunction()),
 		&SetActiveCameraHook, &SetActiveCamera, "SetActiveCamera");
 
+	// -------------------------------------------------------------------------
+	// Override static accessors to return P2-P4 player controllers if needed
+	// ------------------------------------------------------------------------
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlUnitLibrary.GetPlayerControlledUnit")->GetFunction()),
 		&GetPlayerControlledUnitHook, &GetPlayerControlledUnit, "GetPlayerControlledUnit");
@@ -591,6 +632,9 @@ void MultiplayerMod::InitializeMod()
 		(UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.K2_GetPlayerController")->GetFunction()),
 		&K2_GetPlayerControllerHook, &K2_GetPlayerController, "K2_GetPlayerController");
 
+	// ----------------------------------------------------------------------------------
+	// Hook into pause functions to react faster to camera changes (might be obsolete)
+	// ----------------------------------------------------------------------------------
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlManager.BattlePause")->GetFunction()),
 		&BattlePauseHook, &BattlePause, "BattlePause");
@@ -599,6 +643,9 @@ void MultiplayerMod::InitializeMod()
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlManager.BattleResume")->GetFunction()),
 		&BattleResumeHook, &BattleResume, "BattleResume");
 
+	// -------------------------------------------------------------------------------------------------
+	// Instead of using SetPlayerOperation, simply override the accessors (has less bad side-effects)
+	// -------------------------------------------------------------------------------------------------
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.GetPlayerOperation")->GetFunction()),
 		&GetPlayerOperationHook, &GetPlayerOperation, "GetPlayerOperation");
@@ -608,34 +655,21 @@ void MultiplayerMod::InitializeMod()
 		&IsAutoOperationHook, &IsAutoOperation, "IsAutoOperation");
 
 
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlSemiautoComponent.IsAutoStepable")->GetFunction()),
+		&IsAutoStepableHook, &IsAutoStepable, "IsAutoStepable");
+
+
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlSemiautoComponent.IsAutoGuardable")->GetFunction()),
+		&IsAutoGuardableHook, &IsAutoGuardable, "IsAutoGuardable");
+
+
 	//
-	// BUGGY?
-	/*MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.SetTemporaryTargetCharacter")->GetFunction()),
-		&ABtlCharacterBase__SetTemporaryTargetCharacterHook, &ABtlCharacterBase__SetTemporaryTargetCharacter, "SetTemporaryTargetCharacter");*/
-
 	auto tickFn = Pattern::Find("48 8B C4 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 78 FD FF FF");
-	MinHook::Add((DWORD64)tickFn, &FEngineLoop__Tick_Hook, &FEngineLoop__Tick_Orig, "FEngineLoop__Tick_Fn");
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.GetPlayerOperation")->GetFunction()),
-	//	&GetPlayerOperationHook, &GetPlayerOperation, "GetPlayerOperation");
-
-
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonJustPressed")->GetFunction()),
-	//	&K2_IsBtlButtonJustPressedHook, &K2_IsBtlButtonJustPressed, "K2_IsBtlButtonJustPressed");
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonJustReleased")->GetFunction()),
-	//	&K2_IsBtlButtonJustReleasedHook, &K2_IsBtlButtonJustReleased, "K2_IsBtlButtonJustReleased");
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonPressed")->GetFunction()),
-	//	&K2_IsBtlButtonPressedHook, &K2_IsBtlButtonPressed, "K2_IsBtlButtonPressed");
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonRepeated")->GetFunction()),
-	//	&K2_IsBtlButtonRepeatedHook, &K2_IsBtlButtonRepeated, "K2_IsBtlButtonRepeated");
-
 	void* ProcessInterals = UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.ReceiveBeginProcess")->GetFunction();
 
+	MinHook::Add((DWORD64)tickFn, &FEngineLoop__Tick_Hook, &FEngineLoop__Tick_Orig, "FEngineLoop__Tick_Fn");
 	MinHook::Add((DWORD_PTR)ProcessInterals,
 		&ProcessInternalHook, &ProcessInternal, "ProcessInternal");
 
@@ -1309,4 +1343,20 @@ void MultiplayerMod::ChangePartyTop(int index) {
 
 void MultiplayerMod::OnBeforePause() {
 	ModActor->ProcessEvent(OnBeforePauseFn, nullptr);
+}
+
+bool MultiplayerMod::IsControlledCharacter(UE4::AActor *actor, bool ignoreP1) {
+	if (!FastIsA(actor, (UE4::UClass*)SDK::ABtlCharacterBase::StaticClass()))
+		return false;
+
+	auto pawn = (SDK::APawn*)actor;
+	auto controller = (UE4::APlayerController *)pawn->Controller;
+
+	for (int i = 0; i < MAX_CONTROLLERS; i++) {
+		if (Controllers[i] == controller) {
+			return i != 0 || !ignoreP1;
+		}
+	}
+
+	return false;
 }

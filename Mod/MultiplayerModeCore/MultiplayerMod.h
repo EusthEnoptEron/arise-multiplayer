@@ -206,6 +206,7 @@ public:
 	UE4::APlayerController* GetController(int index);
 	UE4::APlayerController* GetControllerOfCharacter(UE4::APawn *pawn);
 	int GetPlayerIndex(UE4::APlayerController* playerController);
+	bool IsControlledCharacter(UE4::AActor* actor, bool ignoreP1);
 
 	UE4::APlayerController* GetControllerFromInputProcessor(UE4::AActor *inputProcess);
 	int GetPlayerIndexFromInputProcessor(UE4::AActor* inputProcess);
