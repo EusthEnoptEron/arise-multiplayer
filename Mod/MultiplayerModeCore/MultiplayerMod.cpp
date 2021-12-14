@@ -1,7 +1,6 @@
 #include "MultiplayerMod.h"
 #include <windows.h>
 #include <time.h>
-#include <string>
 #include <utility>
 #include "InputManager.h";
 #include "Utilities/MinHook.h"
@@ -21,7 +20,8 @@
 
 
 FNativeFuncPtr* MultiplayerMod::GNatives;
-
+float* MultiplayerMod::GNearClippingPlane;
+float MultiplayerMod::GNearOriginal;
 
 UE4::UClass* FastGetClass(UE4::UObject* obj) {
 	return (UE4::UClass*)((SDK::UObject*)(obj))->Class;
@@ -229,10 +229,7 @@ UE4::AActor* FindCharacter(const UE4::FFrame& Stack) {
 //Function Arise.BtlManager.BattlePause
 FNativeFuncPtr BattlePause;
 void BattlePauseHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
-	static auto onBeforePauseFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnBeforePause");
-	
-	((MultiplayerMod*)(Mod::ModRef))->ModActor->ProcessEvent(onBeforePauseFn, nullptr);
-
+	((MultiplayerMod*)(Mod::ModRef))->OnBeforePause();
 	BattlePause(Context, Stack, result);
 }
 
@@ -243,7 +240,7 @@ void BattleResumeHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
 
 	BattleResume(Context, Stack, result);
 
-	((MultiplayerMod*)(Mod::ModRef))->ModActor->ProcessEvent(onBeforePauseFn, nullptr);
+	((MultiplayerMod*)(Mod::ModRef))->OnBeforePause();
 }
 
 
@@ -442,15 +439,50 @@ void SetActiveCameraHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
 
 	SetActiveCamera(Context, Stack, ret);
 }
-//
-//FNativeFuncPtr K2_ExecuteProcess;
-//void K2_ExecuteProcessHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
-//	Log::Info("Start: %s", Stack.Node->GetName().c_str());
-//
-//	K2_ExecuteProcess(Context, Stack, ret);
-//	Log::Info("End");
-//
-//};
+
+FNativeFuncPtr IsAutoStepable;
+void IsAutoStepableHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* ret) {
+	IsAutoStepable(Context, Stack, ret);
+
+	if (*ret) {
+		auto semiautoComponent = (SDK::UBtlSemiautoComponent*)Context;
+		auto ownerActor = semiautoComponent->GetOwner();
+		auto mod = ((MultiplayerMod*)Mod::ModRef);
+
+		if (mod->IsControlledCharacter((UE4::AActor *)ownerActor, true)) {
+			auto mainController = (SDK::APlayerController*)mod->Controllers[0];
+			if (mainController != nullptr) {
+				auto character = (SDK::ABtlCharacterBase*)((SDK::APlayerController*)mod->Controllers[0])->K2_GetPawn();
+				*ret = character->GetSemiautoComponent()->IsAutoStepable();
+				return;
+			}
+
+			*ret = false;
+		}
+	}
+}
+
+FNativeFuncPtr IsAutoGuardable;
+void IsAutoGuardableHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* ret) {
+	IsAutoGuardable(Context, Stack, ret);
+
+	if (*ret) {
+		auto semiautoComponent = (SDK::UBtlSemiautoComponent*)Context;
+		auto ownerActor = semiautoComponent->GetOwner();
+		auto mod = ((MultiplayerMod*)Mod::ModRef);
+
+		if (mod->IsControlledCharacter((UE4::AActor*)ownerActor, true)) {
+			auto mainController = (SDK::APlayerController*)mod->Controllers[0];
+			if (mainController != nullptr) {
+				auto character = (SDK::ABtlCharacterBase*)((SDK::APlayerController*)mod->Controllers[0])->K2_GetPawn();
+				*ret = character->GetSemiautoComponent()->IsAutoStepable();
+				return;
+			}
+
+			*ret = false;
+		}
+	}
+}
 
 FNativeFuncPtr ProcessInternal;
 void ProcessInternalHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
@@ -558,8 +590,20 @@ void MultiplayerMod::InitializeMod()
 
 	SetupHooks();
 
-	auto offset = (DWORD64)GetModuleHandleW(0);
-	GNatives = (FNativeFuncPtr*)((DWORD64)(offset + 0x4BC4D80));
+	// 0x42784DC
+	auto nearClippingPlanePat = Pattern::Find("66 0F 6E C7 0F 5B C0 0F 2E 05 ?? ?? ?? ??");
+	auto nearClippingPlaneOff = *reinterpret_cast<uint32_t*>(nearClippingPlanePat + 10);
+	GNearClippingPlane = (float*)(nearClippingPlanePat + 14 + nearClippingPlaneOff);
+
+	GNearOriginal = *GNearClippingPlane;
+	Log::Info("Found near clipping plane at %p (%f)", GNearClippingPlane, *GNearClippingPlane);
+
+	// 0x4BD9F90
+	auto gnativePat = Pattern::Find("CC 80 3D ?? ?? ?? ?? 00 48 8D 15 ?? ?? ?? ?? 75 49 C6 05 ?? ?? ?? ?? 01 48 8D 05 ?? ?? ?? ??");
+	auto gnativeOff = *reinterpret_cast<uint32_t*>(gnativePat + 27);
+	GNatives = (FNativeFuncPtr*)(gnativePat + 31 + gnativeOff);
+	Log::Info("Found GNatives at %p", GNatives);
+
 	//Log::Info("GNatives: %p", GNatives[1]);
 
 	//Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonJustPressed
@@ -567,14 +611,20 @@ void MultiplayerMod::InitializeMod()
 	UseMenuButton = true; // Allows Mod Loader To Show Button
 
 	MinHook::Init();
+
+	// Feed our own axis input into the game
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBtlAxisValue")->GetFunction()),
 		&GetBtlAxisValueHook, &GetBtlAxisValue, "K2_GetBtlAxisValue");
 
+	// Get battle camera as soon as possible
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCameraLibrary.SetActiveCamera")->GetFunction()),
 		&SetActiveCameraHook, &SetActiveCamera, "SetActiveCamera");
 
+	// -------------------------------------------------------------------------
+	// Override static accessors to return P2-P4 player controllers if needed
+	// ------------------------------------------------------------------------
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlUnitLibrary.GetPlayerControlledUnit")->GetFunction()),
 		&GetPlayerControlledUnitHook, &GetPlayerControlledUnit, "GetPlayerControlledUnit");
@@ -595,6 +645,9 @@ void MultiplayerMod::InitializeMod()
 		(UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.K2_GetPlayerController")->GetFunction()),
 		&K2_GetPlayerControllerHook, &K2_GetPlayerController, "K2_GetPlayerController");
 
+	// ----------------------------------------------------------------------------------
+	// Hook into pause functions to react faster to camera changes (might be obsolete)
+	// ----------------------------------------------------------------------------------
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlManager.BattlePause")->GetFunction()),
 		&BattlePauseHook, &BattlePause, "BattlePause");
@@ -603,6 +656,9 @@ void MultiplayerMod::InitializeMod()
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlManager.BattleResume")->GetFunction()),
 		&BattleResumeHook, &BattleResume, "BattleResume");
 
+	// -------------------------------------------------------------------------------------------------
+	// Instead of using SetPlayerOperation, simply override the accessors (has less bad side-effects)
+	// -------------------------------------------------------------------------------------------------
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.GetPlayerOperation")->GetFunction()),
 		&GetPlayerOperationHook, &GetPlayerOperation, "GetPlayerOperation");
@@ -612,34 +668,21 @@ void MultiplayerMod::InitializeMod()
 		&IsAutoOperationHook, &IsAutoOperation, "IsAutoOperation");
 
 
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlSemiautoComponent.IsAutoStepable")->GetFunction()),
+		&IsAutoStepableHook, &IsAutoStepable, "IsAutoStepable");
+
+
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlSemiautoComponent.IsAutoGuardable")->GetFunction()),
+		&IsAutoGuardableHook, &IsAutoGuardable, "IsAutoGuardable");
+
+
 	//
-	// BUGGY?
-	/*MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.SetTemporaryTargetCharacter")->GetFunction()),
-		&ABtlCharacterBase__SetTemporaryTargetCharacterHook, &ABtlCharacterBase__SetTemporaryTargetCharacter, "SetTemporaryTargetCharacter");*/
-
 	auto tickFn = Pattern::Find("48 8B C4 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 78 FD FF FF");
-	MinHook::Add((DWORD64)tickFn, &FEngineLoop__Tick_Hook, &FEngineLoop__Tick_Orig, "FEngineLoop__Tick_Fn");
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.GetPlayerOperation")->GetFunction()),
-	//	&GetPlayerOperationHook, &GetPlayerOperation, "GetPlayerOperation");
-
-
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonJustPressed")->GetFunction()),
-	//	&K2_IsBtlButtonJustPressedHook, &K2_IsBtlButtonJustPressed, "K2_IsBtlButtonJustPressed");
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonJustReleased")->GetFunction()),
-	//	&K2_IsBtlButtonJustReleasedHook, &K2_IsBtlButtonJustReleased, "K2_IsBtlButtonJustReleased");
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonPressed")->GetFunction()),
-	//	&K2_IsBtlButtonPressedHook, &K2_IsBtlButtonPressed, "K2_IsBtlButtonPressed");
-	//MinHook::Add((DWORD_PTR)
-	//	(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonRepeated")->GetFunction()),
-	//	&K2_IsBtlButtonRepeatedHook, &K2_IsBtlButtonRepeated, "K2_IsBtlButtonRepeated");
-
 	void* ProcessInterals = UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.ReceiveBeginProcess")->GetFunction();
 
+	MinHook::Add((DWORD64)tickFn, &FEngineLoop__Tick_Hook, &FEngineLoop__Tick_Orig, "FEngineLoop__Tick_Fn");
 	MinHook::Add((DWORD_PTR)ProcessInterals,
 		&ProcessInternalHook, &ProcessInternal, "ProcessInternal");
 
@@ -720,7 +763,6 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 	static auto BtlCharacterBase__JustStepProcess = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.JustStepProcess");
 	static auto BtlCharacterBase__JustGuardProcess = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.JustGuardProcess");
-	static auto DerivedInputStateComponent__OnOperationUnitChanged = UE4::UObject::FindObject<UE4::UFunction>("Function BP_DerivedInputStateComponent.BP_DerivedInputStateComponent_C.OnOperationUnitChanged");
 	if (Stack.Node == BtlCharacterBase__JustStepProcess || Stack.Node == BtlCharacterBase__JustGuardProcess) {
 		// Called on enemy, with our character as argument
 		// void JustStepProcess(class ABtlCharacterBase* DmgActor, bool& JustStep);
@@ -745,23 +787,28 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 			return false;
 		}
 	}
-	else
-		if (Stack.Node == DerivedInputStateComponent__OnOperationUnitChanged)
-		{
-			// Ignore if this unit is controlled by ourselves
-			static auto getOwnerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Engine.ActorComponent.GetOwner");
-			UE4::AActor* owner; // InputProcess
-			Stack.Object->ProcessEvent(getOwnerFn, &owner);
 
-			int index = GetPlayerIndexFromInputProcessor(owner);
-			if (index > 0) {
-				// Ignore!
-				Log::Info("Ignore operationunitchanged event");
-				return false;
-			}
 
+	static auto DerivedInputStateComponent__OnOperationUnitChanged = UE4::UObject::FindObject<UE4::UFunction>("Function BP_DerivedInputStateComponent.BP_DerivedInputStateComponent_C.OnOperationUnitChanged");
+	static auto DerivedInputStateComponent__GetOwnerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Engine.ActorComponent.GetOwner");
+	if (Stack.Node == DerivedInputStateComponent__OnOperationUnitChanged)
+	{
+		// Ignore if this unit is controlled by ourselves
+		UE4::AActor* owner; // InputProcess
+		Stack.Object->ProcessEvent(DerivedInputStateComponent__GetOwnerFn, &owner);
+
+		int index = GetPlayerIndexFromInputProcessor(owner);
+		if (index > 0) {
+			// Ignore!
+			Log::Info("Ignore operationunitchanged event");
+			return false;
 		}
+
+	}
+
 	static auto Native_GetHudVisibility = UE4::UObject::FindObject<UE4::UFunction>("Function BP_ModHelper.BP_ModHelper_C.Native_GetHudVisibility");
+	static auto BtlFunctionLibrary__GetUIManager = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlFunctionLibrary.GetUIManager");
+	static auto BP_BattleHudHelper__GetHudVisible = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BattleHudHelper.BP_BattleHudHelper_C.GetHudVisible");
 
 	if (Stack.Node == Native_GetHudVisibility) {
 		struct params {
@@ -769,12 +816,10 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 			SDK::ESlateVisibility Visibility;
 		};
 
-		static auto fn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlFunctionLibrary.GetUIManager");
 
 		SDK::ABattleUIManager* uiManager;
-		Context->ProcessEvent(fn, &uiManager);
+		Context->ProcessEvent(BtlFunctionLibrary__GetUIManager, &uiManager);
 
-		static auto fn2 = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BattleHudHelper.BP_BattleHudHelper_C.GetHudVisible");
 		struct UBP_BattleHudHelper_C_GetHudVisible_Params
 		{
 			SDK::FName                                       RowName;                                                  // (BlueprintVisible, BlueprintReadOnly, Parm, ZeroConstructor, IsPlainOldData)
@@ -788,7 +833,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 			Context
 		};
 
-		Context->ProcessEvent(fn2, &args);
+		Context->ProcessEvent(BP_BattleHudHelper__GetHudVisible, &args);
 
 		auto inputString = Stack.GetParams<UE4::FString>()->ToString();
 		bool visible = false;
@@ -830,7 +875,6 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 	static auto Btl_Camera__SetFocusUnitCamera = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCamera.BP_BtlCamera_C.SetFocusUnitCamera");
 	if (currentFn == Btl_Camera__SetFocusUnitCamera) {
-		Log::Info("hmm?");
 		if (CameraFrozen) {
 			Log::Info("Ignore camera");
 			return false;
@@ -850,14 +894,13 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		static auto ModActor__Native_OnEndChangeTarget = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_OnEndChangeTarget");
 		static auto ModActor__Native_SetNearClippingPlane = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_SetNearClippingPlane");
 		static auto ModActor__Native_ResetNearClippingPlane = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.Native_ResetNearClippingPlane");
+		static auto K2_GetBattleInputProcessFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattleInputProcess");
+		static auto K2_GetBattlePCControllerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattlePCController");
 
 		if (currentFn == ModActor__OnBeginBattle) {
 			InputManager::GetInstance()->SetRerouteControllers(true);
 
 			Log::Info("On Begin Battle");
-
-			static auto K2_GetBattleInputProcessFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattleInputProcess");
-			static auto K2_GetBattlePCControllerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattlePCController");
 
 			// Keep reference to first playerC input process
 			struct GetBattleInputArgs {
@@ -886,6 +929,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		}
 		else if (currentFn == ModActor__Native_OnSubStateStart) {
 			SDK::EBattleState state = *Stack.GetParams<SDK::EBattleState>();
+
 			if (state == SDK::EBattleState::StateMenu) {
 				CameraFrozen = true;
 
@@ -896,9 +940,10 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 						if (i != 0) {
 							ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &i);
 						}
+
 						break;
 					}
-				}	
+				}
 			}
 		}
 		else if (currentFn == ModActor__Native_OnSubStateEnd) {
@@ -944,6 +989,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 	static auto TestWidget__LogInfo = UE4::UObject::FindObject<UE4::UFunction>("Function TestWidget.TestWidget_C.LogInfo");
 	static auto TestWidget__Native_Win = UE4::UObject::FindObject<UE4::UFunction>("Function TestWidget.TestWidget_C.Native_Win");
+	static auto TestWidget__Native_Battle = UE4::UObject::FindObject<UE4::UFunction>("Function TestWidget.TestWidget_C.Native_Battle");
 
 	if (currentFn == TestWidget__LogInfo) {
 		struct param {
@@ -958,6 +1004,20 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 	else if (currentFn == TestWidget__Native_Win) {
 		((SDK::UBtlFunctionLibrary*)ModActor)->STATIC_GetBattleManager((SDK::AActor*)ModActor)->MetaScript->SetBattleWin(0.0f);
 	}
+	else if (currentFn == TestWidget__Native_Battle) {
+		struct PseudoTArray {
+			SDK::FBtlEncountGroupParam* group;
+			int count = 1;
+		};
+
+		SDK::FBtlEncountGroupParam param;
+		PseudoTArray params = { &param, 1 };
+		param.Label = "EGR_DEBUG_BID_EFR_001";
+
+
+		((SDK::UBtlLauncherWorkerLibrary*)Context)->STATIC_SpawnBtlLauncherWorker((SDK::UObject*)Context, SDK::FString(L"MIT_B04"), *((SDK::TArray<SDK::FBtlEncountGroupParam>*) &params), 0.0f, true, false, L"");
+	}
+
 
 	//static auto BP_BtlCharacterBase__UseStrikeResource = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.UseStrikeResource");
 	//if (Stack.Node == BP_BtlCharacterBase__UseStrikeResource) {
@@ -985,12 +1045,15 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 void MultiplayerMod::OnAfterVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
 
+	static auto WaitEnd = UE4::UObject::FindObject<UE4::UFunction>("Function TO14_BP_MenuManagerBase.TO14_BP_MenuManagerBase_C.WaitEnd");
+	static auto onBeforePauseFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnBeforePause");
+
+
+	if (Stack.Node == WaitEnd) {
+		ModActor->ProcessEvent(onBeforePauseFn, nullptr);
+	}
 	
 }
-
-// FF FF FF FF ?? ?? ?? ?? 84 3C EB F0 F7 7F 00 00 20 46 21 F1
-static float* GNearClippingPlane = (float*)((DWORD64)GetModuleHandleW(0) + 0x42644E4);
-static float GNearOriginal = *GNearClippingPlane;
 
 void MultiplayerMod::SetNearClippingPlane(float nearPlane) {
 	//Log::Info("Near Plane: %f (%p)", nearPlane, GNearClippingPlane);
@@ -1034,18 +1097,22 @@ void MultiplayerMod::PostBeginPlay(std::wstring ModActorName, UE4::AActor* Actor
 		OnChangeFirstPlayerTemporarilyFn = Actor->GetFunction("OnChangeFirstPlayerTemporarily");
 		OnRestoreFirstPlayerFn = Actor->GetFunction("OnRestoreFirstPlayer");
 		GetControlledCharacterFn = Actor->GetFunction("GetControlledCharacterFn");
+		OnBeforePauseFn = Actor->GetFunction("OnBeforePause");
+
 
 		IsBattleSceneFn = UE4::UObject::FindObject<UE4::UFunction>("Function BP_GameFunctionLibrary.BP_GameFunctionLibrary_C.GameFunc_IsBattelScene");
 		functionLibClazz = UE4::UObject::FindObject<UE4::UClass>("BlueprintGeneratedClass BP_GameFunctionLibrary.BP_GameFunctionLibrary_C");
 
 		//Actor->CallFunctionByNameWithArguments
 
-		Watch = new filewatch::FileWatch<std::wstring>(
-			L"./MultiplayerMod.ini",
-			[this](const std::wstring& path, const filewatch::Event change_type) {
-			IniDirty = true;
+		if (std::ifstream(INI_FILE_LOCATION).good()) {
+			Watch = new filewatch::FileWatch<std::wstring>(
+				INI_FILE_LOCATION_W.c_str(),
+				[this](const std::wstring& path, const filewatch::Event change_type) {
+					IniDirty = true;
+				}
+			);
 		}
-		);
 	}
 }
 
@@ -1113,15 +1180,15 @@ void MultiplayerMod::RefreshIni() {
 	ApplyConfigParams parms;
 
 	INI::PARSE_FLAGS = INI::PARSE_COMMENTS_ALL | INI::PARSE_COMMENTS_SLASH | INI::PARSE_COMMENTS_HASH;
-	INI config("MultiplayerMod.ini", true);
-
+	INI config(INI_FILE_LOCATION, true);
+	
 	config.select("CAMERA");
 	parms.MinDistance = std::stof(config.get("MinDistance", "1500"));
-	parms.MaxDistance = std::stof(config.get("MaxDistance", "3000"));
+	parms.MaxDistance = std::stof(config.get("MaxDistance", "3500"));
 	parms.MinClip = std::stof(config.get("MinClip", "10.0"));
 	parms.MaxClip = std::stof(config.get("MaxClip", "100000.0"));
 	parms.ClipRatio = std::stof(config.get("ClipRatio", "0.5"));
-	parms.TargetOffset = std::stof(config.get("TargetOffset", "500"));
+	parms.TargetOffset = std::stof(config.get("TargetOffset", "50"));
 	parms.TargetEnemies = std::stoi(config.get("TargetEnemies", "1"));
 	parms.TargetHeroes = std::stoi(config.get("TargetHeroes", "1"));
 	parms.ZoomInSpeed = std::stof(config.get("ZoomInSpeed", "1000"));
@@ -1130,12 +1197,18 @@ void MultiplayerMod::RefreshIni() {
 	parms.ZoomOutPadding = std::stof(config.get("ZoomOutPadding", "0.1"));
 	parms.RotateSpeedX = std::stof(config.get("RotateSpeedX", "60"));
 	parms.RotateSpeedY = std::stof(config.get("RotateSpeedY", "40"));
-	parms.FieldOfView = std::stof(config.get("FieldOfView", "75"));
-	parms.TargetSpeed = std::stof(config.get("TargetSpeed", "3"));
-	parms.TargetRadius = std::stof(config.get("TargetRadius", "500"));
+	parms.FieldOfView = std::stof(config.get("FieldOfView", "60"));
+	parms.TargetSpeed = std::stof(config.get("TargetSpeed", "0.75"));
+	parms.TargetRadius = std::stof(config.get("TargetRadius", "50000"));
+	parms.MinPitch = std::stof(config.get("MinPitch", "-75"));
+	parms.MaxPitch = std::stof(config.get("MaxPitch", "-1"));
 
 	config.select("MISC");
 	parms.DebugMenu = std::stoi(config.get("DebugMenu", "0"));
+	
+	
+	AutoChangeCharas = std::stoi(config.get("AutoChangeCharas", "0"));
+
 
 	ModActor->ProcessEvent(applyConfigFn, &parms);
 }
@@ -1221,8 +1294,6 @@ void MultiplayerMod::Tick()
 
 		CurrentPlayer = 0;
 	}
-	std::swap(OldStates, NewStates);
-
 
 	float x = 0.0f, y = 0.0f;
 	for (int i = 0; i < 4; i++) {
@@ -1235,11 +1306,66 @@ void MultiplayerMod::Tick()
 				y = angle.y;
 			}
 		}
+
+
+		if (NewStates[i].IsChangeChara && !OldStates[i].IsChangeChara) {
+			ChangePartyTop(i);
+		}
 	}
+
+	std::swap(OldStates, NewStates);
 
 	BP_OnCameraAngle(UE4::FVector2D(x, y));
 
 
 	static auto modTickFn = ModActor->GetFunction("ModTick");
 	ModActor->ProcessEvent(modTickFn, nullptr);
+}
+
+void MultiplayerMod::ChangePartyTop(int index) {
+	if (!AutoChangeCharas) return;
+
+	Log::Info("Party top change requested.");
+
+	if (!((SDK::UAriseGameDataLibrary*)ModActor)->STATIC_IsLockPartyTop()) {
+		auto partyOrder = ((SDK::USystemFunctionLibrary*)ModActor)->STATIC_GetPartyOrder();
+		auto currentPartyTop = partyOrder->GetPartyTop();
+		auto proposedPartyTop = partyOrder->GetPartyId((SDK::EPCOrder)index);
+
+		if ((uint8_t)proposedPartyTop >= (uint8_t)SDK::EArisePartyID::MAX) {
+			// Nothing to see here
+			return;
+		}
+
+		Log::Info("Current top: %d, proposed top: %d", currentPartyTop, proposedPartyTop);
+
+		if (proposedPartyTop != currentPartyTop) {
+			partyOrder->SetPartyTop(proposedPartyTop);
+
+			static auto buildPartyTop = UE4::UObject::FindObject<UE4::UFunction>("Function BP_MenuPFSupport.BP_MenuPFSupport_C.BuildPartyTop");
+			ModActor->ProcessEvent(buildPartyTop, &ModActor);
+
+			Log::Info("Set new party top: %d", proposedPartyTop);
+		}
+	}
+}
+
+void MultiplayerMod::OnBeforePause() {
+	ModActor->ProcessEvent(OnBeforePauseFn, nullptr);
+}
+
+bool MultiplayerMod::IsControlledCharacter(UE4::AActor *actor, bool ignoreP1) {
+	if (!FastIsA(actor, (UE4::UClass*)SDK::ABtlCharacterBase::StaticClass()))
+		return false;
+
+	auto pawn = (SDK::APawn*)actor;
+	auto controller = (UE4::APlayerController *)pawn->Controller;
+
+	for (int i = 0; i < MAX_CONTROLLERS; i++) {
+		if (Controllers[i] == controller) {
+			return i != 0 || !ignoreP1;
+		}
+	}
+
+	return false;
 }
