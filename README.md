@@ -23,6 +23,7 @@ UnrealEngineModLauncher.exe before starting the game.
 ## Known Issues
 
 - Strike Attacks always use the P1 target
+- Not compatible with latest version
 
 For a complete list, see [issues](https://github.com/EusthEnoptEron/arise-multiplayer/issues)
 
