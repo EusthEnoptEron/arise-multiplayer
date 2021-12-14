@@ -13,7 +13,7 @@
 #include "../SDK/TO14_BPI_GUI_MNU_SAV_classes.h"
 #include "FileWatch.hpp"
 
-typedef void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void *result);
+typedef  void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void *result);
 struct FScriptName {
 	/** Index into the Names array (used to find String portion of the string/number pair used for comparison) */
 	int32		ComparisonIndex;
@@ -190,6 +190,8 @@ public:
 	void OnAfterVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret);
 
 	static FNativeFuncPtr *GNatives;
+	static float* GNearClippingPlane;
+	static float GNearOriginal;
 
 	GamepadState OldStates[4] = { 0 };
 	GamepadState NewStates[4] = { 0 };

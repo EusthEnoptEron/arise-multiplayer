@@ -62,8 +62,61 @@ void EX_FinalFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* resul
 	auto fn = (SDK::UFunction *)TempCode;
 
 	auto fnName = Context->GetName() + "::" + fn->GetName();
+	std::string params = "(";
 
-	tracer->OnEnter(fnName);
+
+	if (fn != nullptr && fn->NumParms > 0 && (((UPropertyEx*)fn->Children)->PropertyFlags & CPF_ReturnParm) == 0) {
+		auto SaveCode = Stack.Code;
+
+		uint8* memory = (uint8 *)calloc(1, fn->PropertySize);
+		//Log::Info("Created memory: %p (%d)", memory, fn->PropertySize);
+
+		// Step over function pointer
+		Stack.Code += sizeof(uint64_t);
+		//Log::Info(fnName);
+		for (auto Property = (UPropertyEx*)fn->Children; *Stack.Code != EX_EndFunctionParms; Property = (UPropertyEx*)Property->Next)
+		{
+			//Log::Info("%d", (int32)*Stack.Code);
+			Stack.MostRecentPropertyAddress = NULL;
+
+			// Skip the return parameter case, as we've already handled it above
+			const bool bIsReturnParam = ((Property->PropertyFlags & CPF_ReturnParm) != 0);
+			if (bIsReturnParam)
+			{
+				continue;
+			}
+
+			int32 B = *Stack.Code++;
+			if (Property->PropertyFlags & CPF_OutParm)
+			{
+				MultiplayerMod::GNatives[B](Stack.Object, Stack, NULL);
+			}
+			else {
+				auto addr = memory + Property->Offset_Internal;
+
+				if(Property->PropertyFlags & CPF_ZeroConstructor) {
+					//Log::Info("Reset: %p (%d)", addr, Property->ArrayDim * Property->ElementSize);
+					memset(addr, 0, Property->ArrayDim * Property->ElementSize);
+				}
+				else {
+					// InitializeValueInternal(ContainerPtrToValuePtr<void>(Dest));
+					//Log::Info("OH SHIT");
+				}
+
+				//Log::Info("b:%p (%d) (%p) (%s)", addr, (int64)Property->ArrayDim * Property->ElementSize, MultiplayerMod::GNatives[B], Property->GetName().c_str());
+				MultiplayerMod::GNatives[B](Stack.Object, Stack, addr);
+				params += tracer->ToString((SDK::UProperty*)Property, memory) + ", ";
+				//Log::Info("a:ok");
+			}
+		}
+
+		Stack.Code = SaveCode;
+		free(memory);
+	}
+
+	params += ")";
+
+	tracer->OnEnter(fnName + params);
 	auto begin = std::chrono::high_resolution_clock::now();
 	EX_FinalFunction(Context, Stack, result);
 	auto end = std::chrono::high_resolution_clock::now();
@@ -78,7 +131,7 @@ void EX_FinalFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* resul
 	}
 
 
-	tracer->OnExit(fnName, "", std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+	tracer->OnExit(fnName, suffix, std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
 }
 
 
@@ -105,18 +158,18 @@ void Tracer::OnExit(std::string functionName, std::string suffix, long durationN
 		// Counter changed, so we had child instructions
 		_file << std::string(_instructionStack.size() * 2, ' ');
 		_file << "End " << functionName << " (";
+		_file << suffix;
 		_file << (durationNano * 1.0E-6);
 		_file << "ms)";
-		_file << suffix;
 		_file << "\n";
 	}
 	else {
 		// Counter didn't change, so put on same line
 		_file.seekp(-2, _file.cur);
+		_file << suffix;
 		_file << " (";
 		_file << (durationNano * 1.0E-6);
 		_file << "ms)";
-		_file << suffix;
 		_file << "\n";
 	}
 
@@ -163,8 +216,9 @@ void Tracer::OnEvent(std::string evt) {
 
 void Tracer::Hook()
 {
-	auto offset = (DWORD64)GetModuleHandleW(0);
-	_GNatives = (FNativeFuncPtr*)((DWORD64)(offset + 0x4BC4D80));
+	//auto offset = (DWORD64)GetModuleHandleW(0);
+	//_GNatives = (FNativeFuncPtr*)((DWORD64)(offset + 0x4BC4D80));
+	_GNatives = MultiplayerMod::GNatives;
 
 
 	MinHook::Add((DWORD_PTR)_GNatives[0x1B],
@@ -207,6 +261,8 @@ void Tracer::Hook()
 
 
 std::string Tracer::ToString(SDK::UProperty* prop, void *result) {
+	if (result == nullptr) return "NULL";
+
 	//Log::Info("=> %s", Property->Class->GetName());
 	if (prop->IsA(SDK::UBoolProperty::StaticClass())) {
 		return (*(bool*)result) ? "true" : "false";
@@ -224,13 +280,31 @@ std::string Tracer::ToString(SDK::UProperty* prop, void *result) {
 		return prop->Class->GetName();
 	}
 	else if (prop->IsA(SDK::UObjectProperty::StaticClass())) {
-		return (*(SDK::UObject**)result)->GetName();
+		if (*(SDK::UObject**)result != nullptr) {
+			auto name = (*(SDK::UObject**)result)->Name;
+			return name.GetName();
+		}
+		else {
+			return "NULL";
+		}
 	}
 	else if (prop->IsA(SDK::UStrProperty::StaticClass())) {
-		return ((SDK::FString*)result)->ToString();
+		auto str = (SDK::FString*)result;
+		if (str->IsValid()) {
+			return str->ToString();
+		}
+		else {
+			return "";
+		}
+	}
+	/*else if (prop->IsA(SDK::UNameProperty::StaticClass())) {
+		return ((SDK::FName*)result)->GetName();
+	}*/
+	else if (prop->IsA(SDK::UEnumProperty::StaticClass())) {
+		return ToString(((UEnumPropertyEx*)prop)->UnderlyingProp, result);
 	}
 	else {
-		return prop->Class->GetName();
+		return "???";
 	}
 	//fnName = fnName + " => ???";
 	//break;

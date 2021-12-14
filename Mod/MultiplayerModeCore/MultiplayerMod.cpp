@@ -20,7 +20,8 @@
 
 
 FNativeFuncPtr* MultiplayerMod::GNatives;
-
+float* MultiplayerMod::GNearClippingPlane;
+float MultiplayerMod::GNearOriginal;
 
 UE4::UClass* FastGetClass(UE4::UObject* obj) {
 	return (UE4::UClass*)((SDK::UObject*)(obj))->Class;
@@ -589,8 +590,20 @@ void MultiplayerMod::InitializeMod()
 
 	SetupHooks();
 
-	auto offset = (DWORD64)GetModuleHandleW(0);
-	GNatives = (FNativeFuncPtr*)((DWORD64)(offset + 0x4BC4D80));
+	// 0x42784DC
+	auto nearClippingPlanePat = Pattern::Find("66 0F 6E C7 0F 5B C0 0F 2E 05 ?? ?? ?? ??");
+	auto nearClippingPlaneOff = *reinterpret_cast<uint32_t*>(nearClippingPlanePat + 10);
+	GNearClippingPlane = (float*)(nearClippingPlanePat + 14 + nearClippingPlaneOff);
+
+	GNearOriginal = *GNearClippingPlane;
+	Log::Info("Found near clipping plane at %p (%f)", GNearClippingPlane, *GNearClippingPlane);
+
+	// 0x4BD9F90
+	auto gnativePat = Pattern::Find("CC 80 3D ?? ?? ?? ?? 00 48 8D 15 ?? ?? ?? ?? 75 49 C6 05 ?? ?? ?? ?? 01 48 8D 05 ?? ?? ?? ??");
+	auto gnativeOff = *reinterpret_cast<uint32_t*>(gnativePat + 27);
+	GNatives = (FNativeFuncPtr*)(gnativePat + 31 + gnativeOff);
+	Log::Info("Found GNatives at %p", GNatives);
+
 	//Log::Info("GNatives: %p", GNatives[1]);
 
 	//Function Arise.BtlInputExtInputProcessBase.K2_IsBtlButtonJustPressed
@@ -1041,10 +1054,6 @@ void MultiplayerMod::OnAfterVirtualFunction(UE4::UObject* Context, UE4::FFrame& 
 	}
 	
 }
-
-// FF FF FF FF ?? ?? ?? ?? 84 3C EB F0 F7 7F 00 00 20 46 21 F1
-static float* GNearClippingPlane = (float*)((DWORD64)GetModuleHandleW(0) + 0x42644E4);
-static float GNearOriginal = *GNearClippingPlane;
 
 void MultiplayerMod::SetNearClippingPlane(float nearPlane) {
 	//Log::Info("Near Plane: %f (%p)", nearPlane, GNearClippingPlane);
