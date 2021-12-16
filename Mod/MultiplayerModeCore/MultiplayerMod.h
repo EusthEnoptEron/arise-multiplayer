@@ -142,9 +142,9 @@ public:
 	MultiplayerMod()
 	{
 		ModName = "MultiplayerMod"; // Mod Name -- If Using BP ModActor, Should Be The Same Name As Your Pak
-		ModVersion = "1.0.0-SNAPSHOT"; // Mod Version
+		ModVersion = "1.0.0-RC1"; // Mod Version
 		ModDescription = "Adds local multiplayer to Tales of Arise."; // Mod Description
-		ModAuthors = "EusthEnoptEron"; // Mod Author
+		ModAuthors = "Eusthron"; // Mod Author
 		ModLoaderVersion = "2.0.2";
 
 		// Dont Touch The Internal Stuff
