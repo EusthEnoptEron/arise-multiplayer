@@ -9,6 +9,7 @@
 const uint64_t CPF_Parm = 0x0000000000000080;
 const uint64_t CPF_ReturnParm = 0x0000000000000400;
 const uint64_t CPF_OutParm = 0x0000000000000100;
+const uint64_t CPF_ReferenceParm = 0x0000000008000000;
 const uint64_t CPF_ZeroConstructor = 0x0000000000000200;
 const uint8_t EX_EndFunctionParms = 0x16;
 const uint8_t FUNC_Native = 0x00000400;
@@ -104,6 +105,7 @@ public:
     void *GetPointer(UE4::UFunction* function);
 
     std::string ToString(SDK::UProperty* prop, void* result);
+    std::string GetParams(SDK::UFunction *fn, uint32 codeOffset, UE4::UObject* Context, UE4::FFrame& Stack, void* result);
     SDK::UFunction* GetFunction(SDK::UObject*, std::string name);
 private:
     ~Tracer() {

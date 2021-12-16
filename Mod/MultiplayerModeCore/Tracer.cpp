@@ -25,8 +25,12 @@ void EX_VirtualFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* res
 
 	auto fnName = Context->GetName() + "::" + Result.GetName();
 	auto fn = tracer->GetFunction((SDK::UObject *)Context, Result.GetName());
+	std::string params = "(" + tracer->GetParams(fn, sizeof(FScriptName), Context, Stack, result) + ")";
 
-	tracer->OnEnter(fnName);
+	if (Stack.PreviousFrame == nullptr) {
+		tracer->OnEnter(Stack.Object->GetName() + "::" + Stack.Node->GetName() + "()");
+	}
+	tracer->OnEnter(fnName + params);
 	auto begin = std::chrono::high_resolution_clock::now();
 	EX_VirtualFunction(Context, Stack, result);
 	auto end = std::chrono::high_resolution_clock::now();
@@ -43,6 +47,9 @@ void EX_VirtualFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* res
 
 
 	tracer->OnExit(fnName, suffix, std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+	if (Stack.PreviousFrame == nullptr) {
+		tracer->OnExit(Stack.Object->GetName() + "::" + Stack.Node->GetName(), "", std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+	}
 }
 
 FNativeFuncPtr EX_FinalFunction;
@@ -62,60 +69,11 @@ void EX_FinalFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* resul
 	auto fn = (SDK::UFunction *)TempCode;
 
 	auto fnName = Context->GetName() + "::" + fn->GetName();
-	std::string params = "(";
+	std::string params = "(" + tracer->GetParams(fn, sizeof(uint64_t), Context, Stack, result) + ")";
 
-
-	if (fn != nullptr && fn->NumParms > 0 && (((UPropertyEx*)fn->Children)->PropertyFlags & CPF_ReturnParm) == 0) {
-		auto SaveCode = Stack.Code;
-
-		uint8* memory = (uint8 *)calloc(1, fn->PropertySize);
-		//Log::Info("Created memory: %p (%d)", memory, fn->PropertySize);
-
-		// Step over function pointer
-		Stack.Code += sizeof(uint64_t);
-		//Log::Info(fnName);
-		for (auto Property = (UPropertyEx*)fn->Children; *Stack.Code != EX_EndFunctionParms; Property = (UPropertyEx*)Property->Next)
-		{
-			//Log::Info("%d", (int32)*Stack.Code);
-			Stack.MostRecentPropertyAddress = NULL;
-
-			// Skip the return parameter case, as we've already handled it above
-			const bool bIsReturnParam = ((Property->PropertyFlags & CPF_ReturnParm) != 0);
-			if (bIsReturnParam)
-			{
-				continue;
-			}
-
-			int32 B = *Stack.Code++;
-			if (Property->PropertyFlags & CPF_OutParm)
-			{
-				MultiplayerMod::GNatives[B](Stack.Object, Stack, NULL);
-			}
-			else {
-				auto addr = memory + Property->Offset_Internal;
-
-				if(Property->PropertyFlags & CPF_ZeroConstructor) {
-					//Log::Info("Reset: %p (%d)", addr, Property->ArrayDim * Property->ElementSize);
-					memset(addr, 0, Property->ArrayDim * Property->ElementSize);
-				}
-				else {
-					// InitializeValueInternal(ContainerPtrToValuePtr<void>(Dest));
-					//Log::Info("OH SHIT");
-				}
-
-				//Log::Info("b:%p (%d) (%p) (%s)", addr, (int64)Property->ArrayDim * Property->ElementSize, MultiplayerMod::GNatives[B], Property->GetName().c_str());
-				MultiplayerMod::GNatives[B](Stack.Object, Stack, addr);
-				params += tracer->ToString((SDK::UProperty*)Property, memory) + ", ";
-				//Log::Info("a:ok");
-			}
-		}
-
-		Stack.Code = SaveCode;
-		free(memory);
+	if (Stack.PreviousFrame == nullptr) {
+		tracer->OnEnter(Stack.Object->GetName() + "::" + Stack.Node->GetName() + "()");
 	}
-
-	params += ")";
-
 	tracer->OnEnter(fnName + params);
 	auto begin = std::chrono::high_resolution_clock::now();
 	EX_FinalFunction(Context, Stack, result);
@@ -130,8 +88,10 @@ void EX_FinalFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* resul
 		}
 	}
 
-
 	tracer->OnExit(fnName, suffix, std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+		if (Stack.PreviousFrame == nullptr) {
+		tracer->OnExit(Stack.Object->GetName() + "::" + Stack.Node->GetName(), "", std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+	}
 }
 
 
@@ -144,9 +104,7 @@ void Tracer::OnEnter(std::string functionName) {
 	_instructionCounter++;
 
 	_file << std::string(_instructionStack.size() * 2, ' ');
-	_file << functionName;
-	_file << "\n";
-
+	_file << functionName << "; {\n";
 	_instructionStack.push(_instructionCounter);
 }
 
@@ -157,22 +115,19 @@ void Tracer::OnExit(std::string functionName, std::string suffix, long durationN
 	if (counter != _instructionCounter) {
 		// Counter changed, so we had child instructions
 		_file << std::string(_instructionStack.size() * 2, ' ');
-		_file << "End " << functionName << " (";
-		_file << suffix;
-		_file << (durationNano * 1.0E-6);
-		_file << "ms)";
-		_file << "\n";
+		_file << "} ";
 	}
 	else {
 		// Counter didn't change, so put on same line
-		_file.seekp(-2, _file.cur);
-		_file << suffix;
-		_file << " (";
-		_file << (durationNano * 1.0E-6);
-		_file << "ms)";
-		_file << "\n";
+		_file.seekp(-static_cast<int32>(std::string(" {\n").size()), _file.cur);
 	}
 
+	_file << "//";
+	_file << suffix;
+	_file << " (";
+	_file << (durationNano * 1.0E-6);
+	_file << "ms)";
+	_file << "\n";
 }
 
 void Tracer::Start() {
@@ -196,7 +151,7 @@ void Tracer::Stop() {
 void Tracer::OnBeginTick() {
 	if (!_isTracing) return;
 
-	OnEnter("Tick");
+	OnEnter("Tick()");
 	_tickStartTime = std::chrono::high_resolution_clock::now();
 }
 
@@ -205,7 +160,7 @@ void Tracer::OnEndTick() {
 
 	auto end = std::chrono::high_resolution_clock::now();
 
-	OnExit("Tick", "", std::chrono::duration_cast<std::chrono::nanoseconds>(end - _tickStartTime).count());
+	OnExit("Tick()", "", std::chrono::duration_cast<std::chrono::nanoseconds>(end - _tickStartTime).count());
 }
 
 void Tracer::OnEvent(std::string evt) {
@@ -270,8 +225,20 @@ std::string Tracer::ToString(SDK::UProperty* prop, void *result) {
 	else if(prop->IsA(SDK::UFloatProperty::StaticClass())) {
 		return std::to_string((*(float*)result));
 	}
+	else if (prop->IsA(SDK::UDoubleProperty::StaticClass())) {
+		return std::to_string((*(double*)result));
+	}
 	else if (prop->IsA(SDK::UIntProperty::StaticClass())) {
 		return std::to_string((*(int32*)result));
+	}
+	else if (prop->IsA(SDK::UUInt32Property::StaticClass())) {
+		return std::to_string((*(uint32*)result));
+	}
+	else if (prop->IsA(SDK::UInt64Property::StaticClass())) {
+		return std::to_string((*(int64*)result));
+	}
+	else if (prop->IsA(SDK::UInt8Property::StaticClass())) {
+		return std::to_string((*(int8*)result));
 	}
 	else if (prop->IsA(SDK::UByteProperty::StaticClass())) {
 		return std::to_string((*(uint8*)result));
@@ -280,8 +247,9 @@ std::string Tracer::ToString(SDK::UProperty* prop, void *result) {
 		return prop->Class->GetName();
 	}
 	else if (prop->IsA(SDK::UObjectProperty::StaticClass())) {
-		if (*(SDK::UObject**)result != nullptr) {
-			auto name = (*(SDK::UObject**)result)->Name;
+		auto pointer = *(SDK::UObject**)result;
+		if (pointer != nullptr) {
+			auto name = pointer->Name;
 			return name.GetName();
 		}
 		else {
@@ -297,14 +265,17 @@ std::string Tracer::ToString(SDK::UProperty* prop, void *result) {
 			return "";
 		}
 	}
-	/*else if (prop->IsA(SDK::UNameProperty::StaticClass())) {
+	else if (prop->IsA(SDK::UNameProperty::StaticClass())) {
 		return ((SDK::FName*)result)->GetName();
-	}*/
+	}
 	else if (prop->IsA(SDK::UEnumProperty::StaticClass())) {
 		return ToString(((UEnumPropertyEx*)prop)->UnderlyingProp, result);
 	}
+	else if (prop->IsA(SDK::UEnum::StaticClass())) {
+		return std::to_string((*(uint8*)result));
+	}
 	else {
-		return "???";
+		return "??? ("+ (prop->Class != nullptr ? prop->Class->GetName() : "???") + ")";
 	}
 	//fnName = fnName + " => ???";
 	//break;
@@ -342,4 +313,72 @@ SDK::UFunction* Tracer::GetFunction(SDK::UObject* owner, std::string name)
 
 	_fnTable[fullName] = nullptr;
 	return nullptr;
+}
+
+std::string Tracer::GetParams(SDK::UFunction* Function, uint32 codeOffset, UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
+	std::string params = "";
+
+	if (Function != nullptr && Function->NumParms > 0 && (((UPropertyEx*)Function->Children)->PropertyFlags & CPF_ReturnParm) == 0) {
+		auto SaveCode = Stack.Code;
+
+		//Log::Info("FN %s", fnName.c_str());
+
+		uint8* Frame = (uint8*)calloc(1, Function->PropertySize);
+		//Log::Info("Created memory: %p (%d)", memory, fn->PropertySize);
+
+		// Step over function pointer
+		Stack.Code += codeOffset;
+		//Log::Info(fnName);
+		for (auto Property = (UPropertyEx*)Function->Children; *Stack.Code != EX_EndFunctionParms; Property = (UPropertyEx*)Property->Next)
+		{
+			//Log::Info("%d", (int32)*Stack.Code);
+			Stack.MostRecentPropertyAddress = NULL;
+
+			// Skip the return parameter case, as we've already handled it above
+			const bool bIsReturnParam = ((Property->PropertyFlags & CPF_ReturnParm) != 0);
+			if (bIsReturnParam)
+			{
+				continue;
+			}
+
+			int32 B = *Stack.Code++;
+			if (Property->PropertyFlags & CPF_OutParm)
+			{
+				//Log::Info("Out %p", B);
+				MultiplayerMod::GNatives[B](Stack.Object, Stack, NULL);
+
+				if (Stack.MostRecentPropertyAddress != nullptr && Property->PropertyFlags & CPF_ReferenceParm != 0) {
+					params += ToString((SDK::UProperty*)Property, Stack.MostRecentPropertyAddress) + ", ";
+				}
+			}
+			else {
+				uint8* addr = Frame + Property->Offset_Internal;
+				if (Property->PropertyFlags & CPF_ZeroConstructor) {
+					//Log::Info("Reset: %p (%d)", addr, Property->ArrayDim * Property->ElementSize);
+					memset(addr, 0, Property->ArrayDim * Property->ElementSize);
+					//Log::Info("MemsetA %d", Property->ArrayDim * Property->ElementSize);
+				}
+				else {
+					// InitializeValueInternal(ContainerPtrToValuePtr<void>(Dest));
+					//Log::Info("OH SHIT");
+					memset(addr, 0, Property->ArrayDim * Property->ElementSize);
+					//Log::Info("MemsetB %d", Property->ArrayDim * Property->ElementSize);
+				}
+
+				//Log::Info("b:%p (%d) (%p) (%s)", addr, (int64)Property->ArrayDim * Property->ElementSize, MultiplayerMod::GNatives[B], Property->GetName().c_str());
+				//Log::Info("GNatives: %p", B);
+				MultiplayerMod::GNatives[B](Stack.Object, Stack, addr);
+				params += ToString((SDK::UProperty*)Property, addr) + ", ";
+				//Log::Info("a:ok");
+			}
+		}
+
+		Stack.Code = SaveCode;
+		free(Frame);
+	}
+
+	if (params.length() > 0) {
+		params = std::string(params.begin(), params.end() - 2);
+	}
+	return params;
 }
