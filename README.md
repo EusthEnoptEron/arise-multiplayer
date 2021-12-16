@@ -19,6 +19,14 @@ During battle, controllers will automatically be assigned to the characters. See
 
 > :warning: If `xinput1_3.dll` already exists because you installed another mod (e.g. Arise SDK), skip the file and launch UnrealEngineModLauncher.exe before starting the game.
 
+## How To Use
+
+1. Plug in a second (or third, or fourth) controller.
+
+The controllers will then be assigned to the 2nd, 3rd, and 4th character respectively and will be able to control these characters.
+
+For details, [refer to Controls](#controls).
+
 ## How To Disable
 
 Temporarily:
@@ -28,14 +36,6 @@ Temporarily:
 Completely:
 1. Remove `xinput1_3.dll`.
 2. Optionally, remove all files included in the archive.
-
-## How To Use
-
-1. Plug in a second (or third, or fourth) controller.
-
-The controllers will then be assigned to the 2nd, 3rd, and 4th character respectively and will be able to control these characters.
-
-For details, [refer to Controls](#controls).
 
 ## Known Issues
 
