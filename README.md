@@ -95,3 +95,13 @@ The camera is still a work in progress. You can however tweak it to your liking 
 a `MultiplayerMod.ini` file that you place at `...\steamapps\common\Tales of Arise\Arise\Binaries\Win64\MultiplayerMod.ini`. The folder already contains an example file -- simply rename it and delete the `.example` part.
 
 **Hot-reloads when changes are made.**
+
+## Compiling The Code
+
+The project is not currently in a compilable state because of some local changes to the Arise SDK. `// TODO`
+
+## Special Thanks
+
+- RussellJerome, for [Unreal Mod Loader (UML)](https://github.com/RussellJerome/UnrealModLoader)
+- emoose, for the [Arise SDK](https://github.com/emoose/Arise-SDK)
+- Meebo, for testing and literally playing through the game to provide me with a save file.
