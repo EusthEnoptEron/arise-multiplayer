@@ -213,12 +213,14 @@ public:
 	UE4::APlayerController* GetControllerFromInputProcessor(UE4::AActor *inputProcess);
 	int GetPlayerIndexFromInputProcessor(UE4::AActor* inputProcess);
 
-	int CurrentPlayer = 0;
+	int CurrentPlayer = -1;
+	int LastStrikeInitiator = -1;
 	bool IsSettingUpStrikeAttack = false;
 	bool CameraFrozen = false;
 
 	void OnBeforePause();
 private:
+
 
 	UE4::UFunction* OnActionFn;
 	UE4::UFunction* OnActionPressedFn;
@@ -246,6 +248,8 @@ private:
 
 	time_t LastCheck;
 	InputManager* Manager;
+
+	
 
 	filewatch::FileWatch<std::wstring> *Watch;
 

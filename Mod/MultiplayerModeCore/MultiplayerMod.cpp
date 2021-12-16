@@ -44,6 +44,17 @@ bool FastIsA(UE4::UObject* obj, UE4::UClass* cmp)
 	return false;
 }
 
+void PrintStackTrace(UE4::UObject * Context, UE4::FFrame &Stack) {
+	Log::Info("%s [%s]", Context->GetName().c_str(), Context->GetClass()->GetName().c_str());
+
+	UE4::FFrame* frame = &Stack;
+	while (frame != nullptr) {
+		Log::Info("%s::%s", frame->Object->GetName().c_str(), frame->Node->GetName().c_str());
+		frame = frame->PreviousFrame;
+	}
+	Log::Info("");
+}
+
 // #######################
 //  Main tick hook
 // #######################
@@ -86,7 +97,7 @@ void APlayerController__PostProcessInputHook(UE4::APlayerController* thisptr, co
 	InputManager::GetInstance()->SetIndex(0);
 
 	auto instance = (MultiplayerMod*)(Mod::ModRef);
-	instance->CurrentPlayer = 0;
+	instance->CurrentPlayer = -1;
 }
 
 // ---------------------------
@@ -115,7 +126,7 @@ void MultiplayerMod::CompareDigitalStates(bool newValue, bool oldValue, bool* ju
 }
 
 template<typename T> T GetParam(UE4::FFrame& Stack) {
-	T val = { 0 };
+	T val;
 
 	auto saveCode = Stack.Code;
 	int32 comp = *(Stack.Code++);
@@ -157,6 +168,12 @@ int MultiplayerMod::GetPlayerIndexFromInputProcessor(UE4::AActor* inputProcess) 
 }
 
 UE4::APlayerController* FindPlayerController(const UE4::FFrame& Stack) {
+	auto mod = ((MultiplayerMod*)(Mod::ModRef));
+
+	if (mod->CurrentPlayer >= 0) {
+		return mod->GetController(mod->CurrentPlayer);
+	}
+
 	static auto derivedInputStateComponentClazz = UE4::UObject::FindClass("Class Arise.BtlDerivedInputStateComponent");
 	static auto btlProcessorClazz = UE4::UObject::FindClass("Class Arise.BtlInputExtInputProcessBase");
 	static auto getOwnerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Engine.ActorComponent.GetOwner");
@@ -164,8 +181,6 @@ UE4::APlayerController* FindPlayerController(const UE4::FFrame& Stack) {
 	static auto unitScriptClazz = UE4::UObject::FindClass("Class Arise.BtlUnitScript");
 	static auto pawnGetControllerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Engine.Pawn.GetController");
 	static auto btlCharacterClazz = UE4::UObject::FindClass("Class Arise.BtlCharacterBase");
-
-	auto mod = ((MultiplayerMod*)(Mod::ModRef));
 
 	// Search stack for a reference to our own classes
 	auto frame = &Stack;
@@ -307,8 +322,15 @@ void GetPlayerOperationHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* res
 
 	GetPlayerOperation(Context, Stack, result);
 
-	if (controller != nullptr && mod->GetPlayerIndex((UE4::APlayerController*)controller) > 0) {
-		*result = true;
+	if (controller != nullptr) {
+		int charaIndex = mod->GetPlayerIndex((UE4::APlayerController*)controller);
+		if (mod->CurrentPlayer >= 0 && mod->CurrentPlayer != charaIndex) {
+			Log::Info("Forcing %s (%d) to NOT player (current player = %d)", controller->GetName().c_str(), charaIndex, mod->CurrentPlayer);
+			*result = false;
+		} else if (charaIndex > 0) {
+				*result = true;
+			
+		}
 	}
 }
 
@@ -322,8 +344,15 @@ void IsAutoOperationHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* result
 
 	IsAutoOperation(Context, Stack, result);
 
-	if (controller != nullptr && mod->GetPlayerIndex((UE4::APlayerController*)controller) > 0) {
-		*result = false;
+	if (controller != nullptr) {
+		int charaIndex = mod->GetPlayerIndex((UE4::APlayerController*)controller);
+		if (mod->CurrentPlayer >= 0 && mod->CurrentPlayer != charaIndex) {
+			Log::Info("Forcing %s to AUTO", controller->GetName().c_str());
+
+			*result = true;
+		} else if (charaIndex > 0) {
+				*result = false;
+		}
 	}
 }
 
@@ -331,30 +360,14 @@ void IsAutoOperationHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* result
 FNativeFuncPtr GetPlayerControlledUnit;
 void GetPlayerControlledUnitHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
 	GetPlayerControlledUnit(Context, Stack, result);
-	auto mod = ((MultiplayerMod*)(Mod::ModRef));
-
-	auto resultPointer = (UE4::AActor**)result;
-	if (mod->CurrentPlayer > 0) {
-		auto character = ((MultiplayerMod*)(Mod::ModRef))->GetControlledCharacter(mod->CurrentPlayer);
-
-		if (character != nullptr) {
-			Log::Info("Swap character");
-			*(UE4::AActor**)result = character;
-		}
-		else {
-			Log::Info("Nullptr on %d", character);
-		}
+	auto charaPointer = FindCharacter(Stack);
+	if (charaPointer != nullptr) {
+		Log::Info("Swap character (alternative)");
+		*(UE4::AActor**)result = charaPointer;
 	}
-	else {
-		auto charaPointer = FindCharacter(Stack);
-		if (charaPointer != nullptr) {
-			Log::Info("Swap character (alternative)");
-			*(UE4::AActor**)result = charaPointer;
-		}
-		//else if(mod->Controllers[0] != nullptr) {
-		//	*(SDK::AActor**)result =((SDK::APlayerController*)mod->Controllers[0])->Pawn;
-		//}
-	}
+	//else if(mod->Controllers[0] != nullptr) {
+	//	*(SDK::AActor**)result =((SDK::APlayerController*)mod->Controllers[0])->Pawn;
+	//}
 }
 
 FNativeFuncPtr GetBtlAxisValue;
@@ -482,6 +495,18 @@ void IsAutoGuardableHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* ret) {
 			*ret = false;
 		}
 	}
+}
+
+
+FNativeFuncPtr SetBoostAttackCaller;
+void SetBoostAttackCallerHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* ret) {
+
+	auto caller = GetParam<SDK::ABtlCharacterBase *>(Stack);
+	SetBoostAttackCaller(Context, Stack, ret);
+
+	Log::Info("SET STRIKE CALLER: %s", caller == nullptr ? "NULL" : caller->GetName().c_str());
+
+	PrintStackTrace(Context, Stack);
 }
 
 FNativeFuncPtr ProcessInternal;
@@ -677,6 +702,9 @@ void MultiplayerMod::InitializeMod()
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlSemiautoComponent.IsAutoGuardable")->GetFunction()),
 		&IsAutoGuardableHook, &IsAutoGuardable, "IsAutoGuardable");
 
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.SetBoostAttackCaller")->GetFunction()),
+		&SetBoostAttackCallerHook, &SetBoostAttackCaller, "SetBoostAttackCaller");
 
 	//
 	auto tickFn = Pattern::Find("48 8B C4 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 78 FD FF FF");
@@ -880,6 +908,74 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 			return false;
 		}
 	}
+	
+	static auto PCInputProcess__RunStrike = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BTL_PCInputProcess.BP_BTL_PCInputProcess_C.RunStrike");
+	static auto BoostLibrary__RunBoostAttack = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BTL_BoostLibrary.BP_BTL_BoostLibrary_C.RunBoostAttack");
+	if (currentFn == PCInputProcess__RunStrike) {
+		// Someone clicked the strike button, oversteer the static player controller methods to consider the current user the main player
+		// At this step, we don't yet know if a boost attack can be executed.
+		int playerBefore = CurrentPlayer;
+		CurrentPlayer = GetPlayerIndexFromInputProcessor((UE4::AActor *)Stack.Object);
+		Log::Info("RunStrike %d => %d", playerBefore, CurrentPlayer);
+
+		ProcessInternal(Context, Stack, ret);
+
+		CurrentPlayer = playerBefore;
+		return false;
+	}
+
+	if (currentFn == BoostLibrary__RunBoostAttack) {
+		Log::Info("RunBoostAttack (%d)", CurrentPlayer);
+		// Called inside of "RunStrike" -- we now know that a boost attack will occur
+		// We now change the first player character to the initiator of the boost attack in order to satisfy the native TOARISE code I cannot
+		// be bothered to locate in the debugger...
+		if (CurrentPlayer > 0) {
+			int playerIndex = CurrentPlayer;
+			CurrentPlayer = 0;
+			ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &playerIndex);
+		}
+
+		LastStrikeInitiator = CurrentPlayer;
+		return true;
+	}
+
+	static auto BP_BtlCharacterBase__OnAttackBeginEvent = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.OnAttackBeginEvent");
+	if (currentFn == BP_BtlCharacterBase__OnAttackBeginEvent) {
+		// Event handler for any attack -- also boost attacks.
+		// At this point, the native side has finished setting up the boost attack and we can revert our changes.
+
+		struct Params {
+			SDK::ABtlCharacterBase* SelfCharacter;                                            // (BlueprintVisible, BlueprintReadOnly, Parm, ZeroConstructor, IsPlainOldData)
+			SDK::FBtlArtsData                                NowArts;                                                  // (BlueprintVisible, BlueprintReadOnly, Parm)
+			SDK::EBattleActionState                                 PreState;
+		};
+		auto params = Stack.GetParams<Params>();
+		
+		auto type = params->NowArts.Type;
+		switch (type) {
+			case SDK::EBtlArtsType::STR_ATK:
+			case SDK::EBtlArtsType::STR_ATK_AIR:
+			case SDK::EBtlArtsType::STR_ATK_SUB:
+			case SDK::EBtlArtsType::STR_ATK_AIR_SUB:
+				Log::Info("Doing a boost attack (%d => %d)", CurrentPlayer, LastStrikeInitiator);
+				int playerBefore = CurrentPlayer;
+				CurrentPlayer = LastStrikeInitiator;
+
+				ProcessInternal(Context, Stack, ret);
+
+				CurrentPlayer = playerBefore;
+				LastStrikeInitiator = -1;
+
+				Log::Info("Restore first player");
+				ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
+
+				return false;
+			break;
+		}
+	}
+
+	//
+	//
 
 
 	if (Stack.Object == ModActor) {
@@ -1172,7 +1268,7 @@ int MultiplayerMod::GetPlayerIndex(UE4::APlayerController* playerController)
 			return i;
 		}
 	}
-	return 0;
+	return -1;
 }
 
 void MultiplayerMod::RefreshIni() {
@@ -1259,7 +1355,7 @@ void MultiplayerMod::Tick()
 			OnControllerConnected(i);
 		}
 
-		CurrentPlayer = i;
+		/*CurrentPlayer =*/ i;
 
 		// Only send through this for the time being
 		CompareDigitalStates(newState.IsTarget, oldState.IsTarget, &(justPressed.IsTarget), &(justReleased.IsTarget), Actions::BATTLE_BASE_TARGET_QUICK, i);
@@ -1292,7 +1388,7 @@ void MultiplayerMod::Tick()
 		//	OnAnalogAction(i, Actions::BATTLE_CAMERA_ANGLE, newState.CameraAngle.x, newState.CameraAngle.y);
 		//}
 
-		CurrentPlayer = 0;
+		//CurrentPlayer = -1;
 	}
 
 	float x = 0.0f, y = 0.0f;
