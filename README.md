@@ -103,5 +103,5 @@ The project is not currently in a compilable state because of some local changes
 ## Special Thanks
 
 - RussellJerome, for [Unreal Mod Loader (UML)](https://github.com/RussellJerome/UnrealModLoader)
-- emoose, for the [Arise SDK](https://github.com/emoose/Arise-SDK)
+- emoose, for the [Arise SDK](https://www.nexusmods.com/talesofarise/mods/5)
 - Meebo, for testing and literally playing through the game to provide me with a save file.
