@@ -79,7 +79,7 @@ At the moment, boost attacks can be used by all players to add some competitiven
 While still not completely stable, you *can* change characters during the battle, but you'll have to use the menu to do so.
 
 <kbd>P1</kbd>: Move the flag to the character you want to control and make sure the position is not already taken by another player (or chaos will ensue.)
-<kbd>P2</kbd>-<kbd>P4</kbd>: Move the character you'd like to control to your slot. (See [Battle Controls](battle-controls)) **You can ignore the flag.**
+<kbd>P2</kbd>-<kbd>P4</kbd>: Move the character you'd like to control to your slot. (See [Battle Controls](#battle-controls)) **You can ignore the flag.**
 
 ### Overworld Controls
 
