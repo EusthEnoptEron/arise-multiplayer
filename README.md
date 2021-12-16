@@ -1,4 +1,5 @@
-# Tales of Arise: Multiplayer Mod
+Tales of Arise: Multiplayer Mod
+=================================
 
 ![Assets/Sample.jpg](Assets/Sample.jpg)
 
@@ -6,11 +7,13 @@ Mod that adds multiplayer to Tales of Arise. For progress, see <!-- [Milestones]
 
 This is still to be considered experimental until someone says it's stable. Let me know via [GitHub](https://github.com/EusthEnoptEron/arise-multiplayer/issues) or [Discord](https://discord.gg/Se2XTnA) when you encounter untracked issues.
 
-## Why?
+Why?
+---
 
 Because this is how God intended *Tales of* to be.
 
-## How To Install
+How To Install
+--------------
 
 1. Extract files to the game data folder.
 2. Start the game.
@@ -19,7 +22,8 @@ During battle, controllers will automatically be assigned to the characters. See
 
 > :warning: If `xinput1_3.dll` already exists because you installed another mod (e.g. Arise SDK), skip the file and launch UnrealEngineModLauncher.exe before starting the game.
 
-## How To Use
+How To Use
+----------
 
 1. Plug in a second (or third, or fourth) controller.
 
@@ -27,7 +31,8 @@ The controllers will then be assigned to the 2nd, 3rd, and 4th character respect
 
 For details, [refer to Controls](#controls).
 
-## How To Disable
+How To Disable
+--------------
 
 Temporarily:
 
@@ -37,7 +42,8 @@ Completely:
 1. Remove `xinput1_3.dll`.
 2. Optionally, remove all files included in the archive.
 
-## Known Issues
+Known Issues
+--------------
 
 No critical issues known at this time.
 
@@ -46,7 +52,8 @@ For a complete list, see [issues](https://github.com/EusthEnoptEron/arise-multip
 Please comment or add new issues if you encounter any that haven't been reported yet.
 
 
-## Controls
+Controls
+--------------
 
 ### Controller Order
 
@@ -89,18 +96,21 @@ mirrors the default behavior of the game and allows for taking turns without pas
 Additionally, if you set `AutoChangeCharas` to `1` in the config (see [Customizing the Camera](#customizing-the-camera)),
 you will be able to instantly change the visible character with a press of "Reset Camera 2" (default is left bumper) on a controller to its assigned character.
 
-## Customizing the Camera
+Customizing the Camera
+--------------
 
 The camera is still a work in progress. You can however tweak it to your liking by editing
 a `MultiplayerMod.ini` file that you place at `...\steamapps\common\Tales of Arise\Arise\Binaries\Win64\MultiplayerMod.ini`. The folder already contains an example file -- simply rename it and delete the `.example` part.
 
 **Hot-reloads when changes are made.**
 
-## Compiling The Code
+Compiling The Code
+--------------
 
 The project is not currently in a compilable state because of some local changes to the Arise SDK. `// TODO`
 
-## Special Thanks
+Special Thanks
+--------------
 
 - RussellJerome, for [Unreal Mod Loader (UML)](https://github.com/RussellJerome/UnrealModLoader)
 - emoose, for the [Arise SDK](https://github.com/emoose/Arise-SDK)
