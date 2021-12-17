@@ -1,3 +1,4 @@
+#if ENABLE_TRACING
 #pragma once
 #include "Lib.h"
 #include <Windows.h>
@@ -53,3 +54,4 @@ private:
 	static LoaderUI* UI;
 };
 
+#endif

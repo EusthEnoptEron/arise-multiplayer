@@ -8,6 +8,7 @@
 #include "UnrealEngineModLoader/Memory/CoreModLoader.h"
 #include "UE4/Ue4.hpp"
 #include "LoaderUI.h"
+
 bool bIsProcessInternalsHooked = false;
 bool GameStateClassInitNotRan = true;
 namespace Hooks
