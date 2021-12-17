@@ -87,7 +87,7 @@ Outside of battle, all controllers are treated equally and can steer the main ch
 mirrors the default behavior of the game and allows for taking turns without passing around a controller.
 
 Additionally, if you set `AutoChangeCharas` to `1` in the config (see [Customizing the Camera](#customizing-the-camera)),
-you will be able to instantly change the visible character with a press of "Reset Camera 2" (default is left bumper) on a controller to its assigned character.
+all player will be able to instantly change the visible character to their own by pressing "Reset Camera 2" (default is left bumper) on their respective controllers.
 
 ## Customizing the Camera
 
