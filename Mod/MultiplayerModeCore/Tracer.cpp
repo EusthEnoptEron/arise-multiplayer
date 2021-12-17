@@ -95,6 +95,49 @@ void EX_FinalFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* resul
 }
 
 
+FNativeFuncPtr EX_CallMath;
+void EX_CallMathHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
+	auto tracer = Tracer::GetInstance();
+
+	static auto thread_id = std::this_thread::get_id();
+	auto current_thread_id = std::this_thread::get_id();
+
+	if (current_thread_id != thread_id || !tracer->IsTracing()) {
+		EX_FinalFunction(Context, Stack, result);
+		return;
+	}
+
+	uint64_t TempCode;
+	TempCode = *(uint64_t*)Stack.Code;
+	auto fn = (SDK::UFunction*)TempCode;
+
+	auto fnName = Context->GetName() + "::" + fn->GetName();
+	std::string params = "(" + tracer->GetParams(fn, sizeof(uint64_t), Context, Stack, result) + ")";
+
+	if (Stack.PreviousFrame == nullptr) {
+		tracer->OnEnter(Stack.Object->GetName() + "::" + Stack.Node->GetName() + "()");
+	}
+	tracer->OnEnter(fnName + params);
+	auto begin = std::chrono::high_resolution_clock::now();
+	EX_CallMath(Context, Stack, result);
+	auto end = std::chrono::high_resolution_clock::now();
+
+	std::string suffix = "";
+	if (fn != nullptr && fn->ReturnValueOffset != MAX_uint16) {
+		for (UPropertyEx* Property = (UPropertyEx*)fn->Children; Property && (Property->PropertyFlags & (CPF_Parm)) == CPF_Parm; Property = (UPropertyEx*)Property->Next) {
+			if ((Property->PropertyFlags & (CPF_ReturnParm)) == CPF_ReturnParm) {
+				suffix = " => " + tracer->ToString((SDK::UProperty*)Property, result);
+			}
+		}
+	}
+
+	tracer->OnExit(fnName, suffix, std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+	if (Stack.PreviousFrame == nullptr) {
+		tracer->OnExit(Stack.Object->GetName() + "::" + Stack.Node->GetName(), "", std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+	}
+}
+
+
 void *Tracer::GetPointer(UE4::UFunction* function) {
 	return _functionTable[function->GetFullName()];
 }
@@ -188,7 +231,13 @@ void Tracer::Hook()
 		"EX_FinalFunction"
 	);
 
+	MinHook::Add((DWORD_PTR)_GNatives[0x68],
+		&EX_CallMathHook,
+		&EX_CallMath,
+		"EX_CallMath"
+	);
 
+	
 	//for (int i = 0; i < UE4::UObject::GObjects->GetAsChunckArray().Num(); i++)
 	//{
 	//	auto fn = make::function([](UE4::UObject *Context, UE4::FFrame *Stack, void *result) {  });
@@ -244,7 +293,20 @@ std::string Tracer::ToString(SDK::UProperty* prop, void *result) {
 		return std::to_string((*(uint8*)result));
 	}
 	else if (prop->IsA(SDK::UStructProperty::StaticClass())) {
-		return prop->Class->GetName();
+		auto Struct = ((UStructPropertyEx*)prop)->Struct;
+		auto name = Struct->GetName();
+		if (name == "Vector") {
+			auto v = *(SDK::FVector*)result;
+			return "[" + std::to_string(v.X) + ", " + std::to_string(v.Y) + ", " + std::to_string(v.Z) + "]";
+		} else if (name == "Vector2D") {
+			auto v = *(SDK::FVector2D*)result;
+			return "[" + std::to_string(v.X) + ", " + std::to_string(v.Y) + "]";
+		} else if (name == "Rotator") {
+			auto r = *(SDK::FRotator*)result;
+			return "[" + std::to_string(r.Pitch) + ", " + std::to_string(r.Yaw) + ", " + std::to_string(r.Roll) + "]";
+		}
+
+		return name + " (Struct)";
 	}
 	else if (prop->IsA(SDK::UObjectProperty::StaticClass())) {
 		auto pointer = *(SDK::UObject**)result;

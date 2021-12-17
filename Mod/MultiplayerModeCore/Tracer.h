@@ -35,7 +35,7 @@ public:
     SDK::UEnum* Enum; //
 };
 
-struct UStructPropertyEx : UPropertyEx {
+struct UStructPropertyEx : SDK::UProperty {
 public:
     SDK::UScriptStruct* Struct; //
 };
