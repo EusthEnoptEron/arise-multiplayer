@@ -259,48 +259,6 @@ void BattleResumeHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
 }
 
 
-//Function Engine.GameplayStatics.GetPlayerController(int index) => APlayerController
-FNativeFuncPtr ABtlCharacterBase__SetTemporaryTargetCharacter;
-void ABtlCharacterBase__SetTemporaryTargetCharacterHook(UE4::UObject* Context, UE4::FFrame& Stack, void *result) {
-	ABtlCharacterBase__SetTemporaryTargetCharacter(Context, Stack, result);
-
-	// Replace if we have a better one
-	auto mod = ((MultiplayerMod*)(Mod::ModRef));
-
-	static auto getTargetCharacterFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.GetTargetCharacter");
-	// 	class ABtlCharacterBase* GetTargetCharacter(bool IgnoreTemporary);
-	struct params {
-		bool IgnoreTemporary;
-		SDK::ABtlCharacterBase* ReturnValue;
-	};
-	Log::Info("Whoo %s, %s, %s", Context->GetName().c_str(), Stack.Object->GetName().c_str(), Stack.Node->GetName().c_str());
-
-	if (mod->IsSettingUpStrikeAttack) {
-		Log::Info("Whee %s, %s, %s", Context->GetName().c_str(), Stack.Object->GetName().c_str(), Stack.Node->GetName().c_str());
-
-		/*auto targetRef = (SDK::ABtlCharacterBase *)Context;
-		auto states = mod->OldStates;
-		for (int i = 0; i < 4; i++) {
-			if (states[i].IsStrikeAttack0 || states[i].IsStrikeAttack1 || states[i].IsStrikeAttack2 || states[i].IsStrikeAttack3) {
-				auto chara = mod->GetControlledCharacter(i);
-				if (chara != nullptr) {
-
-					params parms = { true, nullptr };
-					chara->ProcessEvent(getTargetCharacterFn, &parms);
-
-					if (parms.ReturnValue != nullptr) {
-						targetRef->TemporaryTargetCharacter = parms.ReturnValue;
-						Log::Info("Replaced target with target of %s", chara->GetName().c_str());
-					}
-					return;
-				}
-			}
-		}*/
-	}
-}
-
-
-
 FNativeFuncPtr GameplayStatics__GetPlayerController;
 void GameplayStatics__GetPlayerControllerHook(UE4::UObject* Context, UE4::FFrame& Stack, UE4::APlayerController** result) {
 	GameplayStatics__GetPlayerController(Context, Stack, result);
@@ -422,6 +380,15 @@ void K2_GetBattleInputProcessHook(UE4::UObject* Context, UE4::FFrame& Stack, UE4
 	}
 
 	if (mod->InputProcesses[0] != nullptr && *result != mod->InputProcesses[0]) {
+		Log::Info("Wrong input process: %s -- fixing it!", (*result)->GetName().c_str());
+		auto battleManager = ((SDK::UBtlFunctionLibrary*)Stack.Object)->STATIC_GetBattleManager((SDK::UObject*)Stack.Object);
+		if (battleManager != nullptr) {
+			battleManager->BattleInputProcess = (SDK::ABtlInputExtInputProcessBase*)mod->InputProcesses[0];
+		}
+		else {
+			Log::Info("Unable to acquire battle manager.");
+		}
+
 		*result = mod->InputProcesses[0];
 	}
 }
@@ -439,6 +406,7 @@ void K2_GetBattlePCControllerHook(UE4::UObject* Context, UE4::FFrame& Stack, UE4
 	}
 
 	if (mod->Controllers[0] != nullptr && *result != mod->Controllers[0]) {
+		Log::Info("WRONG PLAYER CONTROLLER: " + (*result)->GetName());
 		*result = mod->Controllers[0];
 	}
 }
