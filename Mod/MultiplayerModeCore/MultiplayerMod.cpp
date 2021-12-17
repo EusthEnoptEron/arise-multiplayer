@@ -1391,8 +1391,17 @@ void MultiplayerMod::ChangePartyTop(int index) {
 
 	Log::Info("Party top change requested.");
 
+	auto gameMode = ((SDK::USystemFunctionLibrary*)ModActor)->STATIC_GetAriseGameMode();
+	if (gameMode->GetDisplayScene() != SDK::EAriseGameScene::PlayerFree) {
+		Log::Info("Only allowed in free mode, current state: %d", gameMode->GetDisplayScene());
+		return;
+	}
+
 	if (!((SDK::UAriseGameDataLibrary*)ModActor)->STATIC_IsLockPartyTop()) {
 		auto partyOrder = ((SDK::USystemFunctionLibrary*)ModActor)->STATIC_GetPartyOrder();
+
+		if (partyOrder == nullptr) return;
+
 		auto currentPartyTop = partyOrder->GetPartyTop();
 		auto proposedPartyTop = partyOrder->GetPartyId((SDK::EPCOrder)index);
 
