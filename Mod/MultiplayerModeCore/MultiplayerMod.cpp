@@ -465,18 +465,6 @@ void IsAutoGuardableHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* ret) {
 	}
 }
 
-
-FNativeFuncPtr SetBoostAttackCaller;
-void SetBoostAttackCallerHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* ret) {
-
-	auto caller = GetParam<SDK::ABtlCharacterBase *>(Stack);
-	SetBoostAttackCaller(Context, Stack, ret);
-
-	Log::Info("SET STRIKE CALLER: %s", caller == nullptr ? "NULL" : caller->GetName().c_str());
-
-	PrintStackTrace(Context, Stack);
-}
-
 FNativeFuncPtr ProcessInternal;
 void ProcessInternalHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
 	static auto thread_id = std::this_thread::get_id();
@@ -535,6 +523,53 @@ void K2_IsBtlButtonRepeatedHook(UE4::UObject* Context, UE4::FFrame& Stack, void*
 	}
 	K2_IsBtlButtonRepeated(Context, Stack, ret);
 };
+
+FNativeFuncPtr IsFriendUnit;
+void IsFriendUnitHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* ret) {
+	Log::Info("IsFriendUnit");
+	IsFriendUnit(Context, Stack, ret);
+	*ret = false;
+};
+
+FNativeFuncPtr K2_IsFriendlyFire;
+void K2_IsFriendlyFireHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* ret) {
+	Log::Info("K2_IsFriendlyFire");
+	K2_IsFriendlyFire(Context, Stack, ret);
+	*ret = false;
+};
+
+UPropertyEx* FindProperty(SDK::UFunction *fn, std::string name) {
+	for (auto prop = (UPropertyEx*)fn->Children; prop; prop = (UPropertyEx*)prop->Next) {
+		if (prop->GetName() == name) {
+			Log::Info("Found %s", name.c_str());
+			return prop;
+		}
+	}
+
+	return nullptr;
+}
+
+FNativeFuncPtr GetTargetSelectionList;
+void GetTargetSelectionListHook(UE4::UObject* Context, UE4::FFrame& Stack, uint8_t* ret) {
+
+	auto playerUnit = ((SDK::UBtlUnitLibrary*)Context)->STATIC_GetPlayerControlledUnit();
+	auto friends = ((SDK::UBtlUnitLibrary*)Context)->STATIC_GetPartyUnitList( true, false, false);
+
+	for (int i = 0; i < friends.Num(); i++) {
+		if (friends[i] != playerUnit) {
+			friends[i]->SetUnitGroup(SDK::EBtlUnitGroup::GROUP_ENEMY);
+		}
+	}
+
+	GetTargetSelectionList(Context, Stack, ret);
+
+	for (int i = 0; i < friends.Num(); i++) {
+		if (friends[i] != playerUnit) {
+			friends[i]->SetUnitGroup(SDK::EBtlUnitGroup::GROUP_PARTY);
+		}
+	}
+};
+
 
 
 FNativeFuncPtr K2_GetPlayerController;
@@ -671,9 +706,17 @@ void MultiplayerMod::InitializeMod()
 		&IsAutoGuardableHook, &IsAutoGuardable, "IsAutoGuardable");
 
 	MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.SetBoostAttackCaller")->GetFunction()),
-		&SetBoostAttackCallerHook, &SetBoostAttackCaller, "SetBoostAttackCaller");
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlUnitLibrary.IsFriendUnit")->GetFunction()),
+		&IsFriendUnitHook, &IsFriendUnit, "IsFriendUnit");
 
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.K2_IsFriendlyFire")->GetFunction()),
+		&K2_IsFriendlyFireHook, &K2_IsFriendlyFire, "K2_IsFriendlyFire");
+
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlTargetCursorManager.GetTargetSelectionList")->GetFunction()),
+		&GetTargetSelectionListHook, &GetTargetSelectionList, "GetTargetSelectionList");
+		
 	//
 	auto tickFn = Pattern::Find("48 8B C4 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 78 FD FF FF");
 	void* ProcessInterals = UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.ReceiveBeginProcess")->GetFunction();
@@ -756,6 +799,19 @@ struct JustParams {
 
 bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
 	auto currentFn = Stack.Node;
+
+	//static auto IsFriendlyFire = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.K2_IsFriendlyFire");
+	//if (Stack.Node == IsFriendlyFire) {
+	//	Log::Info("IsFriendlyFire");
+	//	*(((FOutParmRec*)Stack.OutParms)->PropAddr) = false;
+	//	return false;
+	//}
+
+	static auto IsCorrectHitCollision = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.IsCorrectHitCollisionProcess");
+	if (Stack.Node == IsCorrectHitCollision) {
+		*(((FOutParmRec*)Stack.OutParms)->PropAddr) = true;
+		return false;
+	}
 
 	static auto BtlCharacterBase__JustStepProcess = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.JustStepProcess");
 	static auto BtlCharacterBase__JustGuardProcess = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.JustGuardProcess");
@@ -979,7 +1035,27 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 			ModActor->ProcessEvent(K2_GetBattlePCControllerFn, &args);
 			Controllers[0] = (UE4::APlayerController*)args.Result;
-			Log::Info("Setting first player controller: %p (%s)", Controllers[0], Controllers[0]->GetName().c_str());
+			if (Controllers[0] != nullptr) {
+				Log::Info("Setting first player controller: %p (%s)", Controllers[0], Controllers[0]->GetName().c_str());
+
+				/*auto units = ((SDK::UBtlUnitLibrary*)ModActor)->STATIC_GetAllUnitList(true, false);
+				for (int i = 0; i < units.Num(); i++) {
+					units[i]->BattleStatusComponent->SetHPMax(9999999);
+					units[i]->BattleStatusComponent->SetHP(9999999);
+				}*/
+			}
+			else {
+				Log::Info("NO CONTROLLER?!");
+			}
+
+		/*	Log::Info("Make enemies");
+			SDK::TArray<SDK::AActor*> outActors;
+			((SDK::UGameplayStatics*)ModActor)->STATIC_GetAllActorsOfClass((SDK::UObject*)ModActor, SDK::ABtlCharacterBase::StaticClass(), &outActors);
+			for (int i = 0; i < outActors.Num(); i++) {
+				Log::Info("Make enemy out of %s", outActors[i]->GetName().c_str());
+				((SDK::ABtlCharacterBase*)outActors[i])->SetUnitGroup(SDK::EBtlUnitGroup::GROUP_ENEMY);
+			}*/
+
 		}
 		else if (currentFn == ModActor__OnEndBattle) {
 			InputManager::GetInstance()->SetRerouteControllers(false);
@@ -1116,7 +1192,13 @@ void MultiplayerMod::OnAfterVirtualFunction(UE4::UObject* Context, UE4::FFrame& 
 	if (Stack.Node == WaitEnd) {
 		ModActor->ProcessEvent(onBeforePauseFn, nullptr);
 	}
-	
+
+
+	if (((SDK::UObject*)Stack.Object)->IsA(SDK::ABtlCharacterBase::StaticClass())) {
+		//((SDK::ABtlCharacterBase*)Stack.Object)->SetUnitGroup(SDK::EBtlUnitGroup::GROUP_ENEMY);
+		((SDK::ABtlCharacterBase*)Stack.Object)->SetHitFilter(SDK::EBtlHitFilter::GROUP_ANY);
+	}
+
 }
 
 void MultiplayerMod::SetNearClippingPlane(float nearPlane) {
@@ -1203,7 +1285,8 @@ UE4::APawn* MultiplayerMod::GetControlledCharacter(int index) {
 	GetControlledCharacterParms parms = { index, nullptr };
 	ModActor->ProcessEvent(GetControlledCharacterFn, &parms);
 
-	return parms.Result;
+	auto chara = parms.Result;
+	return chara;
 }
 
 UE4::APlayerController* MultiplayerMod::GetController(int index) {
