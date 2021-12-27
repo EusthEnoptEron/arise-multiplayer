@@ -12,8 +12,10 @@ Because this is how God intended *Tales of* to be.
 
 ## How To Install
 
-1. Extract files to the game data folder.
-2. Start the game.
+1. Extract files to the local game data folder. (See image how to get there.)
+
+    ![Assets/browse_local_files.jpg](Assets/browse_local_files.jpg)
+3. Start the game.
 
 During battle, controllers will automatically be assigned to the characters. See below for details on the order.
 
