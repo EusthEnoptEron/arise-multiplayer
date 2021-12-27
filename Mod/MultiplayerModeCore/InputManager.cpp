@@ -15,20 +15,27 @@ int InputManager::GetIndexForController(InputHandle_t handle) {
 	// Search for handle
 	for (int i = 0; i < Controllers.size(); i++) {
 		if (Controllers[i] == handle) return i;
-		if (emptySpot < 0 &&Controllers[i] == 0) {
-			emptySpot = i;
+		if (emptySpot < 0 && Controllers[i] == 0) {
+			if (i > 0 || !SkipFirstPlayer) {
+				emptySpot = i;
+				// Do not break, because we might still find the handle
+			}
 		}
 	}
 
 	if (emptySpot >= 0) {
 		// Found empty spot
 		Controllers[emptySpot] = handle;
-		Log::Info("Registering new controller: %p => %d", handle, emptySpot);
+		Log::Info("Registering new controller: %p (P%d)", handle, emptySpot+1);
 		return emptySpot;
 	}
 
+	if (Controllers.size() == 0 && SkipFirstPlayer) {
+		Controllers.push_back((InputHandle_t)0);
+	}
+
 	Controllers.push_back(handle);
-	Log::Info("Registering new controller: %p", handle);
+	Log::Info("Registering new controller: %p (P%d)", handle, Controllers.size());
 	return Controllers.size() - 1;
 }
 

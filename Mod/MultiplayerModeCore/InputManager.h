@@ -83,6 +83,8 @@ public:
 	}
 
 	bool IsMenuPressed(int index);
+
+	bool SkipFirstPlayer = false;
 private:
 	InputManager() {
 		Input = SteamInput();

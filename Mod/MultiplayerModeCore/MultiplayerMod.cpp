@@ -1132,7 +1132,14 @@ void MultiplayerMod::ResetNearClippingPlane() {
 
 void MultiplayerMod::InitGameState()
 {
+	// Read "FirstPlayerIsKeyboard" from config.
+	INI::PARSE_FLAGS = INI::PARSE_COMMENTS_ALL | INI::PARSE_COMMENTS_SLASH | INI::PARSE_COMMENTS_HASH;
+	INI config(INI_FILE_LOCATION, true);
+	
 	InputManager::Initialize();
+
+	config.select("MISC");
+	InputManager::GetInstance()->SkipFirstPlayer = std::stoi(config.get("FirstPlayerIsKeyboard", "0"));
 	InputManager::GetInstance()->Refresh(NewStates);
 }
 
@@ -1272,8 +1279,6 @@ void MultiplayerMod::RefreshIni() {
 	
 	
 	AutoChangeCharas = std::stoi(config.get("AutoChangeCharas", "0"));
-
-
 	ModActor->ProcessEvent(applyConfigFn, &parms);
 }
 
