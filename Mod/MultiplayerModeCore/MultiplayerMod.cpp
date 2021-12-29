@@ -176,6 +176,7 @@ UE4::APlayerController* FindPlayerController(const UE4::FFrame& Stack) {
 
 	static auto derivedInputStateComponentClazz = UE4::UObject::FindClass("Class Arise.BtlDerivedInputStateComponent");
 	static auto btlProcessorClazz = UE4::UObject::FindClass("Class Arise.BtlInputExtInputProcessBase");
+	static auto inputExtPlayerController = UE4::UObject::FindClass("Class InputExtPlugin.InputExtPlayerController");
 	static auto getOwnerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Engine.ActorComponent.GetOwner");
 	static auto getUnitFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlUnitScript.GetUnit");
 	static auto unitScriptClazz = UE4::UObject::FindClass("Class Arise.BtlUnitScript");
@@ -200,6 +201,10 @@ UE4::APlayerController* FindPlayerController(const UE4::FFrame& Stack) {
 
 		if (FastIsA(obj, btlCharacterClazz)) {
 			return mod->GetControllerOfCharacter((UE4::APawn*)obj);
+		}
+
+		if (FastIsA(obj, inputExtPlayerController)) {
+			return (UE4::APlayerController*)obj;
 		}
 
 		if (FastIsA(obj, unitScriptClazz)) {
@@ -380,7 +385,7 @@ void K2_GetBattleInputProcessHook(UE4::UObject* Context, UE4::FFrame& Stack, UE4
 	}
 
 	if (mod->InputProcesses[0] != nullptr && *result != mod->InputProcesses[0]) {
-		Log::Info("Wrong input process: %s -- fixing it!", (*result)->GetName().c_str());
+		Log::Info("Wrong input process -- fixing it!");
 		auto battleManager = ((SDK::UBtlFunctionLibrary*)Stack.Object)->STATIC_GetBattleManager((SDK::UObject*)Stack.Object);
 		if (battleManager != nullptr) {
 			battleManager->BattleInputProcess = (SDK::ABtlInputExtInputProcessBase*)mod->InputProcesses[0];
@@ -855,6 +860,8 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		return false;
 	}
 
+	static auto Native_GetPlayerController = UE4::UObject::FindObject<UE4::UFunction>("Function MultiPlayerController.MultiPlayerController_C.Native_GetPlayerController");
+	static auto Native_GetInputProcess = UE4::UObject::FindObject<UE4::UFunction>("Function MultiPlayerController.MultiPlayerController_C.Native_GetInputProcess");
 	static auto Native_SetProcess = UE4::UObject::FindObject<UE4::UFunction>("Function MultiPlayerController.MultiPlayerController_C.Native_SetProcess");
 	if (currentFn == Native_SetProcess) {
 
@@ -867,6 +874,16 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		InputProcesses[args.Index] = args.Process;
 
 		Log::Info("Set process %d to %p / %p", args.Index, args.Process, InputProcesses[args.Index]);
+	}
+
+	if (currentFn == Native_GetPlayerController) {
+		*((UE4::APlayerController **)((FOutParmRec*)Stack.OutParms)->PropAddr) = Controllers[0];
+		return false;
+	}
+
+	if (currentFn == Native_GetInputProcess) {
+		*((UE4::AActor**)((FOutParmRec*)Stack.OutParms)->PropAddr) = InputProcesses[0];
+		return false;
 	}
 
 	static auto Btl_Camera__SetFocusUnitCamera = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCamera.BP_BtlCamera_C.SetFocusUnitCamera");
