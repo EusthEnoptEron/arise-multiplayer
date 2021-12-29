@@ -98,6 +98,16 @@ a `MultiplayerMod.ini` file that you place at `...\steamapps\common\Tales of Ari
 
 **Hot-reloads when changes are made.**
 
+## Using the Keyboard
+
+> ⚠️The mouse & keyboard are second-class citizens in this mod. If you have the choice, please use gamepads.
+
+The mouse & keyboard should work normally, but they are **always** P1. This means that with the default behavior, the first gamepad and the keyboard will share the same character.
+If you want them to control separate characters (what you'd expect from multi-player), you have two options:
+
+- A.) Plug in (or emulate) a second gamepad and ignore the first one.
+- B.) Set "FirstPlayerIsKeyboard=1" in the settings. (See [Customizing the Camera](#customizing-the-camera))
+
 ## Compiling The Code
 
 The project is not currently in a compilable state because of some local changes to the Arise SDK. `// TODO`
