@@ -22,6 +22,18 @@ enum class EBtlInputConfigType : uint8
 };
 
 
+// Enum Arise.EControlPlayer
+UENUM(BlueprintType)
+enum class EControlPlayer : uint8
+{
+	PLAYER_1P = 0,
+	PLAYER_2P = 1,
+	PLAYER_3P = 2,
+	PLAYER_4P = 3,
+	PLAYER_MAX = 4
+};
+
+
 // Enum Arise.EPCOrder
 UENUM(BlueprintType)
 enum class EPCOrder : uint8
@@ -40,14 +52,14 @@ enum class EPCOrder : uint8
 UENUM(BlueprintType)
 enum class EBattleStateAction : uint8
 {
-	None                           = 0,
-	Initialize                     = 1,
-	WaitComplete                   = 2,
-	Activate                       = 3,
-	Execute                        = 4,
-	Finalize                       = 5,
-	WaitFinalize                   = 6,
-	EBattleStateAction_MAX         = 7
+	None = 0,
+	Initialize = 1,
+	WaitComplete = 2,
+	Activate = 3,
+	Execute = 4,
+	Finalize = 5,
+	WaitFinalize = 6,
+	EBattleStateAction_MAX = 7
 };
 
 UENUM(BlueprintType)
@@ -257,23 +269,23 @@ enum class EBattleState : uint8
 UENUM(BlueprintType)
 enum class EBattleActionState : uint8
 {
-	STATE_INVALID                  = 0,
-	STATE_MOVE                     = 1,
-	STATE_JUMP                     = 2,
-	STATE_FALL                     = 3,
-	STATE_LAND                     = 4,
-	STATE_STEP                     = 5,
-	STATE_TURN                     = 6,
-	STATE_GUARD                    = 7,
-	STATE_DAMAGE                   = 8,
-	STATE_BLOW                     = 9,
-	STATE_DOWN                     = 10,
-	STATE_ARISE                    = 11,
-	STATE_REACT                    = 12,
-	STATE_DEAD                     = 13,
-	STATE_MAGIC                    = 14,
-	STATE_ITEM                     = 15,
-	STATE_ADVENT                   = 16,
-	STATE_ATTACK                   = 17,
-	STATE_MAX                      = 18
+	STATE_INVALID = 0,
+	STATE_MOVE = 1,
+	STATE_JUMP = 2,
+	STATE_FALL = 3,
+	STATE_LAND = 4,
+	STATE_STEP = 5,
+	STATE_TURN = 6,
+	STATE_GUARD = 7,
+	STATE_DAMAGE = 8,
+	STATE_BLOW = 9,
+	STATE_DOWN = 10,
+	STATE_ARISE = 11,
+	STATE_REACT = 12,
+	STATE_DEAD = 13,
+	STATE_MAGIC = 14,
+	STATE_ITEM = 15,
+	STATE_ADVENT = 16,
+	STATE_ATTACK = 17,
+	STATE_MAX = 18
 };

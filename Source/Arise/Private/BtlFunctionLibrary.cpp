@@ -407,6 +407,11 @@ void UBtlFunctionLibrary::GetPcOrder(ABtlCharacterBase* Owner, bool& IsValid, EP
 {
 }
 
+UArisePartyOrder* UBtlFunctionLibrary::GetPartyOrder()
+{
+	return nullptr;
+}
+
 EOperationMode UBtlFunctionLibrary::GetOperationMode()
 {
 	return {};

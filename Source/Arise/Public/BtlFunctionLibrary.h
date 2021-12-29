@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ArisePartyOrder.h"
 #include "BattleUIManager.h"
 #include "BtlCharacterBase.h"
 #include "BtlDebugCommand.h"
@@ -323,7 +324,9 @@ class ARISE_API UBtlFunctionLibrary : public UBlueprintFunctionLibrary
 
 	UFUNCTION(BlueprintCallable)
 	static void GetPcOrder(ABtlCharacterBase* Owner, bool& IsValid, EPCOrder& Order);
-	// UArisePartyOrder* GetPartyOrder();
+
+	UFUNCTION(BlueprintCallable)
+	UArisePartyOrder* GetPartyOrder();
 
 	UFUNCTION(BlueprintCallable)
 	static EOperationMode GetOperationMode();
