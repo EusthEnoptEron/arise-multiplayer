@@ -245,6 +245,7 @@ private:
 	int MenuCandidate = 0;
 	bool LogEverything = false;
 	bool AutoChangeCharas = false;
+	bool RestrictBoostAttacksToCpuAndSelf = false;
 
 	time_t LastCheck;
 	InputManager* Manager;

@@ -914,13 +914,26 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		// Called inside of "RunStrike" -- we now know that a boost attack will occur
 		// We now change the first player character to the initiator of the boost attack in order to satisfy the native TOARISE code I cannot
 		// be bothered to locate in the debugger...
+
+		LastStrikeInitiator = CurrentPlayer;
+		if (RestrictBoostAttacksToCpuAndSelf) {
+			auto executor = Stack.GetParams<UE4::APawn*>();
+			auto controller = GetControllerOfCharacter(*executor);
+			auto index = GetPlayerIndex(controller);
+			if (index != CurrentPlayer && index >= 0) {
+				// Ignore boost attack
+				Log::Info("Ignoring boost attack because of restriction.");
+				CurrentPlayer = -1;
+				return false;
+			}
+		}
+
 		if (CurrentPlayer > 0) {
 			int playerIndex = CurrentPlayer;
 			CurrentPlayer = 0;
 			ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &playerIndex);
 		}
 
-		LastStrikeInitiator = CurrentPlayer;
 		return true;
 	}
 
@@ -1296,6 +1309,7 @@ void MultiplayerMod::RefreshIni() {
 	
 	
 	AutoChangeCharas = std::stoi(config.get("AutoChangeCharas", "0"));
+	RestrictBoostAttacksToCpuAndSelf = std::stoi(config.get("RestrictBoostAttacksToCpuAndSelf", "0"));
 	ModActor->ProcessEvent(applyConfigFn, &parms);
 }
 
