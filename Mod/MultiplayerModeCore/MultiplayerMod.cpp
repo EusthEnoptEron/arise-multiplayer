@@ -909,6 +909,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		return false;
 	}
 
+	static auto ModActor__IsMultiplayerBattle = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.IsMultiplayerBattle");
 	if (currentFn == BoostLibrary__RunBoostAttack) {
 		Log::Info("RunBoostAttack (%d)", CurrentPlayer);
 		// Called inside of "RunStrike" -- we now know that a boost attack will occur
@@ -917,14 +918,20 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 		LastStrikeInitiator = CurrentPlayer;
 		if (RestrictBoostAttacksToCpuAndSelf) {
-			auto executor = Stack.GetParams<UE4::APawn*>();
-			auto controller = GetControllerOfCharacter(*executor);
-			auto index = GetPlayerIndex(controller);
-			if (index != CurrentPlayer && index >= 0) {
-				// Ignore boost attack
-				Log::Info("Ignoring boost attack because of restriction.");
-				CurrentPlayer = -1;
-				return false;
+			// Only apply this if we're actually in a multiplayer battle (as opposed to tutorial, etc.)
+			bool isMultiplayerBattle;
+			ModActor->ProcessEvent(ModActor__IsMultiplayerBattle, &isMultiplayerBattle);
+
+			if (isMultiplayerBattle) {
+				auto executor = Stack.GetParams<UE4::APawn*>();
+				auto controller = GetControllerOfCharacter(*executor);
+				auto index = GetPlayerIndex(controller);
+				if (index != CurrentPlayer && index >= 0) {
+					// Ignore boost attack
+					Log::Info("Ignoring boost attack because of restriction.");
+					CurrentPlayer = -1;
+					return false;
+				}
 			}
 		}
 

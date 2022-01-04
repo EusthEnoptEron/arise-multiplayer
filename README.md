@@ -88,15 +88,30 @@ While still not completely stable, you *can* change characters during the battle
 Outside of battle, all controllers are treated equally and can steer the main character and navigate through menus. This
 mirrors the default behavior of the game and allows for taking turns without passing around a controller.
 
-Additionally, if you set `AutoChangeCharas` to `1` in the config (see [Customizing the Camera](#customizing-the-camera)),
+Additionally, if you set `AutoChangeCharas` to `1` in the config (see [Customization](#customization)),
 all player will be able to instantly change the visible character to their own by pressing "Reset Camera 2" (default is left bumper) on their respective controllers.
 
-## Customizing the Camera
+## Customization
 
-The camera is still a work in progress. You can however tweak it to your liking by editing
-a `MultiplayerMod.ini` file that you place at `...\steamapps\common\Tales of Arise\Arise\Binaries\Win64\MultiplayerMod.ini`. The folder already contains an example file -- simply rename it and delete the `.example` part.
+There are a few things that you can customize to your liking. For this, you simply have to edit the values in `MultiplayerMod.ini`. (**Changed are applied immediately.**)
 
-**Hot-reloads when changes are made.**
+1. Rename `...\steamapps\common\Tales of Arise\Arise\Binaries\Win64\MultiplayerMod.example.ini` to `MultiplayerMod.ini` (i.e. remove the ".example" part.)
+2. Open the file and edit the values to your liking.
+
+### Camera Customizations
+
+Edit the values under `[CAMERA]`. There are comments that should explain what the variables do.
+
+### Boost Attack Behavior
+
+If you want to keep other players from "stealing" your character by invoking boost attacks, set:
+
+```ini
+[MISC]
+RestrictBoostAttacksToCpuAndSelf=1
+```
+
+This will make sure that only you are allowed to use your own character for boost attacks. CPU characters are still available for everyone.
 
 ## Using the Keyboard
 
@@ -106,7 +121,7 @@ The mouse & keyboard should work normally, but they are **always** P1. This mean
 If you want them to control separate characters (what you'd expect from multi-player), you have two options:
 
 - A.) Plug in (or emulate) a second gamepad and ignore the first one.
-- B.) Set "FirstPlayerIsKeyboard=1" in the settings. (See [Customizing the Camera](#customizing-the-camera))
+- B.) Set "FirstPlayerIsKeyboard=1" in the settings. (See [Customization](#customization))
 
 ## Compiling The Code
 
