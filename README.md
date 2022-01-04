@@ -93,7 +93,7 @@ all player will be able to instantly change the visible character to their own b
 
 ## Customization
 
-There are a few things that you can customize to your liking. For this, you simply have to edit the values in `MultiplayerMod.ini`. (**Changed are applied immediately.**)
+There are a few things that you can customize to your liking. For this, you simply have to edit the values in `MultiplayerMod.ini`. (**Changes are applied immediately.**)
 
 1. Rename `...\steamapps\common\Tales of Arise\Arise\Binaries\Win64\MultiplayerMod.example.ini` to `MultiplayerMod.ini` (i.e. remove the ".example" part.)
 2. Open the file and edit the values to your liking.
