@@ -113,6 +113,18 @@ RestrictBoostAttacksToCpuAndSelf=1
 
 This will make sure that only you are allowed to use your own character for boost attacks. CPU characters are still available for everyone.
 
+### Switching Characters (P2-P4)
+
+There are two flags that let you customize the character switching behavior of P2-P4.
+
+**AllowSwitchingCharasDuringBattle** (default = true)
+
+When enabled, P2-P4 can switch characters during battle (unless the chara is controlled by someone else)
+
+**ResetCharacterAssignmentsAfterBattle** (default = true)
+
+When enabled, P2-P4 will be reset to their default character (according to the character order) after battle. This mimics the behavior for P1.
+
 ## Using the Keyboard
 
 > ⚠️The mouse & keyboard are second-class citizens in this mod. If you have the choice, please use gamepads.
