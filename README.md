@@ -93,7 +93,7 @@ all player will be able to instantly change the visible character to their own b
 
 ## Customization
 
-There are a few things that you can customize to your liking. For this, you simply have to edit the values in `MultiplayerMod.ini`. (**Changed are applied immediately.**)
+There are a few things that you can customize to your liking. For this, you simply have to edit the values in `MultiplayerMod.ini`. (**Changes are applied immediately.**)
 
 1. Rename `...\steamapps\common\Tales of Arise\Arise\Binaries\Win64\MultiplayerMod.example.ini` to `MultiplayerMod.ini` (i.e. remove the ".example" part.)
 2. Open the file and edit the values to your liking.
@@ -112,6 +112,18 @@ RestrictBoostAttacksToCpuAndSelf=1
 ```
 
 This will make sure that only you are allowed to use your own character for boost attacks. CPU characters are still available for everyone.
+
+### Switching Characters (P2-P4)
+
+There are two flags that let you customize the character switching behavior of P2-P4.
+
+**AllowSwitchingCharasDuringBattle** (default = true)
+
+When enabled, P2-P4 can switch characters during battle (unless the chara is controlled by someone else)
+
+**ResetCharacterAssignmentsAfterBattle** (default = true)
+
+When enabled, P2-P4 will be reset to their default character (according to the character order) after battle. This mimics the behavior for P1.
 
 ## Using the Keyboard
 
