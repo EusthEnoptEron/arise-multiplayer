@@ -30,4 +30,7 @@ class ARISE_API UBtlUnitLibrary : public UBlueprintFunctionLibrary
 	UFUNCTION(BlueprintCallable)
 	static ABtlCharacterBase* GetPlayerControlledUnit();
 
+	UFUNCTION(BlueprintCallable)
+	static EPCOrder GetPartyOrder(ABtlCharacterBase* Actor);
+
 };

@@ -12,3 +12,8 @@ ABtlCharacterBase* UBtlUnitLibrary::GetPlayerControlledUnit()
 	return nullptr;
 }
 
+EPCOrder UBtlUnitLibrary::GetPartyOrder(ABtlCharacterBase* Actor)
+{
+	return {};
+}
+

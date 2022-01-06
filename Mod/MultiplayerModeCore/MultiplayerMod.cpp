@@ -1312,6 +1312,10 @@ void MultiplayerMod::RefreshIni() {
 	parms.MaxPitch = std::stof(config.get("MaxPitch", "-1"));
 
 	config.select("MISC");
+
+	parms.AllowSwitchingCharasDuringBattle = std::stoi(config.get("AllowSwitchingCharasDuringBattle", "1"));
+	parms.ResetCharacterAssignmentsAfterBattle = std::stoi(config.get("ResetCharacterAssignmentsAfterBattle", "1"));
+
 	parms.DebugMenu = std::stoi(config.get("DebugMenu", "0"));
 	
 	
@@ -1445,9 +1449,29 @@ void MultiplayerMod::ChangePartyTop(int index) {
 
 		if (partyOrder == nullptr) return;
 
-		auto currentPartyTop = partyOrder->GetPartyTop();
-		auto proposedPartyTop = partyOrder->GetPartyId((SDK::EPCOrder)index);
+		int charaIndex = index;
 
+		auto controller = GetController(index);
+		static auto MultiController = UE4::UObject::FindClass("BlueprintGeneratedClass MultiPlayerController.MultiPlayerController_C");
+
+
+		if (controller != nullptr && FastIsA(controller, MultiController)) {
+			UE4::GetVariable<int>(controller, "Index", charaIndex);
+		}
+		else {
+			SDK::TArray<SDK::FMenuFormationData> formationData;
+			((SDK::UMenuFormationSupport*)ModActor)->STATIC_MenuFormationGetData(&formationData);
+
+			for (int i = 0; i < min(4,formationData.Num()); i++) {
+				if (formationData[i].IsControl) {
+					charaIndex = i;
+					Log::Info("Found chara");
+				}
+			}
+		}
+
+		auto currentPartyTop = partyOrder->GetPartyTop();
+		auto proposedPartyTop = partyOrder->GetPartyId((SDK::EPCOrder)charaIndex);
 		if ((uint8_t)proposedPartyTop >= (uint8_t)SDK::EArisePartyID::MAX) {
 			// Nothing to see here
 			return;

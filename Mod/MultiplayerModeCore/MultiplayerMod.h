@@ -63,6 +63,9 @@ struct ApplyConfigParams {
 	float MinPitch;
 	float MaxPitch;
 
+	bool AllowSwitchingCharasDuringBattle;
+	bool ResetCharacterAssignmentsAfterBattle;
+
 	bool DebugMenu;
 };
 
