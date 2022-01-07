@@ -76,12 +76,13 @@ party member.
 
 At the moment, boost attacks can be used by all players to add some competitiveness to the mix. Let me know if you don't like this behavior and I'll make it configurable.
 
+See [Customization](#customization) for instructions on how to restrict the usage of boost attacks.
+
 #### Changing Characters During Battle
 
-While still not completely stable, you *can* change characters during the battle, but you'll have to use the menu to do so.
+By default, all players can switch characters during battle, as long as the new character is not already controlled by someone else.
 
-<kbd>P1</kbd>: Move the flag to the character you want to control and make sure the position is not already taken by another player (or chaos will ensue.)
-<kbd>P2</kbd>-<kbd>P4</kbd>: Move the character you'd like to control to your slot. (See [Battle Controls](#battle-controls)) **You can ignore the flag.**
+See [Customization](#customization) for instructions on how to customize this behavior.
 
 ### Overworld Controls
 
@@ -119,7 +120,9 @@ There are two flags that let you customize the character switching behavior of P
 
 **AllowSwitchingCharasDuringBattle** (default = true)
 
-When enabled, P2-P4 can switch characters during battle (unless the chara is controlled by someone else)
+When enabled, P2-P4 can switch characters during battle (unless the chara is controlled by someone else) by moving the flag. (i.e. in the target menu, in the battle menu and in the formation menu.) 
+
+When disabled, P2, P3 and P4 are always chara #2 (left), #3 (right) and #4 (bottom) respectively. You can still change charas, but you'll have to move them around to achieve this. (e.g. move the bottom character to the left)
 
 **ResetCharacterAssignmentsAfterBattle** (default = true)
 
