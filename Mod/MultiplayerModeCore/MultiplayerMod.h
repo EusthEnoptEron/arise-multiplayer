@@ -66,6 +66,11 @@ struct ApplyConfigParams {
 	bool AllowSwitchingCharasDuringBattle;
 	bool ResetCharacterAssignmentsAfterBattle;
 
+	bool IgnoreDeadPlayers;
+
+	float TargetCursorScale;
+	bool HideDefaultCursor;
+
 	bool DebugMenu;
 };
 
@@ -249,6 +254,7 @@ private:
 	bool LogEverything = false;
 	bool AutoChangeCharas = false;
 	bool RestrictBoostAttacksToCpuAndSelf = false;
+	bool RestrictBoostAttacksToP1 = false;
 
 	time_t LastCheck;
 	InputManager* Manager;

@@ -754,11 +754,28 @@ void MultiplayerMod::ProcessFunction(UE4::UObject* obj, UE4::FFrame* Frame)
 {
 }
 
+void PrintHierarchy(SDK::UWidget *widget, int depth = 0) {
+	Log::Info("%s%s (%s)", std::string(depth * 2, ' ').c_str(), widget->GetName().c_str(), widget->Class->GetName().c_str());
+	if (widget->IsA(SDK::UPanelWidget::StaticClass())) {
+		auto panelWidget = (SDK::UPanelWidget*)widget;
+		
+		for (int i = 0; i < panelWidget->Slots.Num(); i++) {
+			PrintHierarchy(panelWidget->Slots[i]->Content, depth + 1);
+		}
+	}
+	else if (widget->IsA(SDK::UUserWidget::StaticClass())) {
+		auto userWidget = (SDK::UUserWidget*)widget;
+		PrintHierarchy(userWidget->WidgetTree->RootWidget, depth + 1);
+	}
+}
+
 struct JustParams {
 	UE4::APawn* DmgActor;
 	bool JustGuard;
 };
 
+
+// TODO: Make lookup table for all those implementations
 bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
 	auto currentFn = Stack.Node;
 
@@ -808,6 +825,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 	}
 
 	static auto Native_GetHudVisibility = UE4::UObject::FindObject<UE4::UFunction>("Function BP_ModHelper.BP_ModHelper_C.Native_GetHudVisibility");
+	static auto Native_GetRootWidget = UE4::UObject::FindObject<UE4::UFunction>("Function BP_ModHelper.BP_ModHelper_C.Native_GetRootWidget");
 	static auto BtlFunctionLibrary__GetUIManager = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlFunctionLibrary.GetUIManager");
 	static auto BP_BattleHudHelper__GetHudVisible = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BattleHudHelper.BP_BattleHudHelper_C.GetHudVisible");
 
@@ -859,6 +877,22 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		*ret2 = static_cast<uint8_t>(visible ? SDK::ESlateVisibility::Visible : SDK::ESlateVisibility::Hidden);
 		return false;
 	}
+
+	if (Stack.Node == Native_GetRootWidget) {
+		auto widget = (SDK::UUserWidget *)*(Stack.GetParams<UE4::UObject*>());
+		
+		//PrintHierarchy(widget, 0);
+
+		if (widget == nullptr) {
+			Log::Info("[GetRootWidget] Got NULL reference.");
+			return true;
+		}
+
+		auto ret2 = (SDK::UObject **)((FOutParmRec*)Stack.OutParms)->PropAddr;
+		*ret2 = widget->WidgetTree->RootWidget;
+		return false;
+	}
+
 
 	static auto Native_GetPlayerController = UE4::UObject::FindObject<UE4::UFunction>("Function MultiPlayerController.MultiPlayerController_C.Native_GetPlayerController");
 	static auto Native_GetInputProcess = UE4::UObject::FindObject<UE4::UFunction>("Function MultiPlayerController.MultiPlayerController_C.Native_GetInputProcess");
@@ -917,7 +951,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		// be bothered to locate in the debugger...
 
 		LastStrikeInitiator = CurrentPlayer;
-		if (RestrictBoostAttacksToCpuAndSelf) {
+		if (RestrictBoostAttacksToP1 || RestrictBoostAttacksToCpuAndSelf) {
 			// Only apply this if we're actually in a multiplayer battle (as opposed to tutorial, etc.)
 			bool isMultiplayerBattle;
 			ModActor->ProcessEvent(ModActor__IsMultiplayerBattle, &isMultiplayerBattle);
@@ -926,7 +960,9 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 				auto executor = Stack.GetParams<UE4::APawn*>();
 				auto controller = GetControllerOfCharacter(*executor);
 				auto index = GetPlayerIndex(controller);
-				if (index != CurrentPlayer && index >= 0) {
+
+				if (RestrictBoostAttacksToP1 && CurrentPlayer != 0
+					|| RestrictBoostAttacksToCpuAndSelf && (index != CurrentPlayer && index >= 0)) {
 					// Ignore boost attack
 					Log::Info("Ignoring boost attack because of restriction.");
 					CurrentPlayer = -1;
@@ -1310,17 +1346,21 @@ void MultiplayerMod::RefreshIni() {
 	parms.TargetRadius = std::stof(config.get("TargetRadius", "50000"));
 	parms.MinPitch = std::stof(config.get("MinPitch", "-75"));
 	parms.MaxPitch = std::stof(config.get("MaxPitch", "-1"));
+	parms.IgnoreDeadPlayers = std::stof(config.get("IgnoreDeadPlayers", "1"));
 
 	config.select("MISC");
 
 	parms.AllowSwitchingCharasDuringBattle = std::stoi(config.get("AllowSwitchingCharasDuringBattle", "1"));
 	parms.ResetCharacterAssignmentsAfterBattle = std::stoi(config.get("ResetCharacterAssignmentsAfterBattle", "1"));
+	parms.TargetCursorScale = std::stof(config.get("TargetCursorScale", "0.5"));
+	parms.HideDefaultCursor = std::stoi(config.get("HideDefaultCursor", "1"));
 
 	parms.DebugMenu = std::stoi(config.get("DebugMenu", "0"));
 	
 	
 	AutoChangeCharas = std::stoi(config.get("AutoChangeCharas", "0"));
 	RestrictBoostAttacksToCpuAndSelf = std::stoi(config.get("RestrictBoostAttacksToCpuAndSelf", "0"));
+	RestrictBoostAttacksToP1 = std::stoi(config.get("RestrictBoostAttacksToP1", "0"));
 	ModActor->ProcessEvent(applyConfigFn, &parms);
 }
 
