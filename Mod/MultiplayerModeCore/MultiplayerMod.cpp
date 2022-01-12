@@ -1352,7 +1352,7 @@ void MultiplayerMod::RefreshIni() {
 
 	parms.AllowSwitchingCharasDuringBattle = std::stoi(config.get("AllowSwitchingCharasDuringBattle", "1"));
 	parms.ResetCharacterAssignmentsAfterBattle = std::stoi(config.get("ResetCharacterAssignmentsAfterBattle", "1"));
-	parms.TargetCursorScale = std::stof(config.get("TargetCursorScale", "0.5"));
+	parms.TargetCursorScale = std::stof(config.get("TargetCursorScale", "0.75"));
 	parms.HideDefaultCursor = std::stoi(config.get("HideDefaultCursor", "1"));
 
 	parms.DebugMenu = std::stoi(config.get("DebugMenu", "0"));
