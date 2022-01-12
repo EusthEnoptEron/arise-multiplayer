@@ -74,9 +74,7 @@ party member.
 
 #### Boost Attacks
 
-At the moment, boost attacks can be used by all players to add some competitiveness to the mix. Let me know if you don't like this behavior and I'll make it configurable.
-
-See [Customization](#customization) for instructions on how to restrict the usage of boost attacks.
+By default, boost attacks can be used by all players to add some competitiveness to the mix. See [Customization](#customization) for instructions on how to restrict the usage of boost attacks.
 
 #### Changing Characters During Battle
 
@@ -99,7 +97,7 @@ There are a few things that you can customize to your liking. For this, you simp
 1. Rename `...\steamapps\common\Tales of Arise\Arise\Binaries\Win64\MultiplayerMod.example.ini` to `MultiplayerMod.ini` (i.e. remove the ".example" part.)
 2. Open the file and edit the values to your liking.
 
-### Camera Customizations
+### Camera
 
 Edit the values under `[CAMERA]`. There are comments that should explain what the variables do.
 
@@ -114,6 +112,13 @@ RestrictBoostAttacksToCpuAndSelf=1
 
 This will make sure that only you are allowed to use your own character for boost attacks. CPU characters are still available for everyone.
 
+If you want to keep boost attacks only for P1, set this:
+
+```ini
+[MISC]
+RestrictBoostAttacksToP1=1
+```
+
 ### Switching Characters (P2-P4)
 
 There are two flags that let you customize the character switching behavior of P2-P4.
@@ -127,6 +132,18 @@ When disabled, P2, P3 and P4 are always chara #2 (left), #3 (right) and #4 (bott
 **ResetCharacterAssignmentsAfterBattle** (default = true)
 
 When enabled, P2-P4 will be reset to their default character (according to the character order) after battle. This mimics the behavior for P1.
+
+### Cursor
+
+You can customize the cursor with these options:
+
+```ini
+[MISC]
+TargetCursorScale=0.75
+
+# When enabled, the default cursor will be (partially) hidden. The less obtrusive colored cursors are still visible.
+HideDefaultCursor=1
+```
 
 ## Using the Keyboard
 
