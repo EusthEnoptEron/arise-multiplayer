@@ -826,6 +826,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 	static auto Native_GetHudVisibility = UE4::UObject::FindObject<UE4::UFunction>("Function BP_ModHelper.BP_ModHelper_C.Native_GetHudVisibility");
 	static auto Native_GetRootWidget = UE4::UObject::FindObject<UE4::UFunction>("Function BP_ModHelper.BP_ModHelper_C.Native_GetRootWidget");
+	static auto Native_PrintWidgetHierarchy = UE4::UObject::FindObject<UE4::UFunction>("Function BP_ModHelper.BP_ModHelper_C.Native_PrintWidgetHierarchy");
 	static auto BtlFunctionLibrary__GetUIManager = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlFunctionLibrary.GetUIManager");
 	static auto BP_BattleHudHelper__GetHudVisible = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BattleHudHelper.BP_BattleHudHelper_C.GetHudVisible");
 
@@ -891,6 +892,11 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		auto ret2 = (SDK::UObject **)((FOutParmRec*)Stack.OutParms)->PropAddr;
 		*ret2 = widget->WidgetTree->RootWidget;
 		return false;
+	}
+
+	if (Stack.Node == Native_PrintWidgetHierarchy) {
+		auto widget = (SDK::UUserWidget*)*(Stack.GetParams<UE4::UObject*>());
+		PrintHierarchy(widget, 0);
 	}
 
 
