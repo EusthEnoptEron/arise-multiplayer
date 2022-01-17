@@ -1,6 +1,6 @@
 # Changelog
 
-## LATEST
+## 1.0.1
 
 - Improved UI z-ordering. (UI should now show on the correct layer.)
 - Added option to control the intensity of the camera shake effect. (`CameraShakeScale`)
@@ -47,7 +47,8 @@
 
 - Fixed an issue where P2-P4 would auto-guard and auto-step like crazy
 - Fixed crashes in Spirit Temple
-- Made it so that the multiplayer camera will only kick in when there are actual targets. (Mainly affects the spirit temple and at the beginning of boss fights.)
+- Made it so that the multiplayer camera will only kick in when there are actual targets. (Mainly affects the spirit
+  temple and at the beginning of boss fights.)
 
 ## 1.0.0-beta.2
 
@@ -109,5 +110,6 @@
 
 ## 0.9b
 
-- There's now an `MultiplayerMod.ini` file included that you can use to tweak the camera. You can edit the file while the game is running -- it will update on the fly.
+- There's now an `MultiplayerMod.ini` file included that you can use to tweak the camera. You can edit the file while
+  the game is running -- it will update on the fly.
 - (Probably) fixed some clipping issues during cutscenes.
