@@ -13,6 +13,8 @@
 #include "../SDK/TO14_BPI_GUI_MNU_SAV_classes.h"
 #include "FileWatch.hpp"
 
+typedef  SDK::UCameraShake* (*FPlayCameraShakePtr)(SDK::UClass* ShakeClass, float Scale, SDK::TEnumAsByte<SDK::ECameraAnimPlaySpace> PlaySpace, const SDK::FRotator& UserPlaySpaceRot);
+
 typedef  void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void *result);
 struct FScriptName {
 	/** Index into the Names array (used to find String portion of the string/number pair used for comparison) */
@@ -225,6 +227,7 @@ public:
 	int LastStrikeInitiator = -1;
 	bool IsSettingUpStrikeAttack = false;
 	bool CameraFrozen = false;
+	float CameraShakeScale = 1.0f;
 
 	void OnBeforePause();
 private:
@@ -255,6 +258,8 @@ private:
 	bool AutoChangeCharas = false;
 	bool RestrictBoostAttacksToCpuAndSelf = false;
 	bool RestrictBoostAttacksToP1 = false;
+
+	bool IsMultiplayerBattle();
 
 	time_t LastCheck;
 	InputManager* Manager;

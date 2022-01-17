@@ -541,7 +541,6 @@ void K2_IsBtlButtonRepeatedHook(UE4::UObject* Context, UE4::FFrame& Stack, void*
 	K2_IsBtlButtonRepeated(Context, Stack, ret);
 };
 
-
 FNativeFuncPtr K2_GetPlayerController;
 void K2_GetPlayerControllerHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
 	//int id = round(((UE4::AActor*)Context)->GetActorLocation().X);
@@ -574,6 +573,12 @@ void ChangeAriseGameSceneHook(UE4::UObject* Context, UE4::FFrame& Stack, void* r
 	uint8_t scene = GetParam<uint8_t>(Stack);
 	Log::Info("Scene: %d", scene);
 	ChangeAriseGameScene(Context, Stack, result);
+}
+
+
+FPlayCameraShakePtr PlayCameraShake;
+SDK::UCameraShake*  PlayCameraShakeHook(SDK::UClass* ShakeClass, float Scale, SDK::TEnumAsByte<SDK::ECameraAnimPlaySpace> PlaySpace, const SDK::FRotator& UserPlaySpaceRot) {
+	return PlayCameraShake(ShakeClass, Scale * ((MultiplayerMod*)Mod::ModRef)->CameraShakeScale, PlaySpace, UserPlaySpaceRot);
 }
 
 // Only Called Once, if you need to hook shit, declare some global non changing values
@@ -678,6 +683,12 @@ void MultiplayerMod::InitializeMod()
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.SetBoostAttackCaller")->GetFunction()),
 		&SetBoostAttackCallerHook, &SetBoostAttackCaller, "SetBoostAttackCaller");
+		
+
+	// B34C80
+	MinHook::Add((DWORD_PTR)
+		Pattern::Find("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 50 0F 29 ?? ?? ?? 49 8B F1"),
+		&PlayCameraShakeHook, &PlayCameraShake, "PlayCameraShake");
 
 	//
 	auto tickFn = Pattern::Find("48 8B C4 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 78 FD FF FF");
@@ -949,7 +960,6 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		return false;
 	}
 
-	static auto ModActor__IsMultiplayerBattle = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.IsMultiplayerBattle");
 	if (currentFn == BoostLibrary__RunBoostAttack) {
 		Log::Info("RunBoostAttack (%d)", CurrentPlayer);
 		// Called inside of "RunStrike" -- we now know that a boost attack will occur
@@ -959,10 +969,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		LastStrikeInitiator = CurrentPlayer;
 		if (RestrictBoostAttacksToP1 || RestrictBoostAttacksToCpuAndSelf) {
 			// Only apply this if we're actually in a multiplayer battle (as opposed to tutorial, etc.)
-			bool isMultiplayerBattle;
-			ModActor->ProcessEvent(ModActor__IsMultiplayerBattle, &isMultiplayerBattle);
-
-			if (isMultiplayerBattle) {
+			if (IsMultiplayerBattle()) {
 				auto executor = Stack.GetParams<UE4::APawn*>();
 				auto controller = GetControllerOfCharacter(*executor);
 				auto index = GetPlayerIndex(controller);
@@ -1325,6 +1332,14 @@ int MultiplayerMod::GetPlayerIndex(UE4::APlayerController* playerController)
 	return -1;
 }
 
+bool MultiplayerMod::IsMultiplayerBattle() {
+	static auto ModActor__IsMultiplayerBattle = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.IsMultiplayerBattle");
+	bool isMultiplayerBattle;
+	ModActor->ProcessEvent(ModActor__IsMultiplayerBattle, &isMultiplayerBattle);
+
+	return isMultiplayerBattle;
+}
+
 void MultiplayerMod::RefreshIni() {
 	static auto applyConfigFn = ModActor->GetFunction("OnConfigChanged");
 	ApplyConfigParams parms;
@@ -1353,6 +1368,7 @@ void MultiplayerMod::RefreshIni() {
 	parms.MinPitch = std::stof(config.get("MinPitch", "-75"));
 	parms.MaxPitch = std::stof(config.get("MaxPitch", "-1"));
 	parms.IgnoreDeadPlayers = std::stof(config.get("IgnoreDeadPlayers", "1"));
+	CameraShakeScale = std::stof(config.get("CameraShakeScale", "1.0"));
 
 	config.select("MISC");
 
@@ -1367,6 +1383,7 @@ void MultiplayerMod::RefreshIni() {
 	AutoChangeCharas = std::stoi(config.get("AutoChangeCharas", "0"));
 	RestrictBoostAttacksToCpuAndSelf = std::stoi(config.get("RestrictBoostAttacksToCpuAndSelf", "0"));
 	RestrictBoostAttacksToP1 = std::stoi(config.get("RestrictBoostAttacksToP1", "0"));
+
 	ModActor->ProcessEvent(applyConfigFn, &parms);
 }
 
@@ -1473,7 +1490,6 @@ void MultiplayerMod::Tick()
 	std::swap(OldStates, NewStates);
 
 	BP_OnCameraAngle(UE4::FVector2D(x, y));
-
 
 	static auto modTickFn = ModActor->GetFunction("ModTick");
 	ModActor->ProcessEvent(modTickFn, nullptr);
