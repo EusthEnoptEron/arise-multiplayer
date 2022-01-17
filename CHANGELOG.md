@@ -3,6 +3,7 @@
 ## LATEST
 
 - Improved UI z-ordering. (UI should now show on the correct layer.)
+- Added option to control the intensity of the camera shake effect. (`CameraShakeScale`)
 
 ## 1.0.0
 
