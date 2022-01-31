@@ -1,5 +1,11 @@
 # Changelog
 
+## LATEST
+
+- Added option to disable multiplayer camera. (`UseSinglePlayerCamera`)
+- Added option to disable hit stop behavior. (`DisableHitStop`)
+- Fixed issue where the player number would wiggle.
+
 ## 1.0.1
 
 - Improved UI z-ordering. (UI should now show on the correct layer.)

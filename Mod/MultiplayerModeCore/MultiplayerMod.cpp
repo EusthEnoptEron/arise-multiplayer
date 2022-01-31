@@ -567,15 +567,6 @@ void K2_GetPlayerControllerHook(UE4::UObject* Context, UE4::FFrame& Stack, void*
 	}
 }
 
-FNativeFuncPtr ChangeAriseGameScene;
-void ChangeAriseGameSceneHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
-	Log::Info("ChangeGameSceen %s", Stack.Node->GetName().c_str());
-	uint8_t scene = GetParam<uint8_t>(Stack);
-	Log::Info("Scene: %d", scene);
-	ChangeAriseGameScene(Context, Stack, result);
-}
-
-
 FPlayCameraShakePtr PlayCameraShake;
 SDK::UCameraShake*  PlayCameraShakeHook(SDK::UClass* ShakeClass, float Scale, SDK::TEnumAsByte<SDK::ECameraAnimPlaySpace> PlaySpace, const SDK::FRotator& UserPlaySpaceRot) {
 	return PlayCameraShake(ShakeClass, Scale * ((MultiplayerMod*)Mod::ModRef)->CameraShakeScale, PlaySpace, UserPlaySpaceRot);
@@ -684,7 +675,6 @@ void MultiplayerMod::InitializeMod()
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.SetBoostAttackCaller")->GetFunction()),
 		&SetBoostAttackCallerHook, &SetBoostAttackCaller, "SetBoostAttackCaller");
 		
-
 	// B34C80
 	MinHook::Add((DWORD_PTR)
 		Pattern::Find("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 50 0F 29 ?? ?? ?? 49 8B F1"),
@@ -701,10 +691,6 @@ void MultiplayerMod::InitializeMod()
 #if ENABLE_TRACING
 	Tracer::GetInstance()->Hook();
 #endif
-	/*MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function BP_AriseGamemode.BP_AriseGamemode_C.ChangeAriseGameScene")->GetFunction()),
-		&ChangeAriseGameSceneHook, &ChangeAriseGameScene, "ChangeAriseGameScene");*/
-
 
 
 }
@@ -943,6 +929,13 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 			Log::Info("Ignore camera");
 			return false;
 		}
+	}
+
+	static auto HitStopProcess = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.HitStopProcess");
+	if (currentFn == HitStopProcess && DisableHitStop) {
+		// Processes hit stops (time dilation category = HIT_STOP)
+		Log::Info("Ignore hit stop");
+		return false;
 	}
 	
 	static auto PCInputProcess__RunStrike = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BTL_PCInputProcess.BP_BTL_PCInputProcess_C.RunStrike");
@@ -1367,7 +1360,8 @@ void MultiplayerMod::RefreshIni() {
 	parms.TargetRadius = std::stof(config.get("TargetRadius", "50000"));
 	parms.MinPitch = std::stof(config.get("MinPitch", "-75"));
 	parms.MaxPitch = std::stof(config.get("MaxPitch", "-1"));
-	parms.IgnoreDeadPlayers = std::stof(config.get("IgnoreDeadPlayers", "1"));
+	parms.IgnoreDeadPlayers = std::stoi(config.get("IgnoreDeadPlayers", "1"));
+	parms.UseSinglePlayerCamera = std::stoi(config.get("UseSinglePlayerCamera", "0"));
 	CameraShakeScale = std::stof(config.get("CameraShakeScale", "1.0"));
 
 	config.select("MISC");
@@ -1377,8 +1371,9 @@ void MultiplayerMod::RefreshIni() {
 	parms.TargetCursorScale = std::stof(config.get("TargetCursorScale", "0.75"));
 	parms.HideDefaultCursor = std::stoi(config.get("HideDefaultCursor", "1"));
 
+	DisableHitStop = std::stoi(config.get("DisableHitStop", "0"));
+
 	parms.DebugMenu = std::stoi(config.get("DebugMenu", "0"));
-	
 	
 	AutoChangeCharas = std::stoi(config.get("AutoChangeCharas", "0"));
 	RestrictBoostAttacksToCpuAndSelf = std::stoi(config.get("RestrictBoostAttacksToCpuAndSelf", "0"));

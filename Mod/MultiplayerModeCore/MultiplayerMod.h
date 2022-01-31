@@ -14,8 +14,8 @@
 #include "FileWatch.hpp"
 
 typedef  SDK::UCameraShake* (*FPlayCameraShakePtr)(SDK::UClass* ShakeClass, float Scale, SDK::TEnumAsByte<SDK::ECameraAnimPlaySpace> PlaySpace, const SDK::FRotator& UserPlaySpaceRot);
-
 typedef  void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void *result);
+
 struct FScriptName {
 	/** Index into the Names array (used to find String portion of the string/number pair used for comparison) */
 	int32		ComparisonIndex;
@@ -69,6 +69,7 @@ struct ApplyConfigParams {
 	bool ResetCharacterAssignmentsAfterBattle;
 
 	bool IgnoreDeadPlayers;
+	bool UseSinglePlayerCamera;
 
 	float TargetCursorScale;
 	bool HideDefaultCursor;
@@ -143,6 +144,8 @@ typedef void(*APlayerController__PlayerTick)(UE4::APlayerController* thisptr, fl
 
 const std::string INI_FILE_LOCATION = "./MultiplayerMod.ini";
 const std::wstring INI_FILE_LOCATION_W = L"./MultiplayerMod.ini";
+
+//const uint8_t EX_EndFunctionParms = 0x16;
 
 class MultiplayerMod : public Mod
 {
@@ -228,6 +231,7 @@ public:
 	bool IsSettingUpStrikeAttack = false;
 	bool CameraFrozen = false;
 	float CameraShakeScale = 1.0f;
+	bool DisableHitStop = false;
 
 	void OnBeforePause();
 private:
