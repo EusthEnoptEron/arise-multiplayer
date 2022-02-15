@@ -39,6 +39,27 @@ Completely:
 1. Remove `xinput1_3.dll`.
 2. Optionally, remove all files included in the archive.
 
+
+## How To Play Online
+
+There are 2 ways to play online that are known to work.
+
+### Using Steam Remote Play
+
+The game does not support Steam Remote Play out of the box for obvious reasons, but it's possible to work around this limitation by using a third-party application like [RemotePlayWhatever](https://github.com/m4dEngi/RemotePlayWhatever).
+
+If you follow the instructions, you should be able to send an invite link to your buddies and get a multiplayer session started.
+
+### Using Parsec
+
+You can play online using [Parsec](https://parsec.app/) (and possibly other apps that support Steam Input.)
+
+When using Parsec, it is advised that you switch the virtual gamepads to *DualShock 4*, otherwise the other players' gamepads might be detected twice.
+On the host machine, go to the host settings and switch the Virtual Gamepad Type from "Xbox 360" to "DualShock 4" and restart Parsec using the prompt at the top.
+
+You might also have to turn Approved Apps *off* and have Parsec run on the Desktop, too.
+
+
 ## Known Issues
 
 No critical issues known at this time.
@@ -143,6 +164,20 @@ TargetCursorScale=0.75
 
 # When enabled, the default cursor will be (partially) hidden. The less obtrusive colored cursors are still visible.
 HideDefaultCursor=1
+```
+
+### Quality of Life Improvements
+
+There are a few options that possibly make your game time more enjoyable:
+
+```ini
+[CAMERA]
+# Controls the intensity of the camera shake effect. Reduce this if you experience motion sickness.
+CameraShakeScale=1.0
+
+[MISC]
+# Set this to 1 to disable the "hiccups" that occur on strong blows
+DisableHitStop=0
 ```
 
 ## Using the Keyboard
