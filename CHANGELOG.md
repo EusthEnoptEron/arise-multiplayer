@@ -1,6 +1,6 @@
 # Changelog
 
-## LATEST
+## 1.0.2
 
 - Added option to disable multiplayer camera. (`UseSinglePlayerCamera`)
 - Added option to disable hit stop behavior. (`DisableHitStop`)
