@@ -1,5 +1,9 @@
 # Changelog
 
+## LATEST
+
+- Implemented haptic feedback for all players (#8).
+
 ## 1.0.2
 
 - Added option to disable multiplayer camera. (`UseSinglePlayerCamera`)

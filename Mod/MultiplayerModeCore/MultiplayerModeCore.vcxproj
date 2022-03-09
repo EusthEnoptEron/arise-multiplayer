@@ -233,15 +233,18 @@
     <ClCompile Include="MultiplayerMod.cpp" />
     <ClCompile Include="SDK.cpp" />
     <ClCompile Include="Tracer.cpp" />
+    <ClCompile Include="VibrationModule.cpp" />
     <ClCompile Include="VMTHook.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp" />
+    <ClInclude Include="BaseModule.h" />
     <ClInclude Include="FileWatch.hpp" />
     <ClInclude Include="INI.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="MultiplayerMod.h" />
     <ClInclude Include="Tracer.h" />
+    <ClInclude Include="VibrationModule.h" />
     <ClInclude Include="VMTHook.h" />
   </ItemGroup>
   <ItemGroup>

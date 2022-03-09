@@ -8,10 +8,12 @@
 #include <fstream>
 #include "libloaderapi.h"
 #include <math.h>
-#include "Utilities/Pattern.h";
+#include "Utilities/Pattern.h"
 #include <thread>
 #include "INI.h"
 #include "Tracer.h"
+
+#include "VibrationModule.h"
 
 #define hasFlag(x,m) ((x&m) > 0)
 
@@ -76,29 +78,63 @@ void FEngineLoop__Tick_Hook(void* thisptr)
 // #######################
 //  Hooks to feed input
 // #######################
-APlayerController__PrePostProcessInputFn APlayerController__PreProcessInput;
-void APlayerController__PreProcessInputHook(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused) {
-	auto instance = (MultiplayerMod*)(Mod::ModRef);
 
-	for (int i = 0; i < MAX_CONTROLLERS; i++) {
-		if (instance->Controllers[i] == thisptr) {
-			InputManager::GetInstance()->SetIndex(i);
-			instance->CurrentPlayer = i;
-			break;
+APlayerController__PrePostProcessInputFn TickPlayerInput;
+void TickPlayerInputHook(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused) {
+	auto instance = MultiplayerMod::GetInstance();
+
+	if (thisptr != instance->Controllers[0] && instance->Controllers[0] != nullptr) {
+		for (int i = 1; i < MAX_CONTROLLERS; i++) {
+			if (instance->Controllers[i] == thisptr) {
+				// This is a match!
+				// Switch gamepad to the right one and process as usual.
+
+				InputManager::GetInstance()->SetIndex(i);
+				instance->CurrentPlayer = i;
+
+				// Temporarily set a player because this will allow haptic feedback processing
+				((SDK::APlayerController*)thisptr)->Player = ((SDK::APlayerController*)instance->Controllers[0])->Player;
+				TickPlayerInput(thisptr, DeltaTime, bGamePaused);
+				((SDK::APlayerController*)thisptr)->Player = nullptr;
+
+
+				instance->CurrentPlayer = -1;
+				InputManager::GetInstance()->SetIndex(0);
+				return;
+			}
 		}
 	}
 
-	APlayerController__PreProcessInput(thisptr, DeltaTime, bGamePaused);
+	TickPlayerInput(thisptr, DeltaTime, bGamePaused);
 }
 
-APlayerController__PrePostProcessInputFn APlayerController__PostProcessInput;
-void APlayerController__PostProcessInputHook(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused) {
-	APlayerController__PostProcessInput(thisptr, DeltaTime, bGamePaused);
-	InputManager::GetInstance()->SetIndex(0);
-
-	auto instance = (MultiplayerMod*)(Mod::ModRef);
-	instance->CurrentPlayer = -1;
-}
+//
+// Alternatives to TickPlayerInput.
+// It's generally better to hook TickPlayerInput because this will also give the possibility to deal with haptic feedback.
+//
+//APlayerController__PrePostProcessInputFn APlayerController__PreProcessInput;
+//void APlayerController__PreProcessInputHook(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused) {
+//	auto instance = (MultiplayerMod*)(Mod::ModRef);
+//
+//	for (int i = 0; i < MAX_CONTROLLERS; i++) {
+//		if (instance->Controllers[i] == thisptr) {
+//			InputManager::GetInstance()->SetIndex(i);
+//			instance->CurrentPlayer = i;
+//			break;
+//		}
+//	}
+//
+//	APlayerController__PreProcessInput(thisptr, DeltaTime, bGamePaused);
+//}
+//
+//APlayerController__PrePostProcessInputFn APlayerController__PostProcessInput;
+//void APlayerController__PostProcessInputHook(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused) {
+//	APlayerController__PostProcessInput(thisptr, DeltaTime, bGamePaused);
+//	InputManager::GetInstance()->SetIndex(0);
+//
+//	auto instance = (MultiplayerMod*)(Mod::ModRef);
+//	instance->CurrentPlayer = -1;
+//}
 
 // ---------------------------
 
@@ -125,13 +161,16 @@ void MultiplayerMod::CompareDigitalStates(bool newValue, bool oldValue, bool* ju
 	}
 }
 
-template<typename T> T GetParam(UE4::FFrame& Stack) {
+template<typename T> T GetParam(UE4::FFrame& Stack, bool progress = false) {
 	T val;
 
 	auto saveCode = Stack.Code;
 	int32 comp = *(Stack.Code++);
 	MultiplayerMod::GNatives[comp](Stack.Object, Stack, &val);
-	Stack.Code = saveCode;
+
+	if (!progress) {
+		Stack.Code = saveCode;
+	}
 
 	return val;
 }
@@ -471,17 +510,6 @@ void IsAutoGuardableHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* ret) {
 }
 
 
-FNativeFuncPtr SetBoostAttackCaller;
-void SetBoostAttackCallerHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* ret) {
-
-	auto caller = GetParam<SDK::ABtlCharacterBase *>(Stack);
-	SetBoostAttackCaller(Context, Stack, ret);
-
-	Log::Info("SET STRIKE CALLER: %s", caller == nullptr ? "NULL" : caller->GetName().c_str());
-
-	PrintStackTrace(Context, Stack);
-}
-
 FNativeFuncPtr ProcessInternal;
 void ProcessInternalHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
 	static auto thread_id = std::this_thread::get_id();
@@ -541,32 +569,6 @@ void K2_IsBtlButtonRepeatedHook(UE4::UObject* Context, UE4::FFrame& Stack, void*
 	K2_IsBtlButtonRepeated(Context, Stack, ret);
 };
 
-FNativeFuncPtr K2_GetPlayerController;
-void K2_GetPlayerControllerHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
-	//int id = round(((UE4::AActor*)Context)->GetActorLocation().X);
-	/*if (id > 0.5) {
-		Log::Info("%s [%s] (%d)", Context->GetName().c_str(), Context->GetClass()->GetName().c_str(), id);
-
-		UE4::FFrame* frame = &Stack;
-		while (frame != nullptr) {
-			Log::Info("%s::%s", frame->Object->GetName().c_str(), frame->Node->GetName().c_str());
-			frame = frame->PreviousFrame;
-		}
-		Log::Info("");
-	}*/
-
-	K2_GetPlayerController(Context, Stack, result);
-
-	static bool hooked = false;
-	if (!hooked) {
-		Log::Info("Hooking PlayerController at %p", *((void**)result));
-		APlayerController__PreProcessInput = (APlayerController__PrePostProcessInputFn)HookMethod((LPVOID) * ((void**)result), (PVOID)APlayerController__PreProcessInputHook, 0xA50);
-		APlayerController__PostProcessInput = (APlayerController__PrePostProcessInputFn)HookMethod((LPVOID) * ((void**)result), (PVOID)APlayerController__PostProcessInputHook, 0xA58);
-
-		hooked = true;
-	}
-}
-
 FPlayCameraShakePtr PlayCameraShake;
 SDK::UCameraShake*  PlayCameraShakeHook(SDK::UClass* ShakeClass, float Scale, SDK::TEnumAsByte<SDK::ECameraAnimPlaySpace> PlaySpace, const SDK::FRotator& UserPlaySpaceRot) {
 	return PlayCameraShake(ShakeClass, Scale * ((MultiplayerMod*)Mod::ModRef)->CameraShakeScale, PlaySpace, UserPlaySpaceRot);
@@ -607,8 +609,13 @@ void MultiplayerMod::InitializeMod()
 	MinHook::Init();
 
 	// Feed our own axis input into the game
+	auto fnPointer = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBtlAxisValue")->GetFunction();
+	//auto fnPointer = (PBYTE)GetModuleHandle(NULL) + 0x770680;
+	// 770680
+	// 76C780
+
 	MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBtlAxisValue")->GetFunction()),
+		(fnPointer),
 		&GetBtlAxisValueHook, &GetBtlAxisValue, "K2_GetBtlAxisValue");
 
 	// Get battle camera as soon as possible
@@ -634,10 +641,6 @@ void MultiplayerMod::InitializeMod()
 	MinHook::Add((DWORD_PTR)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattlePCController")->GetFunction()),
 		&K2_GetBattlePCControllerHook, &K2_GetBattlePCController, "K2_GetBattlePCController");
-
-	MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.K2_GetPlayerController")->GetFunction()),
-		&K2_GetPlayerControllerHook, &K2_GetPlayerController, "K2_GetPlayerController");
 
 	// ----------------------------------------------------------------------------------
 	// Hook into pause functions to react faster to camera changes (might be obsolete)
@@ -671,10 +674,13 @@ void MultiplayerMod::InitializeMod()
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlSemiautoComponent.IsAutoGuardable")->GetFunction()),
 		&IsAutoGuardableHook, &IsAutoGuardable, "IsAutoGuardable");
 
+
+	//auto addrPlayerTick = Pattern::Find("40 53 57 41 56 48 81 EC D0 00 00 00 48 8B F9 0F 29 B4 24 C0 00 00 00 48 8B 89 58 04 00 00 45 0F B6 F0 0F 28 F1");
+	auto addrPlayerTick = Pattern::Find("40 53 57 41 56 48 81 EC ?? ?? ?? ?? 48 8B F9 0F 29 B4 24 ?? ?? ?? ??");
 	MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.SetBoostAttackCaller")->GetFunction()),
-		&SetBoostAttackCallerHook, &SetBoostAttackCaller, "SetBoostAttackCaller");
-		
+		addrPlayerTick,
+		&TickPlayerInputHook, &TickPlayerInput, "TickPlayerInput");
+
 	// B34C80
 	MinHook::Add((DWORD_PTR)
 		Pattern::Find("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 50 0F 29 ?? ?? ?? 49 8B F1"),
@@ -692,7 +698,15 @@ void MultiplayerMod::InitializeMod()
 	Tracer::GetInstance()->Hook();
 #endif
 
+	RegisterModules();
 
+	for (const auto& modl: Modules) {
+		modl->Initialize(this);
+	}
+}
+
+void MultiplayerMod::RegisterModules() {
+	Modules.emplace_back(new VibrationModule());
 }
 
 void MultiplayerMod::OnAction(int index, const UE4::FString& name) {
@@ -776,13 +790,20 @@ struct JustParams {
 bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
 	auto currentFn = Stack.Node;
 
+	auto handler = BlueprintHooks.find(Stack.Node);
+	if (handler != BlueprintHooks.end()) {
+		// Handler will take care of it
+		handler->second(Context, Stack, ret, ProcessInternal);
+		return false;
+	}
+		
+
 	static auto BtlCharacterBase__JustStepProcess = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.JustStepProcess");
 	static auto BtlCharacterBase__JustGuardProcess = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCharacterBase.BP_BtlCharacterBase_C.JustGuardProcess");
 	if (Stack.Node == BtlCharacterBase__JustStepProcess || Stack.Node == BtlCharacterBase__JustGuardProcess) {
 		// Called on enemy, with our character as argument
 		// void JustStepProcess(class ABtlCharacterBase* DmgActor, bool& JustStep);
 		// void JustGuardProcess(class ABtlCharacterBase* DmgActor, bool& JustGuard);
-
 
 
 		auto params = *Stack.GetParams<JustParams>();
@@ -870,7 +891,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 		}
 
 		auto ret2 = ((FOutParmRec*)Stack.OutParms)->PropAddr;
-		
+
 		// I have no idea why this isn't just ret
 		*ret2 = static_cast<uint8_t>(visible ? SDK::ESlateVisibility::Visible : SDK::ESlateVisibility::Hidden);
 		return false;
@@ -878,7 +899,7 @@ bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame&
 
 	if (Stack.Node == Native_GetRootWidget) {
 		auto widget = (SDK::UUserWidget *)*(Stack.GetParams<UE4::UObject*>());
-		
+
 		//PrintHierarchy(widget, 0);
 
 		if (widget == nullptr) {
@@ -1485,6 +1506,47 @@ void MultiplayerMod::Tick()
 	std::swap(OldStates, NewStates);
 
 	BP_OnCameraAngle(UE4::FVector2D(x, y));
+
+	// Code to calculate a diff
+	//if (IsMultiplayerBattle()) {
+	//	for (int i = 0; i < MAX_CONTROLLERS; i++) {
+	//		if (Controllers[i] != nullptr) {
+	//			auto chara = (SDK::ABP_BtlCharacterBase_C*)((SDK::APlayerController*)Controllers[i])->K2_GetPawn();
+	//			if (chara != nullptr) {
+	//				*GetPlayerOperationFlag(chara) = true;
+	//				//void* firstAddress = &(chara->ComboNextArts);
+	//				//void* lastAddress = &(chara->UberGraphFrame);
+	//				//uint64 arraySize = (uint64)((uint64)lastAddress - (uint64)firstAddress);
+
+	//				//unsigned char *before = (unsigned char*) malloc(arraySize);
+	//				//unsigned char *after = (unsigned char *) malloc(arraySize);
+
+	//				//memcpy(before, firstAddress, arraySize);
+
+	//				//chara->SetPlayerOperation(true);
+
+	//				//memcpy(after, firstAddress, arraySize);
+
+	//				//// Compare
+	//				//for (int i = 0; i < arraySize; i++) {
+	//				//	if (before[i] != after[i]) {
+	//				//		Log::Info("Difference at byte #%d", i);
+	//				//		Log::Info("Before: #%d", before[i]);
+	//				//		Log::Info("After: #%d", after[i]);
+	//				//	}
+	//				//}
+
+	//				//free(before);
+	//				//free(after);
+
+	//			}
+	//		}
+	//	}
+	//}
+
+	for (const auto& modl : Modules) {
+		modl->Tick();
+	}
 
 	static auto modTickFn = ModActor->GetFunction("ModTick");
 	ModActor->ProcessEvent(modTickFn, nullptr);

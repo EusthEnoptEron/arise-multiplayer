@@ -11,10 +11,16 @@
 #include "../SDK/TO14_ProcessEnum_MNU_SAV_structs.h";
 #include "../SDK/TO14_ModeEnum_MNU_SAV_structs.h";
 #include "../SDK/TO14_BPI_GUI_MNU_SAV_classes.h"
+#include "../SDK/BP_BtlCharacterBase_structs.h"
+#include "../SDK/BP_BtlCharacterBase_classes.h"
 #include "FileWatch.hpp"
 
 typedef  SDK::UCameraShake* (*FPlayCameraShakePtr)(SDK::UClass* ShakeClass, float Scale, SDK::TEnumAsByte<SDK::ECameraAnimPlaySpace> PlaySpace, const SDK::FRotator& UserPlaySpaceRot);
-typedef  void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void *result);
+typedef  void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void* result);
+typedef  float ( *FGetBtlAxisValue)(SDK::AInputExtPlayerController* thisPtr, const UE4::FName& InAxisName);
+typedef  void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void* result);
+typedef  void (*FBlueprintHookHandler)(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
+
 
 struct FScriptName {
 	/** Index into the Names array (used to find String portion of the string/number pair used for comparison) */
@@ -139,8 +145,8 @@ namespace Actions {
 }
 
 typedef void(*FEngineLoop__Tick_Fn)(void* thisptr);
+typedef void(*APlayerController__PlayerTickFn)(UE4::APlayerController* thisptr, const float DeltaTime);
 typedef void(*APlayerController__PrePostProcessInputFn)(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused);
-typedef void(*APlayerController__PlayerTick)(UE4::APlayerController* thisptr, float DeltaTime);
 
 const std::string INI_FILE_LOCATION = "./MultiplayerMod.ini";
 const std::wstring INI_FILE_LOCATION_W = L"./MultiplayerMod.ini";
@@ -184,6 +190,8 @@ public:
 
 	//Call ImGui Here (CALLED EVERY FRAME ON DX HOOK)
 	virtual void DrawImGui() override;
+
+	void RegisterModules();
 
 	void Tick();
 	void OnAction(int index, const UE4::FString &name);
@@ -232,8 +240,34 @@ public:
 	bool CameraFrozen = false;
 	float CameraShakeScale = 1.0f;
 	bool DisableHitStop = false;
+	bool IsMultiplayerBattle();
+
+	/*void SetOperationCharacter(int index) {
+		if (IsMultiplayerBattle()) {
+			for (int i = 0; i < MAX_CONTROLLERS; i++) {
+				if (Controllers[i] != nullptr) {
+					auto chara = (SDK::ABP_BtlCharacterBase_C*)((SDK::APlayerController*)Controllers[i])->K2_GetPawn();
+					if (chara != nullptr) {
+						*GetPlayerOperationFlag(chara) = i == index;
+					}
+				}
+			}
+		}
+	}*/
 
 	void OnBeforePause();
+
+	static MultiplayerMod *GetInstance() {
+		return ((MultiplayerMod*)Mod::ModRef);
+	}
+
+	void AddBlueprintHook(UE4::UFunction* fn, FBlueprintHookHandler handler) {
+		bool success = BlueprintHooks.try_emplace(fn, handler).second;
+		if (!success) {
+			Log::Error("Function handled twice: %s", fn->GetFullName().c_str());
+		}
+	}
+
 private:
 
 
@@ -249,8 +283,15 @@ private:
 	UE4::UFunction* GetControlledCharacterFn;
 	UE4::UFunction* OnBeforePauseFn;
 
-
 	std::vector<int> PlayerStack;
+	std::map<UE4::UFunction*, FBlueprintHookHandler> BlueprintHooks;
+	std::vector<class BaseModule *> Modules;
+
+	//bool *GetPlayerOperationFlag(SDK::ABtlCharacterBase *chara) {
+	//	// Found this address by doing a diff
+	//	// UnknownData07 = 608
+	//	return (bool *)(((bool *)(&(chara->ComboNextArts))) + 644);
+	//}
 
 
 	void ChangePartyTop(int index);
@@ -263,7 +304,6 @@ private:
 	bool RestrictBoostAttacksToCpuAndSelf = false;
 	bool RestrictBoostAttacksToP1 = false;
 
-	bool IsMultiplayerBattle();
 
 	time_t LastCheck;
 	InputManager* Manager;

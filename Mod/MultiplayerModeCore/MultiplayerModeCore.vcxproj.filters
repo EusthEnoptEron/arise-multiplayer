@@ -14,6 +14,9 @@
     <Filter Include="VMTHook">
       <UniqueIdentifier>{4c384f7a-42a5-4b76-8438-44fb5a7ac2be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mod\Modules">
+      <UniqueIdentifier>{84099460-0e29-40bd-8fbf-eda19ab30346}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -49,6 +52,9 @@
     <ClCompile Include="..\..\..\..\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\CoreUObject_functions2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VibrationModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp">
@@ -71,6 +77,12 @@
     </ClInclude>
     <ClInclude Include="Tracer.h">
       <Filter>Mod</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="VibrationModule.h">
+      <Filter>Mod\Modules</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
