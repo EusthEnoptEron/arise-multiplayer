@@ -14,8 +14,8 @@
 #include "../SDK/BP_BtlCharacterBase_structs.h"
 #include "../SDK/BP_BtlCharacterBase_classes.h"
 #include "FileWatch.hpp"
+#include "Utilities/MinHook.h"
 
-typedef  SDK::UCameraShake* (*FPlayCameraShakePtr)(SDK::UClass* ShakeClass, float Scale, SDK::TEnumAsByte<SDK::ECameraAnimPlaySpace> PlaySpace, const SDK::FRotator& UserPlaySpaceRot);
 typedef  void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void* result);
 typedef  float ( *FGetBtlAxisValue)(SDK::AInputExtPlayerController* thisPtr, const UE4::FName& InAxisName);
 typedef  void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void* result);
@@ -235,11 +235,16 @@ public:
 	int GetPlayerIndexFromInputProcessor(UE4::AActor* inputProcess);
 
 	int CurrentPlayer = -1;
-	int LastStrikeInitiator = -1;
 	bool IsSettingUpStrikeAttack = false;
 	bool CameraFrozen = false;
 	float CameraShakeScale = 1.0f;
 	bool DisableHitStop = false;
+
+	bool AutoChangeCharas = false;
+	bool RestrictBoostAttacksToCpuAndSelf = false;
+	bool RestrictBoostAttacksToP1 = false;
+
+
 	bool IsMultiplayerBattle();
 
 	/*void SetOperationCharacter(int index) {
@@ -261,13 +266,24 @@ public:
 		return ((MultiplayerMod*)Mod::ModRef);
 	}
 
-	void AddBlueprintHook(UE4::UFunction* fn, FBlueprintHookHandler handler) {
+	void AddBlueprintHook(std::string fnName, FBlueprintHookHandler handler) {
+		auto fn = UE4::UObject::FindObject<UE4::UFunction>("Function " + fnName);
 		bool success = BlueprintHooks.try_emplace(fn, handler).second;
 		if (!success) {
 			Log::Error("Function handled twice: %s", fn->GetFullName().c_str());
 		}
 	}
 
+	/// <summary>
+	/// Temporarily assigns player at <c>playerIndex</c> to the first player (i.e. giving it the flag)
+	/// </summary>
+	/// <param name="playerIndex"></param>
+	void ChangeFirstPlayerTemporarily(int playerIndex);
+
+	/// <summary>
+	/// Restores the first player to what it was set to before the call to ChangeFirstPlayerTemporarily.
+	/// </summary>
+	void RestoreFirstPlayer();
 private:
 
 
@@ -300,9 +316,6 @@ private:
 
 	int MenuCandidate = 0;
 	bool LogEverything = false;
-	bool AutoChangeCharas = false;
-	bool RestrictBoostAttacksToCpuAndSelf = false;
-	bool RestrictBoostAttacksToP1 = false;
 
 
 	time_t LastCheck;
@@ -316,3 +329,9 @@ private:
 	bool IniDirty = true;
 	void CompareDigitalStates(bool newValue, bool oldValue, bool *justPressed, bool *justReleased, const UE4::FString &name, int index);
 };
+
+
+
+UE4::UClass* FastGetClass(UE4::UObject* obj);
+UE4::UStruct* FastGetSuperField(UE4::UStruct* obj);
+bool FastIsA(UE4::UObject* obj, UE4::UClass* cmp);

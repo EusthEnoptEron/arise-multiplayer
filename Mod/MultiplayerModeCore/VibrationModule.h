@@ -16,7 +16,6 @@ class VibrationModule : public BaseModule
 {
 public:
 	virtual void Initialize(MultiplayerMod *mod) override;
-	virtual void Tick() override;
 
 private:
 	static ClientStopForceFeedbackPtr ClientStopForceFeedback;
@@ -28,5 +27,6 @@ private:
 	static void OnDamage(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
 
 	static AttackerReceiver *CurrentContext;
+
 };
 
