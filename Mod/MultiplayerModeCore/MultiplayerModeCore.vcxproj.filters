@@ -76,6 +76,15 @@
     <ClCompile Include="TestWidgetModule.cpp">
       <Filter>Mod\Modules</Filter>
     </ClCompile>
+    <ClCompile Include="InputModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Mod</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfigModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp">
@@ -124,6 +133,15 @@
       <Filter>Mod\Modules</Filter>
     </ClInclude>
     <ClInclude Include="TestWidgetModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="InputModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Mod</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfigModule.h">
       <Filter>Mod\Modules</Filter>
     </ClInclude>
   </ItemGroup>
