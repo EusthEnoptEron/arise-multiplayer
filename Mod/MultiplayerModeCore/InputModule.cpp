@@ -24,12 +24,12 @@ void InputModule::Initialize(MultiplayerMod* mod)
 		&TickPlayerInputHook, &TickPlayerInput, "TickPlayerInput");
 
 
-	OnActionFn = UE4::UObject::FindObject<UE4::UFunction>("ModActor.ModActor_C.OnAction");
-	OnActionPressedFn = UE4::UObject::FindObject<UE4::UFunction>("ModActor.ModActor_C.OnActionPressed");
-	OnActionReleasedFn = UE4::UObject::FindObject<UE4::UFunction>("ModActor.ModActor_C.OnActionReleased");
-	OnAnalogActionFn = UE4::UObject::FindObject<UE4::UFunction>("ModActor.ModActor_C.OnAnalogAction");
-	OnControllerConnectedFn = UE4::UObject::FindObject<UE4::UFunction>("ModActor.ModActor_C.OnControllerConnected");
-	OnControllerDisconnectedFn = UE4::UObject::FindObject<UE4::UFunction>("ModActor.ModActor_C.OnControllerDisconnected");
+	OnActionFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnAction");
+	OnActionPressedFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnActionPressed");
+	OnActionReleasedFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnActionReleased");
+	OnAnalogActionFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnAnalogAction");
+	OnControllerConnectedFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnControllerConnected");
+	OnControllerDisconnectedFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnControllerDisconnected");
 }
 
 void InputModule::Tick()

@@ -229,7 +229,9 @@
     <ClCompile Include="..\UnrealEngineModLoader\UE4\Basic.cpp" />
     <ClCompile Include="..\UnrealEngineModLoader\UE4\CoreUObject_functions.cpp" />
     <ClCompile Include="BoostAttackModule.cpp" />
+    <ClCompile Include="CameraModule.cpp" />
     <ClCompile Include="ConfigModule.cpp" />
+    <ClCompile Include="ControlModeModule.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="InputModule.cpp" />
@@ -250,7 +252,9 @@
     <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp" />
     <ClInclude Include="BaseModule.h" />
     <ClInclude Include="BoostAttackModule.h" />
+    <ClInclude Include="CameraModule.h" />
     <ClInclude Include="ConfigModule.h" />
+    <ClInclude Include="ControlModeModule.h" />
     <ClInclude Include="FileWatch.hpp" />
     <ClInclude Include="INI.h" />
     <ClInclude Include="InputManager.h" />

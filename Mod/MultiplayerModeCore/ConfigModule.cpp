@@ -4,18 +4,7 @@
 void ConfigModule::Initialize(MultiplayerMod* mod)
 {
 	ModRef = mod;
-	OnConfigChangedFn = UE4::UObject::FindObject<UE4::UFunction>("ModActor.ModActor_C.OnAction");
-
-
-
-	if (std::ifstream(INI_FILE_LOCATION).good()) {
-		Watch = new filewatch::FileWatch<std::wstring>(
-			INI_FILE_LOCATION_W.c_str(),
-			[this](const std::wstring& path, const filewatch::Event change_type) {
-			IniDirty = true;
-		}
-		);
-	}
+	OnConfigChangedFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnConfigChanged");
 }
 
 void ConfigModule::Tick()
@@ -24,7 +13,18 @@ void ConfigModule::Tick()
 		Log::Info("Update INI");
 		RefreshIni();
 		IniDirty = false;
+
+		// Putting this in initialize() does not seem to work
+		if (Watch == nullptr && std::ifstream(INI_FILE_LOCATION).good()) {
+			Watch = new filewatch::FileWatch<std::wstring>(
+				INI_FILE_LOCATION_W.c_str(),
+				[this](const std::wstring& path, const filewatch::Event change_type) {
+				IniDirty = true;
+			}
+			);
+		}
 	}
+
 }
 
 

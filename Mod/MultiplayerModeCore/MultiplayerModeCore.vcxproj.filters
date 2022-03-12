@@ -85,6 +85,12 @@
     <ClCompile Include="ConfigModule.cpp">
       <Filter>Mod\Modules</Filter>
     </ClCompile>
+    <ClCompile Include="ControlModeModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp">
@@ -142,6 +148,12 @@
       <Filter>Mod</Filter>
     </ClInclude>
     <ClInclude Include="ConfigModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ControlModeModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraModule.h">
       <Filter>Mod\Modules</Filter>
     </ClInclude>
   </ItemGroup>

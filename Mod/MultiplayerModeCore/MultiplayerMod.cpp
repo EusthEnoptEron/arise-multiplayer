@@ -21,7 +21,9 @@
 #include "StepGuardModule.h"
 #include "ModActorModule.h"
 #include "TestWidgetModule.h"
+#include "ControlModeModule.h"
 #include "InputModule.h"
+#include "CameraModule.h"
 
 #define hasFlag(x,m) ((x&m) > 0)
 
@@ -34,9 +36,11 @@ float* MultiplayerMod::GNearClippingPlane;
 float MultiplayerMod::GNearOriginal;
 
 
-// #######################
-//  Main tick hook
-// #######################
+
+// ###############################
+// #           HOOKS             #
+// ###############################
+
 FEngineLoop__Tick_Fn FEngineLoop__Tick_Orig;
 void FEngineLoop__Tick_Hook(void* thisptr)
 {
@@ -51,96 +55,6 @@ void FEngineLoop__Tick_Hook(void* thisptr)
 #endif
 }
 
-UE4::APlayerController* MultiplayerMod::GetControllerFromInputProcessor(UE4::AActor* inputProcess) {
-	if (inputProcess == nullptr) return nullptr;
-
-	return Controllers[GetPlayerIndexFromInputProcessor(inputProcess)];
-}
-
-int MultiplayerMod::GetPlayerIndexFromInputProcessor(UE4::AActor* inputProcess) {
-	if (inputProcess == nullptr) return 0;
-
-	for (int i = 0; i < MAX_CONTROLLERS; i++) {
-		if (InputProcesses[i] == inputProcess) {
-			return i;
-		}
-	}
-
-	return 0;
-}
-
-
-//Function Arise.BtlManager.BattlePause
-FNativeFuncPtr BattlePause;
-void BattlePauseHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
-	((MultiplayerMod*)(Mod::ModRef))->OnBeforePause();
-	BattlePause(Context, Stack, result);
-}
-
-// Function Arise.BtlManager.BattleResume
-FNativeFuncPtr BattleResume;
-void BattleResumeHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
-	static auto onBeforePauseFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnBeforePause");
-
-	BattleResume(Context, Stack, result);
-
-	((MultiplayerMod*)(Mod::ModRef))->OnBeforePause();
-}
-
-
-
-//Function Arise.BtlCharacterBase.GetPlayerOperation
-FNativeFuncPtr GetPlayerOperation;
-void GetPlayerOperationHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* result) {
-	auto ctx = (SDK::ABtlCharacterBase*)Context;
-	auto controller = ctx->Controller;
-	auto mod = ((MultiplayerMod*)(Mod::ModRef));
-
-	GetPlayerOperation(Context, Stack, result);
-
-	if (controller != nullptr) {
-		int charaIndex = mod->GetPlayerIndex((UE4::APlayerController*)controller);
-		if (mod->CurrentPlayer >= 0 && mod->CurrentPlayer != charaIndex) {
-			Log::Info("Forcing %s (%d) to NOT player (current player = %d)", controller->GetName().c_str(), charaIndex, mod->CurrentPlayer);
-			*result = false;
-		} else if (charaIndex > 0) {
-				*result = true;
-			
-		}
-	}
-}
-
-
-//Function Arise.BtlCharacterBase.IsAutoOperation
-FNativeFuncPtr IsAutoOperation;
-void IsAutoOperationHook(UE4::UObject* Context, UE4::FFrame& Stack, bool* result) {
-	auto ctx = (SDK::ABtlCharacterBase*)Context;
-	auto controller = ctx->Controller;
-	auto mod = ((MultiplayerMod*)(Mod::ModRef));
-
-	IsAutoOperation(Context, Stack, result);
-
-	if (controller != nullptr) {
-		int charaIndex = mod->GetPlayerIndex((UE4::APlayerController*)controller);
-		if (mod->CurrentPlayer >= 0 && mod->CurrentPlayer != charaIndex) {
-			Log::Info("Forcing %s to AUTO", controller->GetName().c_str());
-
-			*result = true;
-		} else if (charaIndex > 0) {
-				*result = false;
-		}
-	}
-}
-
-FNativeFuncPtr SetActiveCamera;
-void SetActiveCameraHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
-	auto obj = GetParam<SDK::ABP_BtlCamera_C*>(Stack, false);
-	auto actor = ((MultiplayerMod*)Mod::ModRef)->ModActor;
-
-	actor->ProcessEvent(actor->GetFunction("OnBtlCamera"), &obj);
-
-	SetActiveCamera(Context, Stack, ret);
-}
 
 FNativeFuncPtr ProcessInternal;
 void ProcessInternalHook(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
@@ -195,37 +109,6 @@ void MultiplayerMod::InitializeMod()
 
 	MinHook::Init();
 
-
-
-	// Get battle camera as soon as possible
-	MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCameraLibrary.SetActiveCamera")->GetFunction()),
-		&SetActiveCameraHook, &SetActiveCamera, "SetActiveCamera");
-
-
-	// ----------------------------------------------------------------------------------
-	// Hook into pause functions to react faster to camera changes (might be obsolete)
-	// ----------------------------------------------------------------------------------
-	MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlManager.BattlePause")->GetFunction()),
-		&BattlePauseHook, &BattlePause, "BattlePause");
-
-	MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlManager.BattleResume")->GetFunction()),
-		&BattleResumeHook, &BattleResume, "BattleResume");
-
-	// -------------------------------------------------------------------------------------------------
-	// Instead of using SetPlayerOperation, simply override the accessors (has less bad side-effects)
-	// -------------------------------------------------------------------------------------------------
-	MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.GetPlayerOperation")->GetFunction()),
-		&GetPlayerOperationHook, &GetPlayerOperation, "GetPlayerOperation");
-
-	MinHook::Add((DWORD_PTR)
-		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlCharacterBase.IsAutoOperation")->GetFunction()),
-		&IsAutoOperationHook, &IsAutoOperation, "IsAutoOperation");
-
-
 	//
 	auto tickFn = Pattern::Find("48 8B C4 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 78 FD FF FF");
 	void* ProcessInterals = UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.ReceiveBeginProcess")->GetFunction();
@@ -240,9 +123,12 @@ void MultiplayerMod::InitializeMod()
 
 	RegisterModules();
 
+	Log::Info("Loading modules...");
 	for (const auto& modl: Modules) {
 		modl->Initialize(this);
 	}
+
+	Log::Info("Finished loading modules.");
 }
 
 void MultiplayerMod::RegisterModules() {
@@ -255,7 +141,9 @@ void MultiplayerMod::RegisterModules() {
 	Modules.emplace_back(new BoostAttackModule());
 	Modules.emplace_back(new ModActorModule());
 	Modules.emplace_back(new TestWidgetModule());
+	Modules.emplace_back(new ControlModeModule());
 	Modules.emplace_back(new InputModule());
+	Modules.emplace_back(new CameraModule());
 }
 
 
@@ -272,36 +160,11 @@ bool MultiplayerMod::IsBattleScene() {
 bool MultiplayerMod::OnBeforeVirtualFunction(UE4::UObject* Context, UE4::FFrame& Stack, void* ret) {
 	auto currentFn = Stack.Node;
 
-	auto handler = BlueprintHooks.find(Stack.Node);
+	auto handler = BlueprintHooks.find(currentFn);
 	if (handler != BlueprintHooks.end()) {
 		// Handler will take care of it
 		handler->second(Context, Stack, ret, ProcessInternal);
 		return false;
-	}
-
-	static auto DerivedInputStateComponent__OnOperationUnitChanged = UE4::UObject::FindObject<UE4::UFunction>("Function BP_DerivedInputStateComponent.BP_DerivedInputStateComponent_C.OnOperationUnitChanged");
-	static auto DerivedInputStateComponent__GetOwnerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Engine.ActorComponent.GetOwner");
-	if (Stack.Node == DerivedInputStateComponent__OnOperationUnitChanged)
-	{
-		// Ignore if this unit is controlled by ourselves
-		UE4::AActor* owner; // InputProcess
-		Stack.Object->ProcessEvent(DerivedInputStateComponent__GetOwnerFn, &owner);
-
-		int index = GetPlayerIndexFromInputProcessor(owner);
-		if (index > 0) {
-			// Ignore!
-			Log::Info("Ignore operationunitchanged event");
-			return false;
-		}
-
-	}
-
-	static auto Btl_Camera__SetFocusUnitCamera = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BtlCamera.BP_BtlCamera_C.SetFocusUnitCamera");
-	if (currentFn == Btl_Camera__SetFocusUnitCamera) {
-		if (CameraFrozen) {
-			Log::Info("Ignore camera");
-			return false;
-		}
 	}
 
 	return true;
@@ -378,53 +241,7 @@ void MultiplayerMod::DrawImGui()
 {
 }
 
-void MultiplayerMod::BP_OnCameraAngle(UE4::FVector2D angle)
-{
-	static auto fn = ModActor->GetFunction("BP_OnCameraAngle");
-	ModActor->ProcessEvent(fn, &angle);
-}
 
-UE4::APawn* MultiplayerMod::GetControlledCharacter(int index) {
-	if (GetControlledCharacterFn == nullptr) return nullptr;
-
-	GetControlledCharacterParms parms = { index, nullptr };
-	ModActor->ProcessEvent(GetControlledCharacterFn, &parms);
-
-	return parms.Result;
-}
-
-UE4::APlayerController* MultiplayerMod::GetController(int index) {
-	static auto GetControllerFn = ModActor->GetFunction("GetMultiControllerFn");
-
-	GetControllerParms parms = { index, nullptr };
-	ModActor->ProcessEvent(GetControllerFn, &parms);
-
-	return parms.Result;
-}
-
-UE4::APlayerController* MultiplayerMod::GetControllerOfCharacter(UE4::APawn* pawn)
-{
-	if (pawn == nullptr) return nullptr;
-
-	static auto pawnGetControllerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Engine.Pawn.GetController");
-
-	UE4::APlayerController* playerController = nullptr;
-	pawn->ProcessEvent(pawnGetControllerFn, &playerController);
-
-	return playerController;
-}
-
-int MultiplayerMod::GetPlayerIndex(UE4::APlayerController* playerController)
-{
-	if (playerController == nullptr) return 0;
-
-	for (int i = 0; i < MAX_CONTROLLERS; i++) {
-		if (Controllers[i] == playerController) {
-			return i;
-		}
-	}
-	return -1;
-}
 
 bool MultiplayerMod::IsMultiplayerBattle() {
 	static auto ModActor__IsMultiplayerBattle = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.IsMultiplayerBattle");
@@ -448,20 +265,7 @@ void MultiplayerMod::Tick()
 		modl->Tick();
 	}
 
-	// Calculate accumulate of all camera movements and listen to change chara button
-	float x = 0.0f, y = 0.0f;
 	for (int i = 0; i < 4; i++) {
-		auto angle = OldStates[i].CameraAngle;
-		if (angle.bActive) {
-			if (abs(x) < abs(angle.x)) {
-				x = angle.x;
-			}
-			if (abs(y) < abs(angle.y)) {
-				y = angle.y;
-			}
-		}
-
-
 		if (NewStates[i].IsChangeChara && !OldStates[i].IsChangeChara) {
 			ChangePartyTop(i);
 		}
@@ -469,11 +273,6 @@ void MultiplayerMod::Tick()
 
 	// Swap arrays. OldStates will now carry the current state.
 	std::swap(OldStates, NewStates);
-
-	// Update camera angle
-	BP_OnCameraAngle(UE4::FVector2D(x, y));
-
-
 
 	static auto modTickFn = ModActor->GetFunction("ModTick");
 	ModActor->ProcessEvent(modTickFn, nullptr);
@@ -540,6 +339,7 @@ void MultiplayerMod::OnBeforePause() {
 	ModActor->ProcessEvent(OnBeforePauseFn, nullptr);
 }
 
+
 void MultiplayerMod::ChangeFirstPlayerTemporarily(int playerIndex)
 {
 	ModActor->ProcessEvent(OnChangeFirstPlayerTemporarilyFn, &playerIndex);
@@ -551,12 +351,106 @@ void MultiplayerMod::RestoreFirstPlayer()
 	ModActor->ProcessEvent(OnRestoreFirstPlayerFn, nullptr);
 }
 
-bool MultiplayerMod::IsControlledCharacter(UE4::AActor *actor, bool ignoreP1) {
+void MultiplayerMod::AddBlueprintHook(std::string fnName, FBlueprintHookHandler handler)
+{
+	auto fn = UE4::UObject::FindObject<UE4::UFunction>("Function " + fnName);
+	if (fn == nullptr) {
+		Log::Error("BP function not found: %s", fnName.c_str());
+		return;
+	}
+
+	AddBlueprintHook(fn, handler);
+}
+
+void MultiplayerMod::AddBlueprintHook(UE4::UFunction* fn, FBlueprintHookHandler handler)
+{
+	if (fn == nullptr) {
+		Log::Error("BP fn pointer was NULL!");
+		return;
+	}
+
+	bool success = BlueprintHooks.try_emplace(fn, handler).second;
+	if (success) {
+		Log::Info("Added BP hook: %s", fn->GetFullName().c_str());
+	}
+	else {
+		Log::Error("Function handled twice: %s", fn->GetFullName().c_str());
+	}
+}
+
+
+
+
+// ###############################
+// #      PLAYER ACCESSORS       #
+// ###############################
+
+UE4::APlayerController* MultiplayerMod::GetControllerFromInputProcessor(UE4::AActor* inputProcess) {
+	if (inputProcess == nullptr) return nullptr;
+
+	return Controllers[GetPlayerIndexFromInputProcessor(inputProcess)];
+}
+
+int MultiplayerMod::GetPlayerIndexFromInputProcessor(UE4::AActor* inputProcess) {
+	if (inputProcess == nullptr) return 0;
+
+	for (int i = 0; i < MAX_CONTROLLERS; i++) {
+		if (InputProcesses[i] == inputProcess) {
+			return i;
+		}
+	}
+
+	return 0;
+}
+
+UE4::APawn* MultiplayerMod::GetControlledCharacter(int index) {
+	if (GetControlledCharacterFn == nullptr) return nullptr;
+
+	GetControlledCharacterParms parms = { index, nullptr };
+	ModActor->ProcessEvent(GetControlledCharacterFn, &parms);
+
+	return parms.Result;
+}
+
+UE4::APlayerController* MultiplayerMod::GetController(int index) {
+	static auto GetControllerFn = ModActor->GetFunction("GetMultiControllerFn");
+
+	GetControllerParms parms = { index, nullptr };
+	ModActor->ProcessEvent(GetControllerFn, &parms);
+
+	return parms.Result;
+}
+
+UE4::APlayerController* MultiplayerMod::GetControllerOfCharacter(UE4::APawn* pawn)
+{
+	if (pawn == nullptr) return nullptr;
+
+	static auto pawnGetControllerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Engine.Pawn.GetController");
+
+	UE4::APlayerController* playerController = nullptr;
+	pawn->ProcessEvent(pawnGetControllerFn, &playerController);
+
+	return playerController;
+}
+
+int MultiplayerMod::GetPlayerIndex(UE4::APlayerController* playerController)
+{
+	if (playerController == nullptr) return 0;
+
+	for (int i = 0; i < MAX_CONTROLLERS; i++) {
+		if (Controllers[i] == playerController) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+bool MultiplayerMod::IsControlledCharacter(UE4::AActor* actor, bool ignoreP1) {
 	if (!FastIsA(actor, (UE4::UClass*)SDK::ABtlCharacterBase::StaticClass()))
 		return false;
 
 	auto pawn = (SDK::APawn*)actor;
-	auto controller = (UE4::APlayerController *)pawn->Controller;
+	auto controller = (UE4::APlayerController*)pawn->Controller;
 
 	for (int i = 0; i < MAX_CONTROLLERS; i++) {
 		if (Controllers[i] == controller) {

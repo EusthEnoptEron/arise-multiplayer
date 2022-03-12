@@ -162,21 +162,8 @@ public:
 		return ((MultiplayerMod*)Mod::ModRef);
 	}
 
-	void AddBlueprintHook(std::string fnName, FBlueprintHookHandler handler) {
-		auto fn = UE4::UObject::FindObject<UE4::UFunction>("Function " + fnName);
-		if (fn == nullptr)  {
-			Log::Error("BP function not found: %s", fnName.c_str());
-			return;
-		}
-
-		bool success = BlueprintHooks.try_emplace(fn, handler).second;
-		if (success) {
-			Log::Info("Added BP hook: %s", fnName.c_str());
-		}
-		else {
-			Log::Error("Function handled twice: %s", fnName.c_str());
-		}
-	}
+	void AddBlueprintHook(std::string fnName, FBlueprintHookHandler handler);
+	void AddBlueprintHook(UE4::UFunction* fn, FBlueprintHookHandler handler);
 
 	/// <summary>
 	/// Temporarily assigns player at <c>playerIndex</c> to the first player (i.e. giving it the flag)
