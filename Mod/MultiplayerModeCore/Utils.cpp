@@ -45,3 +45,37 @@ void PrintStackTrace(UE4::UObject* Context, UE4::FFrame& Stack) {
 	}
 	Log::Info("");
 }
+
+SDK::FTransform GetIdentity() {
+
+	SDK::FTransform identity;
+	identity.Rotation = SDK::FQuat();
+	identity.Scale3D = SDK::FVector();
+	identity.Rotation.W = 1.0f;
+	identity.Scale3D.X = identity.Scale3D.Y = identity.Scale3D.Z = 1.0f;
+
+	return identity;
+}
+
+
+SDK::FTransform GetTransform(const SDK::AActor* actor)
+{
+	auto rootComponent = actor ? actor->RootComponent : nullptr;
+	if (rootComponent) {
+		auto transformRef = (SDK::FTransform*)(rootComponent->UnknownData02 + 8);
+		return SDK::FTransform(*transformRef);
+	}
+	else {
+		static SDK::FTransform identity = GetIdentity();
+		return identity;
+	}
+}
+
+UE4::UFunction* FindFunction(const std::string path)
+{
+	const auto fn = UE4::UObject::FindObject<UE4::UFunction>(path);
+	if (!fn) {
+		Log::Error("Function not found: %s", path.c_str());
+	}
+	return fn;
+}

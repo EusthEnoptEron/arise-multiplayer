@@ -123,6 +123,7 @@ public:
 
 	UE4::APawn* GetControlledCharacter(int index);
 	UE4::APlayerController* GetController(int index);
+	SDK::ABtlInputExtInputProcessBase* GetInputProcess(int index);
 	UE4::APlayerController* GetControllerOfCharacter(UE4::APawn *pawn);
 	int GetPlayerIndex(UE4::APlayerController* playerController);
 	bool IsControlledCharacter(UE4::AActor* actor, bool ignoreP1);

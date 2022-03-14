@@ -14,6 +14,7 @@ private:
     static FNativeFuncPtr IsAutoOperation;
 
     static void OnOperationUnitChanged(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
+    static void OnSetTurnTargetArts(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
 
 
     static UE4::UFunction* DerivedInputStateComponent__GetOwnerFn;

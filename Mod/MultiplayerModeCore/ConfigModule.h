@@ -54,6 +54,7 @@ class ConfigModule :
 {
 public:
 	virtual void Initialize(MultiplayerMod* mod) override;
+	virtual void PostBeginPlay(UE4::AActor* modActor) override;
 	virtual void Tick() override;
 
 	static bool IsSkipFirstPlayer();

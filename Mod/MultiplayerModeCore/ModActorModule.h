@@ -20,6 +20,12 @@ private:
 	static void Native_OnEndChangeTargetImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
 	static void Native_SetNearClippingPlaneImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
 	static void Native_ResetNearClippingPlaneImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
+	static FNativeFuncPtr BattlePause;
+	static void BattlePauseHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result);
+
+	static FNativeFuncPtr BattleResume;
+	static void BattleResumeHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result);
+
 
 	static MultiplayerMod* ModRef;
 

@@ -1,4 +1,5 @@
 #include "ControlModeModule.h"
+#include "Utils.h"
 
 UE4::UFunction* ControlModeModule::DerivedInputStateComponent__GetOwnerFn;
 void ControlModeModule::Initialize(MultiplayerMod* mod)
@@ -20,7 +21,12 @@ void ControlModeModule::Initialize(MultiplayerMod* mod)
 		OnOperationUnitChanged
 	);
 
-	DerivedInputStateComponent__GetOwnerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Engine.ActorComponent.GetOwner");
+	mod->AddBlueprintHook(
+		"BP_BtlCharacterBase.BP_BtlCharacterBase_C.SetTurnTarget",
+		OnSetTurnTargetArts
+	);
+
+	DerivedInputStateComponent__GetOwnerFn = FindFunction("Function Engine.ActorComponent.GetOwner");
 }
 
 //Function Arise.BtlCharacterBase.GetPlayerOperation
@@ -82,4 +88,29 @@ void ControlModeModule::OnOperationUnitChanged(UE4::UObject* Context, UE4::FFram
 	}
 
 	processFn(Context, Stack, result);
+}
+
+void ControlModeModule::OnSetTurnTargetArts(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn)
+{
+	processFn(Context, Stack, result);
+
+
+	// For some reason, the determination of IsTurnTarget does not work correctly for P2-P4,
+	// so we do the calculation ourselves.
+
+	const auto chara = (SDK::ABP_BtlCharacterBase_C*)Stack.Object;
+	const auto operationMode = ((SDK::UBtlFunctionLibrary*)chara)->STATIC_GetOperationMode();
+	if (operationMode == SDK::EOperationMode::OPERATION_MODE_MANUAL) {
+		const auto mod = MultiplayerMod::GetInstance();
+		const auto controller = mod->GetControllerOfCharacter((UE4::APawn *)chara);
+		const auto inputProcess = mod->GetInputProcess(mod->GetPlayerIndex(controller));
+
+		if (inputProcess != nullptr) {
+			const auto moveToWorld = inputProcess->GetMoveToWorld();
+			const float distance = sqrt(moveToWorld.X * moveToWorld.X + moveToWorld.Y * moveToWorld.Y + moveToWorld.Z * moveToWorld.Z);
+
+			//Log::Info("Distance: %.2f", distance);
+			chara->IsTurnTarget = chara->IsTurnTarget && distance < 0.5;
+		}
+	}
 }

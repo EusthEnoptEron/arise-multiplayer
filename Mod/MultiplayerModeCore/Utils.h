@@ -40,3 +40,7 @@ template<typename T> T GetParam(UE4::FFrame& Stack, bool progress) {
 std::string GetName(UE4::FFrame& Stack);
 
 void PrintStackTrace(UE4::UObject* Context, UE4::FFrame& Stack);
+
+SDK::FTransform GetTransform(const SDK::AActor* actor);
+
+UE4::UFunction* FindFunction(const std::string path);

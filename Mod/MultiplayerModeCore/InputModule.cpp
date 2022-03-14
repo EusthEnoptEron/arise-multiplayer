@@ -24,12 +24,13 @@ void InputModule::Initialize(MultiplayerMod* mod)
 		&TickPlayerInputHook, &TickPlayerInput, "TickPlayerInput");
 
 
-	OnActionFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnAction");
-	OnActionPressedFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnActionPressed");
-	OnActionReleasedFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnActionReleased");
-	OnAnalogActionFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnAnalogAction");
-	OnControllerConnectedFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnControllerConnected");
-	OnControllerDisconnectedFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnControllerDisconnected");
+	OnActionFn = FindFunction("Function ModActor.ModActor_C.OnAction");
+	OnActionPressedFn = FindFunction("Function ModActor.ModActor_C.OnActionPressed");
+	OnActionReleasedFn = FindFunction("Function ModActor.ModActor_C.OnActionReleased");
+	OnAnalogActionFn = FindFunction("Function ModActor.ModActor_C.OnAnalogAction");
+	OnControllerConnectedFn = FindFunction("Function ModActor.ModActor_C.OnControllerConnected");
+	OnControllerDisconnectedFn = FindFunction("Function ModActor.ModActor_C.OnControllerDisconnected");
+
 }
 
 void InputModule::Tick()
@@ -225,6 +226,9 @@ void InputModule::OnAnalogAction(int index, const UE4::FString& name, float x, f
 }
 void InputModule::OnControllerConnected(int index) {
 	Log::Info("Controller connected: %d", index);
+	if (!OnControllerConnectedFn) {
+		Log::Error("MISSING FN");
+	}
 	ModRef->ModActor->ProcessEvent(OnControllerConnectedFn, &index);
 	ModRef->Controllers[index] = ModRef->GetController(index);
 }

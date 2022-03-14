@@ -1,5 +1,7 @@
 #include "ModActorModule.h"
 
+#include "Utils.h"
+
 MultiplayerMod* ModActorModule::ModRef;
 UE4::UFunction* ModActorModule::K2_GetBattleInputProcessFn;
 UE4::UFunction* ModActorModule::K2_GetBattlePCControllerFn;
@@ -7,6 +9,17 @@ UE4::UFunction* ModActorModule::K2_GetBattlePCControllerFn;
 void ModActorModule::Initialize(MultiplayerMod* mod)
 {
 	ModRef = mod;
+
+	// ----------------------------------------------------------------------------------
+	// Hook into pause functions to react faster to camera changes (might be obsolete)
+	// ----------------------------------------------------------------------------------
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlManager.BattlePause")->GetFunction()),
+		&BattlePauseHook, &BattlePause, "BattlePause");
+
+	MinHook::Add((DWORD_PTR)
+		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlManager.BattleResume")->GetFunction()),
+		&BattleResumeHook, &BattleResume, "BattleResume");
 
 	mod->AddBlueprintHook(
 		"ModActor.ModActor_C.OnBeginBattle",
@@ -48,8 +61,8 @@ void ModActorModule::Initialize(MultiplayerMod* mod)
 		Native_ResetNearClippingPlaneImpl
 	);
 
-	K2_GetBattleInputProcessFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattleInputProcess");
-	K2_GetBattlePCControllerFn = UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBattlePCController");
+	K2_GetBattleInputProcessFn = FindFunction("Function Arise.BtlInputExtInputProcessBase.K2_GetBattleInputProcess");
+	K2_GetBattlePCControllerFn = FindFunction("Function Arise.BtlInputExtInputProcessBase.K2_GetBattlePCController");
 }
 
 void ModActorModule::OnBeginBattle(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn)
@@ -168,4 +181,23 @@ void ModActorModule::Native_ResetNearClippingPlaneImpl(UE4::UObject* Context, UE
 	ModRef->ResetNearClippingPlane();
 
 	processFn(Context, Stack, result);
+}
+
+
+
+//Function Arise.BtlManager.BattlePause
+FNativeFuncPtr ModActorModule::BattlePause;
+void ModActorModule::BattlePauseHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
+	((MultiplayerMod*)(Mod::ModRef))->OnBeforePause();
+	BattlePause(Context, Stack, result);
+}
+
+// Function Arise.BtlManager.BattleResume
+FNativeFuncPtr ModActorModule::BattleResume;
+void ModActorModule::BattleResumeHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
+	static auto onBeforePauseFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnBeforePause");
+
+	BattleResume(Context, Stack, result);
+
+	((MultiplayerMod*)(Mod::ModRef))->OnBeforePause();
 }

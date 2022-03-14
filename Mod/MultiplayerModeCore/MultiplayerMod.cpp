@@ -226,6 +226,10 @@ void MultiplayerMod::PostBeginPlay(std::wstring ModActorName, UE4::AActor* Actor
 		IsBattleSceneFn = UE4::UObject::FindObject<UE4::UFunction>("Function BP_GameFunctionLibrary.BP_GameFunctionLibrary_C.GameFunc_IsBattelScene");
 		functionLibClazz = UE4::UObject::FindObject<UE4::UClass>("BlueprintGeneratedClass BP_GameFunctionLibrary.BP_GameFunctionLibrary_C");
 
+		for (const auto& modl : Modules) {
+			modl->PostBeginPlay(Actor);
+		}
+
 		//Actor->CallFunctionByNameWithArguments
 	}
 }
@@ -419,6 +423,12 @@ UE4::APlayerController* MultiplayerMod::GetController(int index) {
 	ModActor->ProcessEvent(GetControllerFn, &parms);
 
 	return parms.Result;
+}
+
+SDK::ABtlInputExtInputProcessBase* MultiplayerMod::GetInputProcess(int index)
+{
+	if (index < 0) return nullptr;
+	return (SDK::ABtlInputExtInputProcessBase*)InputProcesses[index];
 }
 
 UE4::APlayerController* MultiplayerMod::GetControllerOfCharacter(UE4::APawn* pawn)

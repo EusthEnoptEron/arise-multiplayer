@@ -1,11 +1,16 @@
 #include "ConfigModule.h"
 #include <INI.h>
+#include "Utils.h";
 
 void ConfigModule::Initialize(MultiplayerMod* mod)
 {
 	ModRef = mod;
-	OnConfigChangedFn = UE4::UObject::FindObject<UE4::UFunction>("Function ModActor.ModActor_C.OnConfigChanged");
 }
+
+void ConfigModule::PostBeginPlay(UE4::AActor* modActor)
+{
+}
+
 
 void ConfigModule::Tick()
 {
@@ -38,6 +43,7 @@ bool ConfigModule::IsSkipFirstPlayer()
 }
 
 void ConfigModule::RefreshIni() {
+	static auto onConfigChangedFn = ModRef->ModActor->GetFunction("OnConfigChanged");
 	ApplyConfigParams parms;
 
 	INI::PARSE_FLAGS = INI::PARSE_COMMENTS_ALL | INI::PARSE_COMMENTS_SLASH | INI::PARSE_COMMENTS_HASH;
@@ -82,5 +88,9 @@ void ConfigModule::RefreshIni() {
 	ModRef->RestrictBoostAttacksToCpuAndSelf = std::stoi(config.get("RestrictBoostAttacksToCpuAndSelf", "0"));
 	ModRef->RestrictBoostAttacksToP1 = std::stoi(config.get("RestrictBoostAttacksToP1", "0"));
 
-	ModRef->ModActor->ProcessEvent(OnConfigChangedFn, &parms);
+	if (!onConfigChangedFn) {
+		Log::Warn("OnConfigChangedFn not found");
+		return;
+	}
+	ModRef->ModActor->ProcessEvent(onConfigChangedFn, &parms);
 }
