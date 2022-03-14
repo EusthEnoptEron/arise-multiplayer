@@ -1,5 +1,6 @@
 #include "Tracer.h"
 #include "Utilities/MinHook.h"
+#include "Utils.h"
 
 #define MAX_uint16		((uint16)	0xffff)
 

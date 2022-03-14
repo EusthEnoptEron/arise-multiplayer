@@ -228,22 +228,46 @@
     <ClCompile Include="..\..\..\..\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Engine_functions.cpp" />
     <ClCompile Include="..\UnrealEngineModLoader\UE4\Basic.cpp" />
     <ClCompile Include="..\UnrealEngineModLoader\UE4\CoreUObject_functions.cpp" />
+    <ClCompile Include="BoostAttackModule.cpp" />
+    <ClCompile Include="CameraModule.cpp" />
+    <ClCompile Include="ConfigModule.cpp" />
+    <ClCompile Include="ControlModeModule.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="InputModule.cpp" />
+    <ClCompile Include="ModActorModule.cpp" />
     <ClCompile Include="MultiplayerMod.cpp" />
+    <ClCompile Include="QualityOfLifeModule.cpp" />
+    <ClCompile Include="ReroutingModule.cpp" />
     <ClCompile Include="SDK.cpp" />
+    <ClCompile Include="StepGuardModule.cpp" />
+    <ClCompile Include="TestWidgetModule.cpp" />
     <ClCompile Include="Tracer.cpp" />
+    <ClCompile Include="BlueprintProxyModule.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="VibrationModule.cpp" />
     <ClCompile Include="VMTHook.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp" />
     <ClInclude Include="BaseModule.h" />
+    <ClInclude Include="BoostAttackModule.h" />
+    <ClInclude Include="CameraModule.h" />
+    <ClInclude Include="ConfigModule.h" />
+    <ClInclude Include="ControlModeModule.h" />
     <ClInclude Include="FileWatch.hpp" />
     <ClInclude Include="INI.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="InputModule.h" />
+    <ClInclude Include="ModActorModule.h" />
     <ClInclude Include="MultiplayerMod.h" />
+    <ClInclude Include="QualityOfLifeModule.h" />
+    <ClInclude Include="ReroutingModule.h" />
+    <ClInclude Include="StepGuardModule.h" />
+    <ClInclude Include="TestWidgetModule.h" />
     <ClInclude Include="Tracer.h" />
+    <ClInclude Include="BlueprintProxyModule.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="VibrationModule.h" />
     <ClInclude Include="VMTHook.h" />
   </ItemGroup>

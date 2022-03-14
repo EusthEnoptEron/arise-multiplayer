@@ -1,8 +1,10 @@
 # Changelog
 
-## LATEST
+## 1.0.3
 
 - Implemented haptic feedback for all players (#8).
+- Fixed a bug where the input direction was ignored in manual mode (#64).
+- Some sorely needed refactoring to keep the code base manageable. Might have broken stuff.
 
 ## 1.0.2
 

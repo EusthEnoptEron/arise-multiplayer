@@ -23,8 +23,10 @@ void VibrationModule::Initialize(MultiplayerMod *mod)
 		&VibrationModule::ClientStopForceFeedbackHook, &VibrationModule::ClientStopForceFeedback, "StopForceFeedback");
 
 
-	auto damageEventHandlerFn = UE4::UObject::FindObject<UE4::UFunction>("Function BP_BattleManagerBase.BP_BattleManagerBase_C.BndEvt__EventDispatcher_K2Node_ComponentBoundEvent_12_BtlDamageSignature__DelegateSignature");
-	mod->AddBlueprintHook(damageEventHandlerFn, VibrationModule::OnDamage);
+	mod->AddBlueprintHook(
+		"BP_BattleManagerBase.BP_BattleManagerBase_C.BndEvt__EventDispatcher_K2Node_ComponentBoundEvent_12_BtlDamageSignature__DelegateSignature", 
+		VibrationModule::OnDamage
+	);
 }
 
 
@@ -88,9 +90,3 @@ void VibrationModule::ClientStopForceFeedbackHook(SDK::APlayerController* thisPt
 	}
 }
 
-
-
-void VibrationModule::Tick()
-{
-
-}

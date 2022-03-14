@@ -55,6 +55,42 @@
     <ClCompile Include="VibrationModule.cpp">
       <Filter>Mod\Modules</Filter>
     </ClCompile>
+    <ClCompile Include="ReroutingModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="BlueprintProxyModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="QualityOfLifeModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="BoostAttackModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="StepGuardModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ModActorModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="TestWidgetModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="InputModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Mod</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfigModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ControlModeModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp">
@@ -82,6 +118,42 @@
       <Filter>Mod\Modules</Filter>
     </ClInclude>
     <ClInclude Include="VibrationModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ReroutingModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="BlueprintProxyModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="QualityOfLifeModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="BoostAttackModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="StepGuardModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ModActorModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="TestWidgetModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="InputModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Mod</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfigModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ControlModeModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraModule.h">
       <Filter>Mod\Modules</Filter>
     </ClInclude>
   </ItemGroup>
