@@ -1,5 +1,5 @@
 #include "ControlModeModule.h"
-#include "Utils.h"
+#include "../Utils.h"
 
 UE4::UFunction* ControlModeModule::DerivedInputStateComponent__GetOwnerFn;
 void ControlModeModule::Initialize(MultiplayerMod* mod)
