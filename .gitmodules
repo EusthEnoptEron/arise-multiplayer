@@ -1,0 +1,3 @@
+[submodule "Arise-SDK"]
+	path = Mod/MultiplayerModeCore/Libs/Arise-SDK
+    url  = git@github.com:EusthEnoptEron/Arise-SDK.git
