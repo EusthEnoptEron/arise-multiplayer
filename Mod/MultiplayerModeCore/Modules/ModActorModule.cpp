@@ -1,6 +1,6 @@
 #include "ModActorModule.h"
 
-#include "Utils.h"
+#include "../Utils.h"
 
 MultiplayerMod* ModActorModule::ModRef;
 UE4::UFunction* ModActorModule::K2_GetBattleInputProcessFn;

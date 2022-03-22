@@ -1,6 +1,6 @@
 #include "ReroutingModule.h"
 #include <Utilities/MinHook.h>
-#include "Utils.h"
+#include "../Utils.h"
 
 
 void ReroutingModule::Initialize(MultiplayerMod* mod)

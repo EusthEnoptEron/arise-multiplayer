@@ -52,43 +52,46 @@
     <ClCompile Include="..\..\..\..\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\CoreUObject_functions2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VibrationModule.cpp">
-      <Filter>Mod\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="ReroutingModule.cpp">
-      <Filter>Mod\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="BlueprintProxyModule.cpp">
-      <Filter>Mod\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="QualityOfLifeModule.cpp">
-      <Filter>Mod\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="BoostAttackModule.cpp">
-      <Filter>Mod\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="StepGuardModule.cpp">
-      <Filter>Mod\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="ModActorModule.cpp">
-      <Filter>Mod\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="TestWidgetModule.cpp">
-      <Filter>Mod\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="InputModule.cpp">
-      <Filter>Mod\Modules</Filter>
-    </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>Mod</Filter>
     </ClCompile>
-    <ClCompile Include="ConfigModule.cpp">
+    <ClCompile Include="Modules\BoostAttackModule.cpp">
       <Filter>Mod\Modules</Filter>
     </ClCompile>
-    <ClCompile Include="ControlModeModule.cpp">
+    <ClCompile Include="Modules\CameraModule.cpp">
       <Filter>Mod\Modules</Filter>
     </ClCompile>
-    <ClCompile Include="CameraModule.cpp">
+    <ClCompile Include="Modules\ConfigModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\ControlModeModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\InputModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\ModActorModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\QualityOfLifeModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\ReroutingModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\StepGuardModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\TestWidgetModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\VibrationModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\BaseModule.cpp">
+      <Filter>Mod\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\BlueprintProxyModule.cpp">
       <Filter>Mod\Modules</Filter>
     </ClCompile>
   </ItemGroup>
@@ -114,46 +117,46 @@
     <ClInclude Include="Tracer.h">
       <Filter>Mod</Filter>
     </ClInclude>
-    <ClInclude Include="BaseModule.h">
-      <Filter>Mod\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="VibrationModule.h">
-      <Filter>Mod\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="ReroutingModule.h">
-      <Filter>Mod\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="BlueprintProxyModule.h">
-      <Filter>Mod\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="QualityOfLifeModule.h">
-      <Filter>Mod\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="BoostAttackModule.h">
-      <Filter>Mod\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="StepGuardModule.h">
-      <Filter>Mod\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="ModActorModule.h">
-      <Filter>Mod\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="TestWidgetModule.h">
-      <Filter>Mod\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="InputModule.h">
-      <Filter>Mod\Modules</Filter>
-    </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>Mod</Filter>
     </ClInclude>
-    <ClInclude Include="ConfigModule.h">
+    <ClInclude Include="Modules\BlueprintProxyModule.h">
       <Filter>Mod\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="ControlModeModule.h">
+    <ClInclude Include="Modules\BoostAttackModule.h">
       <Filter>Mod\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="CameraModule.h">
+    <ClInclude Include="Modules\CameraModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\ConfigModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\ControlModeModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\InputModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\ModActorModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\QualityOfLifeModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\ReroutingModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\StepGuardModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\TestWidgetModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\VibrationModule.h">
+      <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\BaseModule.h">
       <Filter>Mod\Modules</Filter>
     </ClInclude>
   </ItemGroup>

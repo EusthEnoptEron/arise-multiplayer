@@ -1,6 +1,6 @@
 #include "InputModule.h"
-#include "Tracer.h"
-#include "Utils.h"
+#include "../Tracer.h"
+#include "../Utils.h"
 
 
 MultiplayerMod* InputModule::ModRef;
