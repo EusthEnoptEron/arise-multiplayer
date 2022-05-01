@@ -1,0 +1,113 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnrealEngineModLoader", "UnrealEngineModLoader.vcxproj", "{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnrealEngineModLauncher", "..\UnrealEngineModLauncher\UnrealEngineModLauncher.vcxproj", "{5BF2489F-778A-4781-8666-853F6685931E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MultiplayerModCore", "..\MultiplayerModeCore\MultiplayerModeCore.vcxproj", "{96B46066-A93A-4003-A8AE-445E499C2297}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LoaderAutoInjector", "..\LoaderAutoInjector\LoaderAutoInjector.vcxproj", "{ACD937DA-925A-4640-9AD0-39A381D323EA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Clang-Debug|x64 = Clang-Debug|x64
+		Clang-Debug|x86 = Clang-Debug|x86
+		Clang-Release|x64 = Clang-Release|x64
+		Clang-Release|x86 = Clang-Release|x86
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Development|x64 = Development|x64
+		Development|x86 = Development|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Clang-Debug|x64.ActiveCfg = Debug|x64
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Clang-Debug|x64.Build.0 = Debug|x64
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Clang-Debug|x86.ActiveCfg = Debug|Win32
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Clang-Debug|x86.Build.0 = Debug|Win32
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Clang-Release|x64.ActiveCfg = Release|x64
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Clang-Release|x64.Build.0 = Release|x64
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Clang-Release|x86.ActiveCfg = Release|Win32
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Clang-Release|x86.Build.0 = Release|Win32
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Debug|x64.ActiveCfg = Debug|x64
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Debug|x64.Build.0 = Debug|x64
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Debug|x86.ActiveCfg = Debug|Win32
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Debug|x86.Build.0 = Debug|Win32
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Development|x64.ActiveCfg = Development|x64
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Development|x64.Build.0 = Development|x64
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Development|x86.ActiveCfg = Development|Win32
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Development|x86.Build.0 = Development|Win32
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Release|x64.ActiveCfg = Release|x64
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Release|x64.Build.0 = Release|x64
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Release|x86.ActiveCfg = Release|Win32
+		{DE3BC2AD-2683-4D76-AD72-95D98164E9C7}.Release|x86.Build.0 = Release|Win32
+		{5BF2489F-778A-4781-8666-853F6685931E}.Clang-Debug|x64.ActiveCfg = Debug|x64
+		{5BF2489F-778A-4781-8666-853F6685931E}.Clang-Debug|x64.Build.0 = Debug|x64
+		{5BF2489F-778A-4781-8666-853F6685931E}.Clang-Debug|x86.ActiveCfg = Debug|Win32
+		{5BF2489F-778A-4781-8666-853F6685931E}.Clang-Debug|x86.Build.0 = Debug|Win32
+		{5BF2489F-778A-4781-8666-853F6685931E}.Clang-Release|x64.ActiveCfg = Release|x64
+		{5BF2489F-778A-4781-8666-853F6685931E}.Clang-Release|x64.Build.0 = Release|x64
+		{5BF2489F-778A-4781-8666-853F6685931E}.Clang-Release|x86.ActiveCfg = Release|Win32
+		{5BF2489F-778A-4781-8666-853F6685931E}.Clang-Release|x86.Build.0 = Release|Win32
+		{5BF2489F-778A-4781-8666-853F6685931E}.Debug|x64.ActiveCfg = Debug|x64
+		{5BF2489F-778A-4781-8666-853F6685931E}.Debug|x64.Build.0 = Debug|x64
+		{5BF2489F-778A-4781-8666-853F6685931E}.Debug|x86.ActiveCfg = Debug|Win32
+		{5BF2489F-778A-4781-8666-853F6685931E}.Debug|x86.Build.0 = Debug|Win32
+		{5BF2489F-778A-4781-8666-853F6685931E}.Development|x64.ActiveCfg = Development|x64
+		{5BF2489F-778A-4781-8666-853F6685931E}.Development|x64.Build.0 = Development|x64
+		{5BF2489F-778A-4781-8666-853F6685931E}.Development|x86.ActiveCfg = Development|Win32
+		{5BF2489F-778A-4781-8666-853F6685931E}.Development|x86.Build.0 = Development|Win32
+		{5BF2489F-778A-4781-8666-853F6685931E}.Release|x64.ActiveCfg = Release|x64
+		{5BF2489F-778A-4781-8666-853F6685931E}.Release|x64.Build.0 = Release|x64
+		{5BF2489F-778A-4781-8666-853F6685931E}.Release|x86.ActiveCfg = Release|Win32
+		{5BF2489F-778A-4781-8666-853F6685931E}.Release|x86.Build.0 = Release|Win32
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Clang-Debug|x64.ActiveCfg = Debug|x64
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Clang-Debug|x64.Build.0 = Debug|x64
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Clang-Debug|x86.ActiveCfg = Debug|Win32
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Clang-Debug|x86.Build.0 = Debug|Win32
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Clang-Release|x64.ActiveCfg = Release|x64
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Clang-Release|x64.Build.0 = Release|x64
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Clang-Release|x86.ActiveCfg = Release|Win32
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Clang-Release|x86.Build.0 = Release|Win32
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Debug|x64.ActiveCfg = Debug|x64
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Debug|x64.Build.0 = Debug|x64
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Debug|x86.ActiveCfg = Debug|Win32
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Debug|x86.Build.0 = Debug|Win32
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Development|x64.ActiveCfg = Development|x64
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Development|x64.Build.0 = Development|x64
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Development|x86.ActiveCfg = Development|Win32
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Development|x86.Build.0 = Development|Win32
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Release|x64.ActiveCfg = Release|x64
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Release|x64.Build.0 = Release|x64
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Release|x86.ActiveCfg = Release|Win32
+		{96B46066-A93A-4003-A8AE-445E499C2297}.Release|x86.Build.0 = Release|Win32
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Clang-Debug|x64.ActiveCfg = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Clang-Debug|x64.Build.0 = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Clang-Debug|x86.ActiveCfg = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Clang-Debug|x86.Build.0 = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Clang-Release|x64.ActiveCfg = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Clang-Release|x64.Build.0 = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Clang-Release|x86.ActiveCfg = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Clang-Release|x86.Build.0 = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Debug|x64.ActiveCfg = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Debug|x64.Build.0 = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Debug|x86.ActiveCfg = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Debug|x86.Build.0 = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Development|x64.ActiveCfg = Development|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Development|x64.Build.0 = Development|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Development|x86.ActiveCfg = Development|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Release|x64.ActiveCfg = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Release|x64.Build.0 = Release|x64
+		{ACD937DA-925A-4640-9AD0-39A381D323EA}.Release|x86.ActiveCfg = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9BBAE879-6117-442A-9B9C-A8346519C4A3}
+	EndGlobalSection
+EndGlobal
