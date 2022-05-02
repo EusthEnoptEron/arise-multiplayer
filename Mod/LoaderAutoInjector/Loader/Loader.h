@@ -3,4 +3,4 @@
 namespace Loader
 {
 	void LoadModLoader();
-};
+}

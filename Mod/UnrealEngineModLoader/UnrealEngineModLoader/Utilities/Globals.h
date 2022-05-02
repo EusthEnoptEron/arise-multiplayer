@@ -1,11 +1,11 @@
 #pragma once
-#include "UE4.hpp"
+#include "UE4/Ue4.hpp"
 #include <map>
 #include <iostream>
 #include <string>
-#include "../Lib.h"
-#include "../Mod/Mod.h"
-#include "../EventSystem.h"
+#include "Lib.h"
+#include "Mod/Mod.h"
+#include "EventSystem.h"
 struct ModInfo
 {
 	std::wstring ModName;

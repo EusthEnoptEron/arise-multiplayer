@@ -1,5 +1,5 @@
 #pragma once
-#include "../Lib.h"
+#include "Lib.h"
 #include <string>
 #include <vector>
 #include <Windows.h>

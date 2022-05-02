@@ -1,5 +1,5 @@
 #pragma once
-#include "../MultiplayerMod.h";
+#include "MultiplayerMod.h";
 
 
 class BaseModule
