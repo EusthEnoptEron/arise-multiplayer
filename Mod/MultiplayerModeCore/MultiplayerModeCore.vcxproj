@@ -225,8 +225,8 @@
   <ItemGroup>
     <ClCompile Include="..\UnrealEngineModLoader\UE4\Basic.cpp" />
     <ClCompile Include="..\UnrealEngineModLoader\UE4\CoreUObject_functions.cpp" />
-    <ClCompile Include="E:\Dev\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Arise_functions.cpp" />
-    <ClCompile Include="E:\Dev\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Engine_functions.cpp" />
+    <ClCompile Include="Libs\Arise-SDK\src\SDK\Arise_functions.cpp" />
+    <ClCompile Include="Libs\Arise-SDK\src\SDK\Engine_functions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Libs\Arise-SDK\src\SDK\CoreUObject_functions.cpp">

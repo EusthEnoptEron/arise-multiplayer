@@ -79,10 +79,10 @@
     <ClCompile Include="Modules\BlueprintProxyModule.cpp">
       <Filter>Mod\Modules</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Dev\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Arise_functions.cpp">
+    <ClCompile Include="Libs\Arise-SDK\src\SDK\Arise_functions.cpp">
       <Filter>SDK</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Dev\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Engine_functions.cpp">
+    <ClCompile Include="Libs\Arise-SDK\src\SDK\Engine_functions.cpp">
       <Filter>SDK</Filter>
     </ClCompile>
     <ClCompile Include="..\UnrealEngineModLoader\UE4\Basic.cpp">
