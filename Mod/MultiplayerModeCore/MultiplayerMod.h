@@ -4,15 +4,15 @@
 #include "Mod/Mod.h"
 #include "steam/isteaminput.h"
 #include "InputManager.h";
-#include "../SDK.h";
-#include "../SDK/BP_BtlCamera_classes.h";
-#include "../SDK/STR_BtlHudVisible_structs.h";
-#include "../SDK/TO14_StateEnum_MNU_SAV_structs.h";
-#include "../SDK/TO14_ProcessEnum_MNU_SAV_structs.h";
-#include "../SDK/TO14_ModeEnum_MNU_SAV_structs.h";
-#include "../SDK/TO14_BPI_GUI_MNU_SAV_classes.h"
-#include "../SDK/BP_BtlCharacterBase_structs.h"
-#include "../SDK/BP_BtlCharacterBase_classes.h"
+#include "SDK.h";
+#include "SDK/BP_BtlCamera_classes.h";
+#include "SDK/STR_BtlHudVisible_structs.h";
+#include "SDK/TO14_StateEnum_MNU_SAV_structs.h";
+#include "SDK/TO14_ProcessEnum_MNU_SAV_structs.h";
+#include "SDK/TO14_ModeEnum_MNU_SAV_structs.h";
+#include "SDK/TO14_BPI_GUI_MNU_SAV_classes.h"
+#include "SDK/BP_BtlCharacterBase_structs.h"
+#include "SDK/BP_BtlCharacterBase_classes.h"
 #include "FileWatch.hpp"
 #include "Utilities/MinHook.h"
 

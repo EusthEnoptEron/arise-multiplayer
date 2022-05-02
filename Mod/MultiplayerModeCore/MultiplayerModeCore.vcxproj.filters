@@ -17,16 +17,13 @@
     <Filter Include="Mod\Modules">
       <UniqueIdentifier>{84099460-0e29-40bd-8fbf-eda19ab30346}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SDK">
+      <UniqueIdentifier>{3d7fbc56-08da-4d8c-ab52-f78e8e785c04}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\UnrealEngineModLoader\UE4\Basic.cpp">
-      <Filter>UE4</Filter>
-    </ClCompile>
-    <ClCompile Include="..\UnrealEngineModLoader\UE4\CoreUObject_functions.cpp">
-      <Filter>UE4</Filter>
     </ClCompile>
     <ClCompile Include="MultiplayerMod.cpp">
       <Filter>Mod</Filter>
@@ -37,20 +34,8 @@
     <ClCompile Include="InputManager.cpp">
       <Filter>Mod</Filter>
     </ClCompile>
-    <ClCompile Include="SDK.cpp">
-      <Filter>Mod</Filter>
-    </ClCompile>
     <ClCompile Include="Tracer.cpp">
       <Filter>Mod</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Arise_functions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Engine_functions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\CoreUObject_functions2.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>Mod</Filter>
@@ -94,11 +79,26 @@
     <ClCompile Include="Modules\BlueprintProxyModule.cpp">
       <Filter>Mod\Modules</Filter>
     </ClCompile>
+    <ClCompile Include="E:\Dev\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Arise_functions.cpp">
+      <Filter>SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Dev\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Engine_functions.cpp">
+      <Filter>SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnrealEngineModLoader\UE4\Basic.cpp">
+      <Filter>UE4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnrealEngineModLoader\UE4\CoreUObject_functions.cpp">
+      <Filter>UE4</Filter>
+    </ClCompile>
+    <ClCompile Include="Libs\Arise-SDK\src\SDK\CoreUObject_functions.cpp">
+      <Filter>SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK.cpp">
+      <Filter>SDK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp">
-      <Filter>UE4</Filter>
-    </ClInclude>
     <ClInclude Include="MultiplayerMod.h">
       <Filter>Mod</Filter>
     </ClInclude>
@@ -158,6 +158,9 @@
     </ClInclude>
     <ClInclude Include="Modules\BaseModule.h">
       <Filter>Mod\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp">
+      <Filter>UE4</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

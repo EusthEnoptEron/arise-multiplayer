@@ -1,7 +1,7 @@
 #pragma once
 #include "Mod/Mod.h"
 #include "MultiplayerMod.h";
-#include "../SDK.h";
+#include "SDK.h";
 
 
 struct FScriptName {

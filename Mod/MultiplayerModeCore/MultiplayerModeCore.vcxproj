@@ -208,7 +208,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;EXAMPLEMOD_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;ENABLE_TRACING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)MinHook\;$(SolutionDir)UE4;$(SolutionDir)UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;$(SolutionDir)INI;$(ProjectDir)Libs\Arise-SDK\src\SDK;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)MinHook\;$(SolutionDir)UE4;$(SolutionDir)UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;$(SolutionDir)INI;$(ProjectDir)Libs\Arise-SDK\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
@@ -223,13 +223,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Arise_functions.cpp" />
-    <ClCompile Include="..\..\..\..\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\CoreUObject_functions2.cpp" />
-    <ClCompile Include="..\..\..\..\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Engine_functions.cpp" />
     <ClCompile Include="..\UnrealEngineModLoader\UE4\Basic.cpp" />
     <ClCompile Include="..\UnrealEngineModLoader\UE4\CoreUObject_functions.cpp" />
+    <ClCompile Include="E:\Dev\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Arise_functions.cpp" />
+    <ClCompile Include="E:\Dev\Repos\UnrealModLoader\MultiplayerModeCore\Libs\Arise-SDK\src\SDK\Engine_functions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="Libs\Arise-SDK\src\SDK\CoreUObject_functions.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Development|x64'">$(IntDir)_SDK</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="Modules\BaseModule.cpp" />
     <ClCompile Include="Modules\BlueprintProxyModule.cpp" />
     <ClCompile Include="Modules\BoostAttackModule.cpp" />
