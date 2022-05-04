@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4
+
+- Restored compatibility with latest game version (7 April 2022)
+
 ## 1.0.3
 
 - Implemented haptic feedback for all players (#8).
