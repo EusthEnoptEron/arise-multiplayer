@@ -87,18 +87,19 @@ void MultiplayerMod::InitializeMod()
 
 	SetupHooks();
 
-	// 0x42784DC
-	auto nearClippingPlanePat = Pattern::Find("66 0F 6E C7 0F 5B C0 0F 2E 05 ?? ?? ?? ??");
-	auto nearClippingPlaneOff = *reinterpret_cast<uint32_t*>(nearClippingPlanePat + 10);
-	GNearClippingPlane = (float*)(nearClippingPlanePat + 14 + nearClippingPlaneOff);
+	// 0x42784DC, patch-2022-2: 0x3D57034
+	auto nearClippingPlanePat = Pattern::Find("F3 ?? ?? ?? F3 ?? ?? ?? 83 FB 03 74 0A F3 0F 10 05 ?? ?? ?? ?? EB 05");
+	uint32_t nearClippingPlanePatOffset = 17;
+	auto nearClippingPlaneOff = *reinterpret_cast<uint32_t*>(nearClippingPlanePat + nearClippingPlanePatOffset);
+	GNearClippingPlane = (float*)(nearClippingPlanePat + nearClippingPlanePatOffset + 4 + nearClippingPlaneOff);
 
 	GNearOriginal = *GNearClippingPlane;
 	Log::Info("Found near clipping plane at %p (%f)", GNearClippingPlane, *GNearClippingPlane);
 
 	// 0x4BD9F90
-	auto gnativePat = Pattern::Find("CC 80 3D ?? ?? ?? ?? 00 48 8D 15 ?? ?? ?? ?? 75 49 C6 05 ?? ?? ?? ?? 01 48 8D 05 ?? ?? ?? ??");
-	auto gnativeOff = *reinterpret_cast<uint32_t*>(gnativePat + 27);
-	GNatives = (FNativeFuncPtr*)(gnativePat + 31 + gnativeOff);
+	auto gnativePat = Pattern::Find("75 49 C6 05 ?? ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ??");
+	auto gnativeOff = *reinterpret_cast<uint32_t*>(gnativePat + 12);
+	GNatives = (FNativeFuncPtr*)(gnativePat + 12 + 4 + gnativeOff);
 	Log::Info("Found GNatives at %p", GNatives);
 
 	//Log::Info("GNatives: %p", GNatives[1]);
@@ -109,8 +110,7 @@ void MultiplayerMod::InitializeMod()
 
 	MinHook::Init();
 
-	//
-	auto tickFn = Pattern::Find("48 8B C4 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 78 FD FF FF");
+	auto tickFn = Pattern::Find("?? 48 8B C8 B2 01 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B C8") - 0x2c;
 	void* ProcessInterals = UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.ReceiveBeginProcess")->GetFunction();
 
 	MinHook::Add((DWORD64)tickFn, &FEngineLoop__Tick_Hook, &FEngineLoop__Tick_Orig, "FEngineLoop__Tick_Fn");

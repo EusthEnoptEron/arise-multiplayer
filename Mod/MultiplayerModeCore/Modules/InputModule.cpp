@@ -20,7 +20,7 @@ void InputModule::Initialize(MultiplayerMod* mod)
 
 	//auto addrPlayerTick = Pattern::Find("40 53 57 41 56 48 81 EC D0 00 00 00 48 8B F9 0F 29 B4 24 C0 00 00 00 48 8B 89 58 04 00 00 45 0F B6 F0 0F 28 F1");
 	MinHook::Add((DWORD_PTR)
-		Pattern::Find("40 53 57 41 56 48 81 EC ?? ?? ?? ?? 48 8B F9 0F 29 B4 24 ?? ?? ?? ??"),
+		Pattern::Find("40 55 53 57 41 55 48 8D 6C 24 88 48 81 EC ?? ?? ?? ?? 48 8B D9 0F 29 BC 24 ?? ?? ?? ??"),
 		&TickPlayerInputHook, &TickPlayerInput, "TickPlayerInput");
 
 
