@@ -1,7 +1,5 @@
 # Tales of Arise: Multiplayer Mod
 
-> :warning: **WARNING: The mod is not compatible with the latest game patch. See #66 for the current state and for information on how to downgrade.**
-
 ![Assets/Sample.jpg](Assets/Sample.jpg)
 
 Mod that adds multiplayer to Tales of Arise. For progress, see <!-- [Milestones](https://github.com/EusthEnoptEron/arise-multiplayer/milestones) and--> the [Project page](https://github.com/EusthEnoptEron/arise-multiplayer/projects/1).
