@@ -15,7 +15,7 @@ Because this is how God intended *Tales of* to be.
 1. Extract files to the local game data folder. (See image how to get there.)
 
     ![Assets/browse_local_files.jpg](Assets/browse_local_files.jpg)
-3. Start the game.
+2. Start the game.
 
 During battle, controllers will automatically be assigned to the characters. See below for details on the order.
 
@@ -190,9 +190,9 @@ If you want them to control separate characters (what you'd expect from multi-pl
 - A.) Plug in (or emulate) a second gamepad and ignore the first one.
 - B.) Set "FirstPlayerIsKeyboard=1" in the settings. (See [Customization](#customization))
 
-## Compiling The Code
+## How to build
 
-The project is not currently in a compilable state because of some local changes to the Arise SDK. `// TODO`
+see [BUILDING.md](BUILDING.md)
 
 ## Special Thanks
 

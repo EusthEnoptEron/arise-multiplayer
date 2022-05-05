@@ -168,14 +168,15 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;EXAMPLEMOD_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;EXAMPLEMOD_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\UE4;$(SolutionDir)\UnrealEngineModLoader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\UnrealEngineModLoader\MinHook\;$(ProjectDir)..\UnrealEngineModLoader;$(ProjectDir)..\UnrealEngineModLoader\UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;$(ProjectDir)Libs\Arise-SDK\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>$(ProjectDir)..\UnrealEngineModLoader\MinHook\lib\libMinHook-x64-v141-mtd.lib;$(ProjectDir)Libs\steamworks\redistributable_bin\win64\steam_api64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -186,7 +187,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;EXAMPLEMOD_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)MinHook\;$(SolutionDir)UE4;$(SolutionDir)UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;$(ProjectDir)Libs\Arise-SDK\src;$(SolutionDir)INI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\UnrealEngineModLoader\MinHook\;$(ProjectDir)..\UnrealEngineModLoader;$(ProjectDir)..\UnrealEngineModLoader\UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;$(ProjectDir)Libs\Arise-SDK\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
@@ -196,7 +197,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(SolutionDir)MinHook\lib\libMinHook-x64-v141-mtd.lib;$(ProjectDir)Libs\steamworks\redistributable_bin\win64\steam_api64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)..\UnrealEngineModLoader\MinHook\lib\libMinHook-x64-v141-mtd.lib;$(ProjectDir)Libs\steamworks\redistributable_bin\win64\steam_api64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)Libs\steamworks\redistributable_bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -208,7 +209,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;EXAMPLEMOD_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;ENABLE_TRACING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)MinHook\;$(SolutionDir)UE4;$(SolutionDir)UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;$(SolutionDir)INI;$(ProjectDir)Libs\Arise-SDK\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\UnrealEngineModLoader\MinHook\;$(ProjectDir)..\UnrealEngineModLoader;$(ProjectDir)..\UnrealEngineModLoader\UnrealEngineModLoader;$(ProjectDir)Libs\steamworks\public;$(ProjectDir)Libs\Arise-SDK\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
@@ -218,21 +219,24 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(SolutionDir)MinHook\lib\libMinHook-x64-v141-mtd.lib;$(ProjectDir)Libs\steamworks\redistributable_bin\win64\steam_api64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)..\UnrealEngineModLoader\MinHook\lib\libMinHook-x64-v141-mtd.lib;$(ProjectDir)Libs\steamworks\redistributable_bin\win64\steam_api64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)Libs\steamworks\redistributable_bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\UnrealEngineModLoader\UE4\Basic.cpp" />
     <ClCompile Include="..\UnrealEngineModLoader\UE4\CoreUObject_functions.cpp" />
-    <ClCompile Include="Libs\Arise-SDK\src\SDK\Arise_functions.cpp" />
-    <ClCompile Include="Libs\Arise-SDK\src\SDK\Engine_functions.cpp" />
+    <ClCompile Include="Libs\Arise-SDK\src\SDK\Arise_functions.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Libs\Arise-SDK\src\SDK\CoreUObject_functions.cpp">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Development|x64'">$(IntDir)_SDK</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)_SDK</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Development|x64'">$(IntDir)_SDK</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)_SDK</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="Libs\Arise-SDK\src\SDK\Engine_functions.cpp" />
     <ClCompile Include="Modules\BaseModule.cpp" />
     <ClCompile Include="Modules\BlueprintProxyModule.cpp" />
     <ClCompile Include="Modules\BoostAttackModule.cpp" />
@@ -253,10 +257,18 @@
     <ClCompile Include="VMTHook.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\UnrealEngineModLoader\UE4\Basic.hpp" />
+    <ClInclude Include="..\UnrealEngineModLoader\UE4\CoreUObject_classes.hpp" />
+    <ClInclude Include="..\UnrealEngineModLoader\UE4\CoreUObject_parameters.hpp" />
+    <ClInclude Include="..\UnrealEngineModLoader\UE4\CoreUObject_structs.hpp" />
     <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp" />
     <ClInclude Include="FileWatch.hpp" />
-    <ClInclude Include="INI.h" />
+    <ClInclude Include="..\UnrealEngineModLoader\INI\INI.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="Libs\Arise-SDK\src\SDK\Basic.h" />
+    <ClInclude Include="Libs\Arise-SDK\src\SDK\CoreUObject_classes.h" />
+    <ClInclude Include="Libs\Arise-SDK\src\SDK\CoreUObject_parameters.h" />
+    <ClInclude Include="Libs\Arise-SDK\src\SDK\CoreUObject_structs.h" />
     <ClInclude Include="Modules\BaseModule.h" />
     <ClInclude Include="Modules\BlueprintProxyModule.h" />
     <ClInclude Include="Modules\BoostAttackModule.h" />

@@ -1,4 +1,6 @@
 #include "LoaderUI.h"
+
+#if ENABLE_TRACING
 #include "Utilities/Logger.h"
 #include "Memory/mem.h"
 #include "Utilities/Dumper.h"
@@ -527,3 +529,5 @@ void LoaderUI::CreateUILogicThread()
 	Log::Info("CreateUILogicThread Called");
 	CreateThread(0, 0, LogicThread, 0, 0, 0);
 }
+
+#endif // ENABLE_TRACING

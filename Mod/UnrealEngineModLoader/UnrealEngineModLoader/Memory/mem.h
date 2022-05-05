@@ -1,5 +1,5 @@
 #pragma once
-#include "../Lib.h"
+#include "Lib.h"
 #include <windows.h>
 #include <cstdio>
 #include <cinttypes>

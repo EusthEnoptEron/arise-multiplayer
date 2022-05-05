@@ -82,20 +82,20 @@
     <ClCompile Include="Libs\Arise-SDK\src\SDK\Arise_functions.cpp">
       <Filter>SDK</Filter>
     </ClCompile>
-    <ClCompile Include="Libs\Arise-SDK\src\SDK\Engine_functions.cpp">
+    <ClCompile Include="SDK.cpp">
       <Filter>SDK</Filter>
-    </ClCompile>
-    <ClCompile Include="..\UnrealEngineModLoader\UE4\Basic.cpp">
-      <Filter>UE4</Filter>
-    </ClCompile>
-    <ClCompile Include="..\UnrealEngineModLoader\UE4\CoreUObject_functions.cpp">
-      <Filter>UE4</Filter>
     </ClCompile>
     <ClCompile Include="Libs\Arise-SDK\src\SDK\CoreUObject_functions.cpp">
       <Filter>SDK</Filter>
     </ClCompile>
-    <ClCompile Include="SDK.cpp">
+    <ClCompile Include="Libs\Arise-SDK\src\SDK\Engine_functions.cpp">
       <Filter>SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnrealEngineModLoader\UE4\CoreUObject_functions.cpp">
+      <Filter>UE4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnrealEngineModLoader\UE4\Basic.cpp">
+      <Filter>UE4</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -111,7 +111,7 @@
     <ClInclude Include="FileWatch.hpp">
       <Filter>Mod</Filter>
     </ClInclude>
-    <ClInclude Include="INI.h">
+    <ClInclude Include="..\UnrealEngineModLoader\INI\INI.h">
       <Filter>Mod</Filter>
     </ClInclude>
     <ClInclude Include="Tracer.h">
@@ -159,8 +159,32 @@
     <ClInclude Include="Modules\BaseModule.h">
       <Filter>Mod\Modules</Filter>
     </ClInclude>
+    <ClInclude Include="..\UnrealEngineModLoader\UE4\Basic.hpp">
+      <Filter>UE4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnrealEngineModLoader\UE4\CoreUObject_classes.hpp">
+      <Filter>UE4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnrealEngineModLoader\UE4\CoreUObject_parameters.hpp">
+      <Filter>UE4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnrealEngineModLoader\UE4\CoreUObject_structs.hpp">
+      <Filter>UE4</Filter>
+    </ClInclude>
     <ClInclude Include="..\UnrealEngineModLoader\UE4\Ue4.hpp">
       <Filter>UE4</Filter>
+    </ClInclude>
+    <ClInclude Include="Libs\Arise-SDK\src\SDK\CoreUObject_classes.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Libs\Arise-SDK\src\SDK\CoreUObject_parameters.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Libs\Arise-SDK\src\SDK\CoreUObject_structs.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Libs\Arise-SDK\src\SDK\Basic.h">
+      <Filter>SDK</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

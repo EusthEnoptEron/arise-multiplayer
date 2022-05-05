@@ -3,6 +3,7 @@
 #include <string>
 #include <filesystem>
 #include <psapi.h>
+#include <vector>
 
 uint32_t FoundGamepid = 0;
 std::vector<std::string> GameProfiles;
@@ -69,12 +70,9 @@ BOOL CALLBACK WindowEnumerationCallBack(HWND hwnd, LPARAM lParam)
         HMODULE hMod;
         DWORD cbNeeded;
         TCHAR szEXEName[MAX_PATH];
-        if (EnumProcessModules(hProc, &hMod,
-            sizeof(hMod), &cbNeeded))
+        if (EnumProcessModules(hProc, &hMod, sizeof(hMod), &cbNeeded))
         {
-            GetModuleBaseName(hProc, hMod, szEXEName,
-                sizeof(szEXEName) / sizeof(TCHAR));
-
+            GetModuleBaseName(hProc, hMod, szEXEName, sizeof(szEXEName) / sizeof(TCHAR));
             EXEName = (szEXEName);
         }
     }

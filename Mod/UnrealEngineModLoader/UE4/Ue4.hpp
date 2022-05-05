@@ -3,7 +3,7 @@
 #include <Psapi.h>
 #include "Utilities/EngineDefFinder.h"
 #include "Basic.hpp"
-#include "Utilities//Pattern.h"
+#include "Utilities/Pattern.h"
 #include "CoreUObject_classes.hpp"
 namespace UE4
 {

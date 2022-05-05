@@ -46,4 +46,4 @@ namespace MEM
 	{
 		return (ptr + *(int32_t*)(ptr + offset) + instr_size);
 	}
-};
+}

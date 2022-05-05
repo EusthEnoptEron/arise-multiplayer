@@ -1,7 +1,7 @@
 //#include <stdafx.h>
 #include <windows.h>
 #include <stdio.h>
-#include "../Loader/Loader.h"
+#include "Loader/Loader.h"
 HINSTANCE mHinst = 0, mHinstDLL = 0;
 extern "C" UINT_PTR mProcs[12] = { 0 };
 
@@ -69,4 +69,3 @@ void load_original_dll()
 		ExitProcess(0); // Exit the hard way
 	}
 }
-

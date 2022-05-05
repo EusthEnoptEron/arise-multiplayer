@@ -49,34 +49,16 @@
     <ClCompile Include="UnrealEngineModLoader\Utilities\Dumper.cpp">
       <Filter>UnrealModLoader\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="UnrealEngineModLoader\Memory\CoreModLoader.cpp" />
     <ClCompile Include="Hooks.cpp" />
-    <ClCompile Include="LoaderUI.cpp" />
     <ClCompile Include="UnrealEngineModLoader\Mod\Mod.cpp">
       <Filter>UnrealModLoader\Mod</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_tables.cpp">
-      <Filter>ImGui</Filter>
+    <ClCompile Include="UnrealEngineModLoader\Memory\CoreModLoader.cpp">
+      <Filter>UnrealModLoader\Memory</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_widgets.cpp">
-      <Filter>ImGui</Filter>
+    <ClCompile Include="UnrealEngineModLoader\Utilities\Logger.cpp">
+      <Filter>UnrealModLoader\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_demo.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_draw.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_dx11.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_win32.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="UnrealEngineModLoader\Utilities\Logger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UnrealEngineModLoader\Utilities\Globals.h">
@@ -110,37 +92,14 @@
       <Filter>UE4</Filter>
     </ClInclude>
     <ClInclude Include="PakLoader.h" />
-    <ClInclude Include="UnrealEngineModLoader\Memory\CoreModLoader.h" />
     <ClInclude Include="Hooks.h" />
-    <ClInclude Include="LoaderUI.h" />
     <ClInclude Include="Lib.h" />
     <ClInclude Include="EventSystem.h" />
     <ClInclude Include="UnrealEngineModLoader\Mod\Mod.h">
       <Filter>UnrealModLoader\Mod</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_win32.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_internal.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imstb_rectpack.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imstb_textedit.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imstb_truetype.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imconfig.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_dx11.h">
-      <Filter>ImGui</Filter>
+    <ClInclude Include="UnrealEngineModLoader\Memory\CoreModLoader.h">
+      <Filter>UnrealModLoader\Memory</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
