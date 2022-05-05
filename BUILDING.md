@@ -24,7 +24,7 @@ This mod uses [Unreal Engine Mod Loader](https://github.com/RussellJerome/Unreal
 ## Steps: UnrealModLoader and Mod
 
 1. `cd Mod`
-2. `cmake -B build -S . -G "Visual Studio 2017 Win64` (or "Visual Studio 16 2019"/"Visual Studio 17 2022" without Win64), or use CMake-GUI.
+2. `cmake -B build -S . -G "Visual Studio 15 2017 Win64"` (or "Visual Studio 16 2019"/"Visual Studio 17 2022" without Win64), or use CMake-GUI.
 3. Open `arise-multiplayer/Mod/build/UnrealEngineModLoader.sln`.
 4. Build all 4 modules.
 5. Build the `INSTALL` target to collect and rename the files in `arise-multiplayer/Mod/install`.
