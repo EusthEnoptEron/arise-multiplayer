@@ -1,5 +1,9 @@
 # Changelog
 
+## LATEST
+
+- Fixed a bug where the multiplayer camera wouldn't kick in when the second character slot was not assigned to any character (#74)
+
 ## 1.0.5
 
 - Fixed issue with attack direction in manual mode. (#69)
