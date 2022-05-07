@@ -2,7 +2,7 @@
 
 ## LATEST
 
-- Fixed a bug where the multiplayer camera wouldn't kick in when the second character slot was not assigned to any character (#74)
+- Fixed a bug where the multiplayer camera wouldn't kick in when the second character slot was empty. (#74)
 
 ## 1.0.5
 
