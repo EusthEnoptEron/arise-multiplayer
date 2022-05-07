@@ -103,14 +103,21 @@ void ControlModeModule::OnSetTurnTargetArts(UE4::UObject* Context, UE4::FFrame& 
 	if (operationMode == SDK::EOperationMode::OPERATION_MODE_MANUAL) {
 		const auto mod = MultiplayerMod::GetInstance();
 		const auto controller = mod->GetControllerOfCharacter((UE4::APawn *)chara);
-		const auto inputProcess = mod->GetInputProcess(mod->GetPlayerIndex(controller));
+		const auto playerIndex = mod->GetPlayerIndex(controller);
 
-		if (inputProcess != nullptr) {
-			const auto moveToWorld = inputProcess->GetMoveToWorld();
-			const float distance = sqrt(moveToWorld.X * moveToWorld.X + moveToWorld.Y * moveToWorld.Y + moveToWorld.Z * moveToWorld.Z);
+		if (playerIndex > 0) {
+			const auto inputProcess = mod->GetInputProcess(playerIndex);
 
-			//Log::Info("Distance: %.2f", distance);
-			chara->IsTurnTarget = chara->IsTurnTarget && distance < 0.5;
+			if (inputProcess != nullptr) {
+				const auto moveToWorld = inputProcess->GetMoveToWorld();
+				const float distance = sqrt(moveToWorld.X * moveToWorld.X + moveToWorld.Y * moveToWorld.Y + moveToWorld.Z * moveToWorld.Z);
+				chara->IsTurnTarget = distance < 0.8;
+
+				if (distance >= 0.8) {
+					const auto rotator = ((SDK::UKismetMathLibrary*)inputProcess)->STATIC_MakeRotFromX(moveToWorld);
+					chara->K2_SetActorRotation(rotator, true);
+				}
+			}
 		}
 	}
 }

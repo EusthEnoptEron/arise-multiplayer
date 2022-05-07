@@ -17,7 +17,7 @@
 #include "Utilities/MinHook.h"
 
 typedef  void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void* result);
-typedef  float ( *FGetBtlAxisValue)(SDK::AInputExtPlayerController* thisPtr, const UE4::FName& InAxisName);
+typedef  float ( *FGetBtlAxisValue)(SDK::ABtlInputExtInputProcessBase* thisPtr, const UE4::FName InAxisName);
 typedef  void (*FNativeFuncPtr)(UE4::UObject* Context, UE4::FFrame& Stack, void* result);
 typedef  void (*FBlueprintHookHandler)(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
 

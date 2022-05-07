@@ -5,7 +5,6 @@
 
 MultiplayerMod* InputModule::ModRef;
 
-
 void InputModule::Initialize(MultiplayerMod* mod)
 {
 	ModRef = mod;
@@ -18,11 +17,24 @@ void InputModule::Initialize(MultiplayerMod* mod)
 		(UE4::UObject::FindObject<UE4::UFunction>("Function Arise.BtlInputExtInputProcessBase.K2_GetBtlAxisValue")->GetFunction()),
 		&GetBtlAxisValueHook, &GetBtlAxisValue, "K2_GetBtlAxisValue");
 
-	//auto addrPlayerTick = Pattern::Find("40 53 57 41 56 48 81 EC D0 00 00 00 48 8B F9 0F 29 B4 24 C0 00 00 00 48 8B 89 58 04 00 00 45 0F B6 F0 0F 28 F1");
+
+	//APFPlayerController::K2_GetAxisValue_PF  80 B9 ?? ?? ?? ?? 00 75 04 0F 57 C0 C3 48 81 C1 ?? ?? ?? ?? 
+	//MinHook::Add((DWORD_PTR)
+	//	//Pattern::Find("48 89 5C 24 08 57 48 83 EC 30 0F 29 74 24 20 4C 8B CA 45 33 C0 "),
+	//	Pattern::Find("80 B9 ?? ?? ?? ?? 00 75 04 0F 57 C0 C3 48 81 C1 ?? ?? ?? ??"),
+	//	&APFPlayerController__K2_GetAxisValue_PF_Hook, &APFPlayerController__K2_GetAxisValue_PF, "APFPlayerController::K2_GetAxisValue_PF");
+
+
 	MinHook::Add((DWORD_PTR)
 		Pattern::Find("40 55 53 57 41 55 48 8D 6C 24 88 48 81 EC ?? ?? ?? ?? 48 8B D9 0F 29 BC 24 ?? ?? ?? ??"),
 		&TickPlayerInputHook, &TickPlayerInput, "TickPlayerInput");
 
+	// TickActor
+	// 40 56 57 48 83 EC 58 0F 29 7C 24 30 (PlayerController)
+	// 40 53 48 83 EC 30 48 8B D9 0F 29 74 24 20 8B 49 0C 0F 28 F1  (Inputmodule)
+	//MinHook::Add((DWORD_PTR)
+	//	Pattern::Find("40 56 57 48 83 EC 58 0F 29 7C 24 30"),
+	//	&TickActorHook, &APlayerController__TickActor, "APlayerController::TickActor");
 
 	OnActionFn = FindFunction("Function ModActor.ModActor_C.OnAction");
 	OnActionPressedFn = FindFunction("Function ModActor.ModActor_C.OnActionPressed");
@@ -133,7 +145,6 @@ void InputModule::GetBtlAxisValueHook(UE4::UObject* Context, UE4::FFrame& Stack,
 	}
 }
 
-
 APlayerController__PrePostProcessInputFn InputModule::TickPlayerInput;
 void InputModule::TickPlayerInputHook(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused) {
 	auto instance = MultiplayerMod::GetInstance();
@@ -231,6 +242,8 @@ void InputModule::OnControllerConnected(int index) {
 	}
 	ModRef->ModActor->ProcessEvent(OnControllerConnectedFn, &index);
 	ModRef->Controllers[index] = ModRef->GetController(index);
+
+	Log::Info("Set player controller %d: %p", index, ModRef->Controllers[index]);
 }
 
 void InputModule::OnControllerDisconnected(int index) {
