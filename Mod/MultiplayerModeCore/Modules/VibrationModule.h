@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BaseModule.h";
+#include "BaseModule.h"
 typedef  void (*ClientStopForceFeedbackPtr)(SDK::APlayerController* thisPtr, SDK::UForceFeedbackEffect* ForceFeedbackEffect, const SDK::FName& Tag);
 typedef  void (*ClientPlayForceFeedbackPtr)(SDK::APlayerController* thisPtr, SDK::UForceFeedbackEffect* ForceFeedbackEffect, bool bLooping, bool bIgnoreTimeDilation, const SDK::FName& Tag, float LargePow, float SmallPow);
 

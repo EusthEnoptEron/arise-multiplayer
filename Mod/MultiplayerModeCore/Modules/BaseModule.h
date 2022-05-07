@@ -1,5 +1,5 @@
 #pragma once
-#include "MultiplayerMod.h";
+#include "MultiplayerMod.h"
 
 
 class BaseModule
@@ -9,4 +9,3 @@ public:
 	virtual void PostBeginPlay(UE4::AActor* modActor) {};
 	virtual void Tick() {};
 };
-

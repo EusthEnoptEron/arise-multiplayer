@@ -1,6 +1,6 @@
 #include "ConfigModule.h"
 #include <INI/INI.h>
-#include "Utils.h";
+#include "Utils.h"
 
 void ConfigModule::Initialize(MultiplayerMod* mod)
 {

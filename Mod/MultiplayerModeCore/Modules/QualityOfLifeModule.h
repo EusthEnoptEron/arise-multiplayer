@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BaseModule.h";
+#include "BaseModule.h"
 
 typedef  SDK::UCameraShake* (*FPlayCameraShakePtr)(SDK::UClass* ShakeClass, float Scale, SDK::TEnumAsByte<SDK::ECameraAnimPlaySpace> PlaySpace, const SDK::FRotator& UserPlaySpaceRot);
 
