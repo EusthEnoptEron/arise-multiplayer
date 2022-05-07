@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5
+
+- Fixed issue with attack direction in manual mode. (#69)
+
 ## 1.0.4
 
 - Restored compatibility with latest game version (7 April 2022)
