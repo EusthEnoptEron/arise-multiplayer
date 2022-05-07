@@ -37,13 +37,13 @@ set(UE4_FILES
 )
 
 set(UNREALENGINEMODLOADER_FILES
-	EventSystem.h
-	Hooks.cpp
-	Hooks.h
-	LoaderUI.cpp
-	LoaderUI.h
-	PakLoader.cpp
-	PakLoader.h
+	UnrealEngineModLoader/EventSystem.h
+	UnrealEngineModLoader/Hooks.cpp
+	UnrealEngineModLoader/Hooks.h
+	UnrealEngineModLoader/LoaderUI.cpp
+	UnrealEngineModLoader/LoaderUI.h
+	UnrealEngineModLoader/PakLoader.cpp
+	UnrealEngineModLoader/PakLoader.h
 	UnrealEngineModLoader/GameInfo/GameInfo.cpp
 	UnrealEngineModLoader/GameInfo/GameInfo.h
 	UnrealEngineModLoader/Memory/CoreModLoader.cpp
@@ -71,7 +71,7 @@ source_group("ImGui" FILES ${IMGUI_FILES})
 source_group("INI" FILES ${INI_FILES})
 source_group("MinHook" FILES ${MINHOOK_FILES})
 source_group("UE4" FILES ${UE4_FILES})
-source_group(TREE "UnrealEngineModLoader" FILES ${UNREALENGINEMODLOADER_FILES})
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/UnrealEngineModLoader" PREFIX "UnrealEngineModLoader" FILES ${UNREALENGINEMODLOADER_FILES})
 
 
 # definitions
@@ -81,7 +81,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC _USRDLL _CRT_SECURE_NO_WARNING
 # includes
 target_include_directories(${PROJECT_NAME} PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/MinHook
-	${CMAKE_CURRENT_SOURCE_DIR}/
+	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/UnrealEngineModLoader
 )
 

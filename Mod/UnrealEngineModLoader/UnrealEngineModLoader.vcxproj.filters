@@ -22,6 +22,9 @@
     <Filter Include="UnrealModLoader\Mod">
       <UniqueIdentifier>{31c4735e-1d2d-4355-95df-b9c75892f6af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="INI">
+      <UniqueIdentifier>{a4169ba3-aeab-447f-958c-a2b961b4f4c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="UnrealEngineModLoader\dllmain.cpp">
@@ -45,11 +48,9 @@
     <ClCompile Include="UE4\Basic.cpp">
       <Filter>UE4</Filter>
     </ClCompile>
-    <ClCompile Include="PakLoader.cpp" />
     <ClCompile Include="UnrealEngineModLoader\Utilities\Dumper.cpp">
       <Filter>UnrealModLoader\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="Hooks.cpp" />
     <ClCompile Include="UnrealEngineModLoader\Mod\Mod.cpp">
       <Filter>UnrealModLoader\Mod</Filter>
     </ClCompile>
@@ -58,6 +59,36 @@
     </ClCompile>
     <ClCompile Include="UnrealEngineModLoader\Utilities\Logger.cpp">
       <Filter>UnrealModLoader\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="UnrealEngineModLoader\Hooks.cpp">
+      <Filter>UnrealModLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="UnrealEngineModLoader\PakLoader.cpp">
+      <Filter>UnrealModLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="UnrealEngineModLoader\LoaderUI.cpp">
+      <Filter>UnrealModLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_demo.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_draw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_impl_dx11.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_impl_win32.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_tables.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_widgets.cpp">
+      <Filter>ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -91,15 +122,53 @@
     <ClInclude Include="UE4\Ue4.hpp">
       <Filter>UE4</Filter>
     </ClInclude>
-    <ClInclude Include="PakLoader.h" />
-    <ClInclude Include="Hooks.h" />
-    <ClInclude Include="Lib.h" />
-    <ClInclude Include="EventSystem.h" />
     <ClInclude Include="UnrealEngineModLoader\Mod\Mod.h">
       <Filter>UnrealModLoader\Mod</Filter>
     </ClInclude>
     <ClInclude Include="UnrealEngineModLoader\Memory\CoreModLoader.h">
       <Filter>UnrealModLoader\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="UnrealEngineModLoader\EventSystem.h">
+      <Filter>UnrealModLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="UnrealEngineModLoader\Hooks.h">
+      <Filter>UnrealModLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="UnrealEngineModLoader\Lib.h">
+      <Filter>UnrealModLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="UnrealEngineModLoader\PakLoader.h">
+      <Filter>UnrealModLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="UnrealEngineModLoader\LoaderUI.h">
+      <Filter>UnrealModLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imconfig.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_impl_dx11.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_impl_win32.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_internal.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_rectpack.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_textedit.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_truetype.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="INI\INI.h">
+      <Filter>INI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
