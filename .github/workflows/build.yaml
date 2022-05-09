@@ -1,0 +1,41 @@
+name: "build"
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '*.md'
+  push:
+    paths-ignore:
+      - '*.md'
+
+jobs:
+  build-mod:
+    runs-on: windows-2019
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug]
+    env:
+      BUILD_TYPE: ${{ matrix.build_type }}
+
+    steps:
+    - uses: actions/checkout@v3
+      with: 
+        submodules: true
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+      with:
+        msbuild-architecture: x64
+
+    - name: Configure CMake
+      working-directory: ${{github.workspace}}/Mod
+      run: cmake -B build -S . -G "Visual Studio 16 2019" -A x64
+
+    - name: echo MSBuild
+      run: msbuild -version
+
+    - name: Build project
+      working-directory: ${{github.workspace}}/Mod/build
+      run: msbuild UnrealEngineModLoader.sln
