@@ -2,7 +2,7 @@
 #include <windows.h>
 #include <time.h>
 #include <utility>
-#include "InputManager.h";
+#include "InputManager.h"
 #include <iostream>
 #include <fstream>
 #include "libloaderapi.h"

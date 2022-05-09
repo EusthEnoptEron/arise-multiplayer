@@ -410,7 +410,7 @@ std::string Tracer::GetParams(SDK::UFunction* Function, uint32 codeOffset, UE4::
 				//Log::Info("Out %p", B);
 				MultiplayerMod::GNatives[B](Stack.Object, Stack, NULL);
 
-				if (Stack.MostRecentPropertyAddress != nullptr && Property->PropertyFlags & CPF_ReferenceParm != 0) {
+				if (Stack.MostRecentPropertyAddress != nullptr && (Property->PropertyFlags & CPF_ReferenceParm) != 0) {
 					params += ToString((SDK::UProperty*)Property, Stack.MostRecentPropertyAddress) + ", ";
 				}
 			}

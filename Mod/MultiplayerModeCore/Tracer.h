@@ -12,7 +12,6 @@ const uint64_t CPF_OutParm = 0x0000000000000100;
 const uint64_t CPF_ReferenceParm = 0x0000000008000000;
 const uint64_t CPF_ZeroConstructor = 0x0000000000000200;
 const uint8_t EX_EndFunctionParms = 0x16;
-const uint8_t FUNC_Native = 0x00000400;
 
 struct UPropertyEx : SDK::UField {
 public:

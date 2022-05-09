@@ -27,7 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Hooks.cpp" />
+    <ClCompile Include="UnrealEngineModLoader\Hooks.cpp" />
     <ClCompile Condition="'$(Configuration)'=='Development'" Include="ImGui\imgui.cpp" />
     <ClCompile Condition="'$(Configuration)'=='Development'" Include="ImGui\imgui_demo.cpp" />
     <ClCompile Condition="'$(Configuration)'=='Development'" Include="ImGui\imgui_draw.cpp" />
@@ -35,8 +35,8 @@
     <ClCompile Condition="'$(Configuration)'=='Development'" Include="ImGui\imgui_impl_win32.cpp" />
     <ClCompile Condition="'$(Configuration)'=='Development'" Include="ImGui\imgui_tables.cpp" />
     <ClCompile Condition="'$(Configuration)'=='Development'" Include="ImGui\imgui_widgets.cpp" />
-    <ClCompile Condition="'$(Configuration)'=='Development'" Include="LoaderUI.cpp" />
-    <ClCompile Include="PakLoader.cpp" />
+    <ClCompile Condition="'$(Configuration)'=='Development'" Include="UnrealEngineModLoader\LoaderUI.cpp" />
+    <ClCompile Include="UnrealEngineModLoader\PakLoader.cpp" />
     <ClCompile Include="UE4\Basic.cpp" />
     <ClCompile Include="UE4\CoreUObject_functions.cpp" />
     <ClCompile Include="UnrealEngineModLoader\dllmain.cpp" />
@@ -50,8 +50,9 @@
     <ClCompile Include="UnrealEngineModLoader\Utilities\Logger.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EventSystem.h" />
-    <ClInclude Include="Hooks.h" />
+    <ClInclude Include="INI\INI.h" />
+    <ClInclude Include="UnrealEngineModLoader\EventSystem.h" />
+    <ClInclude Include="UnrealEngineModLoader\Hooks.h" />
     <ClInclude Condition="'$(Configuration)'=='Development'" Include="ImGui\imconfig.h" />
     <ClInclude Condition="'$(Configuration)'=='Development'" Include="ImGui\imgui.h" />
     <ClInclude Condition="'$(Configuration)'=='Development'" Include="ImGui\imgui_impl_dx11.h" />
@@ -60,9 +61,9 @@
     <ClInclude Condition="'$(Configuration)'=='Development'" Include="ImGui\imstb_rectpack.h" />
     <ClInclude Condition="'$(Configuration)'=='Development'" Include="ImGui\imstb_textedit.h" />
     <ClInclude Condition="'$(Configuration)'=='Development'" Include="ImGui\imstb_truetype.h" />
-    <ClInclude Include="Lib.h" />
-    <ClInclude Condition="'$(Configuration)'=='Development'" Include="LoaderUI.h" />
-    <ClInclude Include="PakLoader.h" />
+    <ClInclude Include="UnrealEngineModLoader\Lib.h" />
+    <ClInclude Condition="'$(Configuration)'=='Development'" Include="UnrealEngineModLoader\LoaderUI.h" />
+    <ClInclude Include="UnrealEngineModLoader\PakLoader.h" />
     <ClInclude Include="UE4\CoreUObject_classes.hpp" />
     <ClInclude Include="UE4\Ue4.hpp" />
     <ClInclude Include="UnrealEngineModLoader\GameInfo\GameInfo.h" />
