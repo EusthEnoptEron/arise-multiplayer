@@ -4,12 +4,10 @@
 
 #define MAX_uint16		((uint16)	0xffff)
 
-Tracer* Tracer::_Instance;
-FNativeFuncPtr* Tracer::_GNatives;
+Tracer* Tracer::_Instance = nullptr;
+FNativeFuncPtr* Tracer::_GNatives = nullptr;
 
 FNativeFuncPtr EX_VirtualFunction;
-
-
 void EX_VirtualFunctionHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
 	auto tracer = Tracer::GetInstance();
 

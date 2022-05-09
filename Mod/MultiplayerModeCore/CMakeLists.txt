@@ -1,4 +1,4 @@
-project(MultiplayerModeCore)
+project(MultiplayerModCore)
 
 set(BIGOBJ_FILES
 	Libs/Arise-SDK/src/SDK/Arise_functions.cpp

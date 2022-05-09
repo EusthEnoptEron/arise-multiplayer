@@ -5,7 +5,7 @@
 
 #pragma intrinsic(_ReturnAddress)
 
-InputManager *InputManager::Instance;
+InputManager *InputManager::Instance = NULL;
 GetConnectedControllers_t InputManager::GetConnectedControllers;
 ActivateActionSet_t InputManager::ActivateActionSet;
 
@@ -144,7 +144,8 @@ void InputManager::ActivateActionSetHook(ISteamInput* self, InputHandle_t inputH
 
 	// Workaround because the custom InputProcesses seem to interfere with the activated action sets
 	if (instance->Controllers.size() > 0) {
-		if (inputHandle == instance->Controllers[instance->FirstPlayerIndex] || !instance->_rerouteControllers) {
+		if (instance->FirstPlayerIndex && inputHandle == instance->Controllers[instance->FirstPlayerIndex]
+			|| !instance->_rerouteControllers) {
 			if (actionSetHandle == instance->AS_Battle) {
 				if (instance->_preventBattleInput || (instance->UpdateCounter - instance->_lastDifferentActionSet) < 2) {
 					return; // Abort

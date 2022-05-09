@@ -118,12 +118,12 @@ private:
 	}
 
 	static InputManager* Instance;
-	ISteamInput* Input;
+	ISteamInput* Input = nullptr;
 	InputHandle_t InputHandles[STEAM_INPUT_MAX_COUNT];
-	int InputHandleCount;
+	int InputHandleCount = 0;
 	std::vector<InputHandle_t> Controllers;
-	int FirstPlayerIndex;
-	int ActiveIndex;
+	int FirstPlayerIndex = 0;
+	int ActiveIndex = 0;
 
 	unsigned long UpdateCounter = 0;
 
@@ -160,7 +160,7 @@ private:
 
 	// Hack for the time being
 	bool _preventBattleInput = false;
-	unsigned long _lastDifferentActionSet;
+	unsigned long _lastDifferentActionSet = 0;
 	bool _rerouteControllers = false;
 	float _cameraSpeedRatio = .75f;
 

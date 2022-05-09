@@ -119,7 +119,7 @@ public:
 	UE4::APlayerController* Controllers[MAX_CONTROLLERS] = { nullptr };
 	UE4::AActor* InputProcesses[MAX_CONTROLLERS] = { nullptr };
 
-	UE4::AActor* ModActor;
+	UE4::AActor* ModActor = nullptr;
 
 	UE4::APawn* GetControlledCharacter(int index);
 	UE4::APlayerController* GetController(int index);
@@ -196,12 +196,10 @@ private:
 
 	void ChangePartyTop(int index);
 
-	void RefreshIni();
-
 	int MenuCandidate = 0;
 	bool LogEverything = false;
 
-	time_t LastCheck;
+	time_t LastCheck = 0;
 	InputManager* Manager;
 
 	bool Initialized = false;
