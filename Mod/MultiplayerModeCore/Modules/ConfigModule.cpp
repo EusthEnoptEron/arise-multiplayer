@@ -80,6 +80,7 @@ void ConfigModule::RefreshIni() {
 	parms.TargetCursorScale = std::stof(config.get("TargetCursorScale", "0.75"));
 	parms.HideDefaultCursor = std::stoi(config.get("HideDefaultCursor", "1"));
 
+	ModRef->ShowP1Health = std::stoi(config.get("ShowP1Health", "1"));
 	ModRef->DisableHitStop = std::stoi(config.get("DisableHitStop", "0"));
 
 	parms.DebugMenu = std::stoi(config.get("DebugMenu", "0"));

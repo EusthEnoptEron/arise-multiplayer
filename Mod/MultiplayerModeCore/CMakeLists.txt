@@ -12,6 +12,7 @@ set(ARISE_SDK_FILES
 	Libs/Arise-SDK/src/SDK/CoreUObject_parameters.h
 	Libs/Arise-SDK/src/SDK/CoreUObject_structs.h
 	Libs/Arise-SDK/src/SDK/Engine_functions.cpp
+	Libs/Arise-SDK/src/SDK/UMG_functions.cpp
 )
 
 set(UE4_FILES

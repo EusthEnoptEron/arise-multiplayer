@@ -3,6 +3,7 @@
 ## LATEST
 
 - Fixed a bug where the multiplayer camera wouldn't kick in when the second character slot was empty. (#74)
+- Added option to show the HP bar of P1 alongside with the others on the right side. (`ShowP1Health`)
 
 ## 1.0.5
 

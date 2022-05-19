@@ -136,6 +136,7 @@ public:
 	bool CameraFrozen = false;
 	float CameraShakeScale = 1.0f;
 	bool DisableHitStop = false;
+	bool ShowP1Health = true;
 
 	bool AutoChangeCharas = false;
 	bool RestrictBoostAttacksToCpuAndSelf = false;

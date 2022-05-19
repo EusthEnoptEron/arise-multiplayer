@@ -1,5 +1,7 @@
 #include "ModActorModule.h"
-
+#include "SDK/TO14_BPI_GUI_BTL_STATUS_PARTY_BASE_classes.h"
+#include "SDK/TO14_BPI_GUI_BTL_STATUS_PARTY2_classes.h"
+#include "SDK/BPI_BTL_LAYOUT_PARTY_ROOT_classes.h"
 #include "Utils.h"
 
 MultiplayerMod* ModActorModule::ModRef;
@@ -85,6 +87,16 @@ void ModActorModule::OnBeginBattle(UE4::UObject* Context, UE4::FFrame& Stack, vo
 	ModRef->ModActor->ProcessEvent(K2_GetBattlePCControllerFn, &args);
 	ModRef->Controllers[0] = (UE4::APlayerController*)args.Result;
 	Log::Info("Setting first player controller: %p (%s)", ModRef->Controllers[0], ModRef->Controllers[0]->GetName().c_str());
+
+	SDK::TArray<SDK::UUserWidget*> results;
+	((SDK::UWidgetBlueprintLibrary*)Context)->STATIC_GetAllWidgetsOfClass((SDK::UObject*)Context, SDK::UBPI_BTL_LAYOUT_PARTY_ROOT_C::StaticClass(), true, &results);
+
+	if ((SDK::UBPI_BTL_LAYOUT_PARTY_ROOT_C*)results.Num() > 0) {
+		const auto partyRoot = (SDK::UBPI_BTL_LAYOUT_PARTY_ROOT_C*)results[0];
+
+		// Make it reflect HP changes
+		(partyRoot->FrontPlayer)->IsSkipAnim = false;
+	}
 
 	processFn(Context, Stack, result);
 }

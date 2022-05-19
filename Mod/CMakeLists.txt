@@ -29,6 +29,10 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/ModLoaderInfo.ini"
 	DESTINATION $<CONFIG>/Binaries/Win64
 )
 
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/MultiplayerMod.example.ini"
+	DESTINATION $<CONFIG>/Binaries/Win64
+)
+
 set(TALES_OF_ARISE_PROFILE "${CMAKE_CURRENT_SOURCE_DIR}/Profiles/Tales of Arise.profile" CACHE FILEPATH "'Tales of Arise.profile', which shall be copied to Profiles subfolder.")
 install(FILES ${TALES_OF_ARISE_PROFILE}
 	DESTINATION $<CONFIG>/Binaries/Win64/Profiles/
