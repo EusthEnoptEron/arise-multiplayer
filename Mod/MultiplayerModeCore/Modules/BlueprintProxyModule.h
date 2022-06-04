@@ -20,6 +20,11 @@ private:
 	static void Native_GetInputProcessImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
 	static void Native_SetProcessImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
 
+	static void Native_GetControllerCountImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
+	static void Native_GetControllersImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
+	static void Native_SetControllersImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
+	static void Native_SetVibrationImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
+
 	static void PrintHierarchy(SDK::UWidget* widget, int depth = 0);
 
 	static MultiplayerMod* ModRef;

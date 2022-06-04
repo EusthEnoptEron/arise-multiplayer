@@ -21,6 +21,26 @@ void BlueprintProxyModule::Initialize(MultiplayerMod* mod)
 	);
 
 	mod->AddBlueprintHook(
+		"BP_ModHelper.BP_ModHelper_C.Native_GetControllers",
+		Native_GetControllersImpl
+	);
+
+	mod->AddBlueprintHook(
+		"BP_ModHelper.BP_ModHelper_C.Native_GetControllerCount",
+		Native_GetControllerCountImpl
+	);
+
+	mod->AddBlueprintHook(
+		"BP_ModHelper.BP_ModHelper_C.Native_SetControllers",
+		Native_SetControllersImpl
+	);
+
+	mod->AddBlueprintHook(
+		"BP_ModHelper.BP_ModHelper_C.Native_SetVibration",
+		Native_SetVibrationImpl
+	);
+
+	mod->AddBlueprintHook(
 		"MultiPlayerController.MultiPlayerController_C.Native_GetPlayerController",
 		Native_GetPlayerControllerImpl
 	);	
@@ -138,6 +158,76 @@ void BlueprintProxyModule::Native_SetProcessImpl(UE4::UObject* Context, UE4::FFr
 	Log::Info("Set process %d to %p / %p", args.Index, args.Process, ModRef->InputProcesses[args.Index]);
 
 	processFn(Context, Stack, result);
+}
+
+void BlueprintProxyModule::Native_GetControllerCountImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn)
+{
+	*((int32_t*)((FOutParmRec*)Stack.OutParms)->PropAddr) = InputManager::GetInstance()->Controllers.size();
+}
+
+void BlueprintProxyModule::Native_GetControllersImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn)
+{
+	static const auto controllerDataClazz = SDK::UClass::FindClass("Class ControllerData.ControllerData_C");
+	static const auto controllerDataSetId = SDK::UFunction::FindObject<SDK::UFunction>("Function ControllerData.ControllerData_C.SetId");
+
+	const auto controllerArray = *Stack.GetParams<SDK::TArray<SDK::UObject*>>();
+	const auto controllerArrayData = *(SDK::UObject ***)(&controllerArray);
+	
+	int i = 0;
+	for (const auto controller : InputManager::GetInstance()->Controllers) {
+		if (controller != 0) {
+			auto controllerData = ((SDK::UGameplayStatics*)Context)->STATIC_SpawnObject(controllerDataClazz, (SDK::UObject*)Context);
+			SDK::FString idString(std::to_wstring(controller).c_str());
+			controllerData->ProcessEvent(controllerDataSetId, &idString);
+			controllerArrayData[i++] = controllerData;
+		}
+		else {
+			i++;
+		}
+	}
+
+	//*((UE4::AActor**)((FOutParmRec*)Stack.OutParms)->PropAddr) = ModRef->InputProcesses[0];
+}
+
+void BlueprintProxyModule::Native_SetControllersImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn)
+{
+	static const auto controllerDataGetId = SDK::UFunction::FindObject<SDK::UFunction>("Function ControllerData.ControllerData_C.GetId");
+
+	const auto inputManager = InputManager::GetInstance();
+	const auto controllerArray = *Stack.GetParams<SDK::TArray<SDK::UObject*>>();
+
+	inputManager->Controllers.clear();
+
+	for (int i = 0; i < controllerArray.Num(); i++) {
+		const auto obj = controllerArray[i];
+		
+		if (((SDK::UKismetSystemLibrary *)Context)->STATIC_IsValid(obj)) {
+			SDK::FString idString;
+			obj->ProcessEvent(controllerDataGetId, &idString);
+
+			const auto handle = std::stoul(idString.ToString());
+		
+			inputManager->Controllers.push_back(handle);
+		}
+		else {
+			inputManager->Controllers.push_back(0);
+		}
+	}
+
+}
+
+struct SetVibrationParms {
+	SDK::FString Id;
+	bool IsOn;
+};
+
+void BlueprintProxyModule::Native_SetVibrationImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn)
+{
+	const auto parms = Stack.GetParams<SetVibrationParms>();
+	const auto handle = std::stoul(parms->Id.ToString());
+	const auto isOn = parms->IsOn;
+
+	InputManager::GetInstance()->GetInput()->TriggerVibration(handle, isOn ? USHRT_MAX / 2 : 0, isOn ? USHRT_MAX / 2 : 0);
 }
 
 

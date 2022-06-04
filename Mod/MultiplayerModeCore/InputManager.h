@@ -85,6 +85,8 @@ public:
 	bool IsMenuPressed(int index);
 
 	bool SkipFirstPlayer = false;
+	std::vector<InputHandle_t> Controllers;
+
 private:
 	InputManager() {
 		Input = SteamInput();
@@ -121,7 +123,6 @@ private:
 	ISteamInput* Input = nullptr;
 	InputHandle_t InputHandles[STEAM_INPUT_MAX_COUNT];
 	int InputHandleCount = 0;
-	std::vector<InputHandle_t> Controllers;
 	int FirstPlayerIndex = 0;
 	int ActiveIndex = 0;
 

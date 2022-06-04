@@ -16,7 +16,6 @@ private:
 	static void OnRunBoostAttack(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
 	static void OnAttackBeginEvent(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
 
-
 	static MultiplayerMod* ModRef;
 
 	static int LastStrikeInitiator;
