@@ -1,6 +1,17 @@
 #pragma once
 #include "BaseModule.h"
 
+struct SetGetControllersParms {
+	//SDK::UObject* Context;
+	int dummy0;
+	SDK::TArray<SDK::UObject*> Controllers;
+	int dummy2;
+};
+
+struct SetVibrationParms {
+	SDK::FString Id;
+	bool IsOn;
+};
 
 /// <summary>
 /// Module that takes care of the communication between native code and blueprints.
