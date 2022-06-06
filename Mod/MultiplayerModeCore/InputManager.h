@@ -82,6 +82,8 @@ public:
 		return GetInstance()->Input;
 	}
 
+	void SyncColors();
+
 	bool IsMenuPressed(int index);
 
 	bool SkipFirstPlayer = false;
