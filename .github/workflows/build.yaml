@@ -5,9 +5,15 @@ on:
       - main
     paths-ignore:
       - '*.md'
+      - 'LICENSE'
+      - 'Assets/**'
+      - 'Unreal/**'
   push:
     paths-ignore:
       - '*.md'
+      - 'LICENSE'
+      - 'Assets/**'
+      - 'Unreal/**'
 
 jobs:
   build-mod:
@@ -15,9 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build_type: [Debug]
-    env:
-      BUILD_TYPE: ${{ matrix.build_type }}
+        build_type: [Debug, RelWithDebInfo, Release]
 
     steps:
     - uses: actions/checkout@v3
@@ -38,4 +42,10 @@ jobs:
 
     - name: Build project
       working-directory: ${{github.workspace}}/Mod/build
-      run: msbuild UnrealEngineModLoader.sln
+      run: msbuild /nologo /target:Build /property:Configuration=${{matrix.build_type}} INSTALL.vcxproj
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{matrix.build_type}}
+        path: Mod/install/${{matrix.build_type}}
