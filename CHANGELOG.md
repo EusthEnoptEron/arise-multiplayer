@@ -1,6 +1,6 @@
 # Changelog
 
-## LATEST
+## 1.1.0
 
 - Fixed a bug where the multiplayer camera wouldn't kick in when the second character slot was empty. (#74)
 - Improved handling of haptic feedback.
