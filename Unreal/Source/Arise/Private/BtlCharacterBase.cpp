@@ -77,7 +77,17 @@ bool ABtlCharacterBase::SetPlayerOperation(bool Enable) { return false; }
 
 bool ABtlCharacterBase::SetEnableRestartAI(bool on) { return false; }
 
+
 void ABtlCharacterBase::SetBtlAIController(class ABtl_AIControllerBase* AIController)
+{
+}
+
+ABtl_AIControllerBase* ABtlCharacterBase::GetBtlAIController()
+{
+	return 0;
+}
+
+void ABtlCharacterBase::RestartAI()
 {
 }
 

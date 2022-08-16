@@ -68,6 +68,12 @@ public:
 	void SetBtlAIController(ABtl_AIControllerBase* AIController);
 
 	UFUNCTION(BlueprintCallable)
+	ABtl_AIControllerBase* GetBtlAIController();
+	
+	UFUNCTION(BlueprintCallable)
+	void RestartAI();
+
+	UFUNCTION(BlueprintCallable)
 	void SetAIFlag(bool Enable, EBtlBitFlagCategory Category);
 
 	UFUNCTION(BlueprintCallable)

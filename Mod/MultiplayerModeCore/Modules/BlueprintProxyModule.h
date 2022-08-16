@@ -1,6 +1,17 @@
 #pragma once
 #include "BaseModule.h"
 
+struct SetGetControllersParms {
+	//SDK::UObject* Context;
+	int dummy0;
+	SDK::TArray<SDK::UObject*> Controllers;
+	int dummy2;
+};
+
+struct SetVibrationParms {
+	SDK::FString Id;
+	bool IsOn;
+};
 
 /// <summary>
 /// Module that takes care of the communication between native code and blueprints.
@@ -20,8 +31,14 @@ private:
 	static void Native_GetInputProcessImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
 	static void Native_SetProcessImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
 
+	static void Native_GetControllerCountImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
+	static void Native_GetControllersImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
+	static void Native_SetControllersImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
+	static void Native_SetVibrationImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn);
+
 	static void PrintHierarchy(SDK::UWidget* widget, int depth = 0);
 
+	static BlueprintProxyModule *Instance;
 	static MultiplayerMod* ModRef;
 };
 

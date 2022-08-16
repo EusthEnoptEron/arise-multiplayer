@@ -27,6 +27,7 @@ int InputManager::GetIndexForController(InputHandle_t handle) {
 		// Found empty spot
 		Controllers[emptySpot] = handle;
 		Log::Info("Registering new controller: %p (P%d)", handle, emptySpot+1);
+		SyncColors();
 		return emptySpot;
 	}
 
@@ -36,6 +37,8 @@ int InputManager::GetIndexForController(InputHandle_t handle) {
 
 	Controllers.push_back(handle);
 	Log::Info("Registering new controller: %p (P%d)", handle, Controllers.size());
+	SyncColors();
+
 	return Controllers.size() - 1;
 }
 
@@ -130,6 +133,38 @@ void InputManager::Refresh(GamepadState gamepads[]) {
 	}
 	
 	//SteamAPI_ReleaseCurrentThreadMemory();
+}
+
+void InputManager::SyncColors()
+{
+	int i = 0;
+	for (const auto handle : Controllers) {
+		uint8 r = 50;
+		uint8 g = 50;
+		uint8 b = 50;
+
+		if (handle != 0) {
+			switch (i) {
+				case 0:
+					b = 255;
+					break;
+				case 1: 
+					r = 255;
+					break;
+				case 2:
+					g = 255;
+					break;
+				case 3:
+					r = 255;
+					b = 255;
+					break;
+			}
+			
+			Input->SetLEDColor(handle, r, g, b, ESteamInputLEDFlag::k_ESteamInputLEDFlag_SetColor);
+		}
+
+		i++;
+	}
 }
 
 bool InputManager::IsMenuPressed(int index) {

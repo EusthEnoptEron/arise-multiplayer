@@ -3,7 +3,10 @@
 ## LATEST
 
 - Fixed a bug where the multiplayer camera wouldn't kick in when the second character slot was empty. (#74)
+- Improved handling of haptic feedback.
 - Added option to show the HP bar of P1 alongside with the others on the right side. (`ShowP1Health`)
+- Added use of LED colors on gamepads that support it (e.g. PS5). Blue = 1st, Red = 2nd, Green = 3rd, Purple = 4th
+- Added a highly experimental menu that allows changing the controller assignment (opens with <kbd>F2</kbd>). Can be used to disable controllers or move them around or simply debug them.
 
 ## 1.0.5
 

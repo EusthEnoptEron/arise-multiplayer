@@ -190,6 +190,16 @@ If you want them to control separate characters (what you'd expect from multi-pl
 - A.) Plug in (or emulate) a second gamepad and ignore the first one.
 - B.) Set "FirstPlayerIsKeyboard=1" in the settings. (See [Customization](#customization))
 
+## Changing the Controller Order
+
+By pressing <kbd>F2</kbd> you can open a *highly experimental* menu that lets you rebind the gamepad order (i.e. you can move / disable certain gamepads).
+
+A few things to note:
+
+- You need a mouse to operate the menu.
+- You should be in a menu to begin with (e.g. the main menu), otherwise the mouse cursor won't work properly.
+- You can drag & drop gamepads where you want them. They should vibrate (somewhat) when you drag them, for identification.
+
 ## How to build
 
 see [BUILDING.md](BUILDING.md)
