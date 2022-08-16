@@ -1,9 +1,18 @@
 #include "BlueprintProxyModule.h"
 
 MultiplayerMod* BlueprintProxyModule::ModRef = nullptr;
+BlueprintProxyModule* BlueprintProxyModule::Instance = nullptr;
+
+static SDK::UClass* controllerDataClazz;
+static SDK::UFunction* controllerDataSetId;
+static SDK::UFunction* controllerDataGetId;
 
 void BlueprintProxyModule::Initialize(MultiplayerMod* mod)
 {
+	controllerDataClazz = SDK::UClass::FindClass("Class ControllerData.ControllerData_C");
+	controllerDataSetId = SDK::UFunction::FindObject<SDK::UFunction>("Function ControllerData.ControllerData_C.SetId");
+	controllerDataGetId = SDK::UFunction::FindObject<SDK::UFunction>("Function ControllerData.ControllerData_C.GetId");
+
 	mod->AddBlueprintHook(
 		"BP_ModHelper.BP_ModHelper_C.Native_GetHudVisibility",
 		Native_GetHudVisibilityImpl
@@ -55,7 +64,7 @@ void BlueprintProxyModule::Initialize(MultiplayerMod* mod)
 	);
 
 	ModRef = mod;
-
+	Instance = this;
 }
 
 void BlueprintProxyModule::Native_GetHudVisibilityImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn)
@@ -166,9 +175,6 @@ void BlueprintProxyModule::Native_GetControllerCountImpl(UE4::UObject* Context, 
 
 void BlueprintProxyModule::Native_GetControllersImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn)
 {
-	static const auto controllerDataClazz = SDK::UClass::FindClass("Class ControllerData.ControllerData_C");
-	static const auto controllerDataSetId = SDK::UFunction::FindObject<SDK::UFunction>("Function ControllerData.ControllerData_C.SetId");
-
 	const SDK::TArray<SDK::UObject*> controllerArray = *(SDK::TArray<SDK::UObject*>*)(((FOutParmRec*)Stack.OutParms)->PropAddr);
 
 	//Log::Info("%p [%d] -> %d", controllerArray, controllerArray->Num(), (*(SDK::TArray<SDK::UObject *>**)(&controllerArray))->Num());
@@ -198,7 +204,6 @@ void BlueprintProxyModule::Native_GetControllersImpl(UE4::UObject* Context, UE4:
 
 void BlueprintProxyModule::Native_SetControllersImpl(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn)
 {
-	static const auto controllerDataGetId = SDK::UFunction::FindObject<SDK::UFunction>("Function ControllerData.ControllerData_C.GetId");
 
 	const auto inputManager = InputManager::GetInstance();
 	const auto controllerArray = *(SDK::TArray<SDK::UObject*>*)(((FOutParmRec*)Stack.OutParms)->PropAddr);
@@ -223,7 +228,7 @@ void BlueprintProxyModule::Native_SetControllersImpl(UE4::UObject* Context, UE4:
 			Log::Info("Pushing NULL");
 		}
 	}
-
+	
 	inputManager->SyncColors();
 }
 

@@ -38,6 +38,7 @@ private:
 
 	static void PrintHierarchy(SDK::UWidget* widget, int depth = 0);
 
+	static BlueprintProxyModule *Instance;
 	static MultiplayerMod* ModRef;
 };
 

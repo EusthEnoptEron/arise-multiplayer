@@ -48,5 +48,27 @@ class ARISE_API AAriseGameMode : public AGameMode
 	UFUNCTION(BlueprintCallable)
 	void DebugCamera(bool bEnable);
 
+	UFUNCTION(BlueprintCallable)
+	void SetSystemPauseRequestEnable(bool bEnable);
 	
+	UFUNCTION(BlueprintCallable)
+	void RequestSystemPause();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsPausePossibleState();
+	
+	UFUNCTION(BlueprintCallable)
+	bool IsSystemPauseRequestEnabled();
+
+	UFUNCTION(BlueprintCallable)
+	void FlushRequestSystemPause();
+
+	UFUNCTION(BlueprintCallable)
+	int CheckSystemPauseState();
+	
+	UFUNCTION(BlueprintCallable)
+	void CancelSystemPause();
+
+	UFUNCTION(BlueprintCallable)
+	void CancelSystemPauseAll();
 };
