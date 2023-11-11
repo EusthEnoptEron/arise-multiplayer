@@ -4,8 +4,6 @@
 
 typedef void(*APlayerController__PrePostProcessInputFn)(UE4::APlayerController* thisptr, const float DeltaTime, const bool bGamePaused);
 
-
-
 namespace Actions {
 	const UE4::FString BATTLE_CAMERA_RESET = L"BATTLE_CAMERA_RESET";
 	const UE4::FString BATTLE_MENU = L"BATTLE_MENU";

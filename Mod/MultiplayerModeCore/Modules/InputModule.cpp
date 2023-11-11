@@ -25,8 +25,9 @@ void InputModule::Initialize(MultiplayerMod* mod)
 	//	&APFPlayerController__K2_GetAxisValue_PF_Hook, &APFPlayerController__K2_GetAxisValue_PF, "APFPlayerController::K2_GetAxisValue_PF");
 
 
+	// PlayerTick @ 48 89 5C 24 ?? 57 48 83 EC 70 8B 81 ?? ?? ?? ?? 48 8B F9 0F 29
 	MinHook::Add((DWORD_PTR)
-		Pattern::Find("40 55 53 57 41 55 48 8D 6C 24 88 48 81 EC ?? ?? ?? ?? 48 8B D9 0F 29 BC 24 ?? ?? ?? ??"),
+		Pattern::Find("40 53 57 41 56 48 81 EC ?? ?? ?? ?? 48 8B F9 0F 29 B4 24 ?? ?? ?? ?? 48 8B 89"),
 		&TickPlayerInputHook, &TickPlayerInput, "TickPlayerInput");
 
 	// TickActor
