@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0
+
+- Fixed compatibility with latest game version (9 November 2023)
+
 ## 1.1.1
 
 - Fixed a bug where the mod would not load.
