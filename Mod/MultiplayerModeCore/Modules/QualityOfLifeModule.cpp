@@ -5,7 +5,7 @@ void QualityOfLifeModule::Initialize(MultiplayerMod* mod)
 {
 	// B34C80
 	MinHook::Add((DWORD_PTR)
-		Pattern::Find("48 89 5C 24 ?? 57 41 56 41 57 48 83 EC ?? 0F 29 74 24 ?? 4D 8B F1 0F 28 F1 45 8B F8 48 8B D9 40 32 FF"),
+		Pattern::Find("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 50 0F 29 ?? ?? ?? 49 8B F1"),
 		&PlayCameraShakeHook, &PlayCameraShake, "PlayCameraShake");
 
 	mod->AddBlueprintHook(
