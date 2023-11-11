@@ -84,7 +84,7 @@ void MultiplayerMod::InitializeMod()
 	SDK::UObject::GObjects = (SDK::FUObjectArray*)GameProfile::SelectedGameProfile.GObject;
 	SDK::FName::GNames = (SDK::TNameEntryArray*)GameProfile::SelectedGameProfile.GName;
 	SDK::UObject::ProcessEventPtr = (SDK::ProcessEventFn)GameProfile::SelectedGameProfile.ProcessEvent;
-
+	
 	SetupHooks();
 
 	// 0x42784DC, patch-2022-2: 0x3D57034
@@ -110,7 +110,7 @@ void MultiplayerMod::InitializeMod()
 
 	MinHook::Init();
 
-	auto tickFn = Pattern::Find("?? 48 8B C8 B2 01 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B C8") - 0x2c;
+	auto tickFn = Pattern::Find("48 8B C4 48 89 48 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 78 FD FF FF");
 	void* ProcessInterals = UE4::UObject::FindObject<UE4::UFunction>("Function InputExtPlugin.InputExtInputProcessBase.ReceiveBeginProcess")->GetFunction();
 
 	MinHook::Add((DWORD64)tickFn, &FEngineLoop__Tick_Hook, &FEngineLoop__Tick_Orig, "FEngineLoop__Tick_Fn");
@@ -439,7 +439,8 @@ UE4::APlayerController* MultiplayerMod::GetControllerOfCharacter(UE4::APawn* paw
 
 	UE4::APlayerController* playerController = nullptr;
 	pawn->ProcessEvent(pawnGetControllerFn, &playerController);
-
+	//SDK::APlayerController* playerController2 = (SDK::APlayerController*)playerController;
+	//Log::Info("[%s] &VFTable: %p", playerController2->GetName().c_str(), *((intptr_t*)playerController));
 	return playerController;
 }
 

@@ -52,7 +52,6 @@ struct GetControllerParms {
 const int MAX_CONTROLLERS = 10;
 
 typedef void(*FEngineLoop__Tick_Fn)(void* thisptr);
-typedef void(*APlayerController__PlayerTickFn)(UE4::APlayerController* thisptr, const float DeltaTime);
 
 //const uint8_t EX_EndFunctionParms = 0x16;
 
