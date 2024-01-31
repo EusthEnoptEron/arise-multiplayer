@@ -1,5 +1,4 @@
 #include "InputModule.h"
-#include "Tracer.h"
 #include "Utils.h"
 
 
@@ -118,6 +117,8 @@ FNativeFuncPtr InputModule::GetBtlAxisValue;
 void InputModule::GetBtlAxisValueHook(UE4::UObject* Context, UE4::FFrame& Stack, void* result) {
 	std::string nameString = GetName(Stack);
 	GetBtlAxisValue(Context, Stack, result);
+
+	auto previousFrame = Stack.PreviousFrame;
 
 	auto mod = ((MultiplayerMod*)Mod::ModRef);
 	int id = mod->GetPlayerIndexFromInputProcessor((UE4::AActor*)Context);
