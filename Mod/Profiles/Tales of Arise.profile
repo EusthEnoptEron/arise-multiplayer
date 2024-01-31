@@ -42,3 +42,28 @@ SpawnActorFTrans=48 8B C4 55 53 56 57 41 54 41 55 41 56 41 57 48 8D A8 08 FF FF 
 ProcessEvent=40 55 56 57 41 54 41 55 41 56 41 57 48 81 EC F0 00 00 00
 CreateDefaultObject=4C 8B DC 57 48 81 EC 00 02 00 00
 CallFunctionByNameWithArguments=40 55 53 56 57 41 54 41 55 41 56 41 57 48 81 EC 28 03 00 00
+
+
+# Optional, but seems to fix issues on some systems where the game otherwise hangs
+[UObjectDef]
+Index=0xC
+Class=0x10
+Name=0x18
+Outer=0x20
+
+[UFieldDef]
+Next=0x28
+
+[UStructDef]
+SuperStruct=0x30
+Children=0x38
+PropertiesSize=0x40
+
+[UFunctionDef]
+FunctionFlags=0x88
+Func=0xB0
+
+[Property]
+IsFProperty=0
+ArrayDim=0x30
+Offset=0x44
