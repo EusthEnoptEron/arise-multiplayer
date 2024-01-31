@@ -1,5 +1,6 @@
 #include "ControlModeModule.h"
 #include "Utils.h"
+#include "Tracer.h"
 
 UE4::UFunction* ControlModeModule::DerivedInputStateComponent__GetOwnerFn;
 void ControlModeModule::Initialize(MultiplayerMod* mod)
@@ -90,34 +91,82 @@ void ControlModeModule::OnOperationUnitChanged(UE4::UObject* Context, UE4::FFram
 	processFn(Context, Stack, result);
 }
 
+// For some reason, the determination of IsTurnTarget does not work correctly for P1 (uses dirs from P2-P4) and P2-P4 (zero values?),
+// so we do the calculation ourselves. The code is taken from the original implementation, with some adjustments.
 void ControlModeModule::OnSetTurnTargetArts(UE4::UObject* Context, UE4::FFrame& Stack, void* result, FNativeFuncPtr processFn)
 {
-	processFn(Context, Stack, result);
-
-
-	// For some reason, the determination of IsTurnTarget does not work correctly for P2-P4,
-	// so we do the calculation ourselves.
 
 	const auto chara = (SDK::ABP_BtlCharacterBase_C*)Stack.Object;
 	const auto operationMode = ((SDK::UBtlFunctionLibrary*)chara)->STATIC_GetOperationMode();
+	struct ABP_BtlCharacterBase_C_SetTurnTarget_Params
+	{
+		float Range;                                                    // (BlueprintVisible, BlueprintReadOnly, Parm, ZeroConstructor, IsPlainOldData)
+		float Speed;                                                    // (BlueprintVisible, BlueprintReadOnly, Parm, ZeroConstructor, IsPlainOldData)
+		float Time;                                                     // (BlueprintVisible, BlueprintReadOnly, Parm, ZeroConstructor, IsPlainOldData)
+	};
+
 	if (operationMode == SDK::EOperationMode::OPERATION_MODE_MANUAL) {
 		const auto mod = MultiplayerMod::GetInstance();
-		const auto controller = mod->GetControllerOfCharacter((UE4::APawn *)chara);
+		const auto controller = mod->GetControllerOfCharacter((UE4::APawn*)chara);
 		const auto playerIndex = mod->GetPlayerIndex(controller);
 
-		if (playerIndex > 0) {
+	
+		if (playerIndex >= 0) {
 			const auto inputProcess = mod->GetInputProcess(playerIndex);
 
-			if (inputProcess != nullptr) {
-				const auto moveToWorld = inputProcess->GetMoveToWorld();
-				const float distance = sqrt(moveToWorld.X * moveToWorld.X + moveToWorld.Y * moveToWorld.Y + moveToWorld.Z * moveToWorld.Z);
-				chara->IsTurnTarget = distance < 0.8;
+			if (inputProcess == nullptr) {
+				Log::Info("No input process");
+				return;
+			};
+			
+			const auto params = Stack.GetParams<ABP_BtlCharacterBase_C_SetTurnTarget_Params>();
 
-				if (distance >= 0.8) {
+			chara->InterpTurnAngleRange = 360.0;
+			chara->InterpTurnSpeed = params->Speed;
+			chara->InterpTurnTime = params->Time;
+
+			const auto moveToWorld = inputProcess->GetMoveToWorld();
+			const float distance = sqrt(moveToWorld.X * moveToWorld.X + moveToWorld.Y * moveToWorld.Y + moveToWorld.Z * moveToWorld.Z);
+
+			
+			if (distance >= 0.8) {
+				// Apply
+				if (playerIndex >= 0) {
 					const auto rotator = ((SDK::UKismetMathLibrary*)inputProcess)->STATIC_MakeRotFromX(moveToWorld);
 					chara->K2_SetActorRotation(rotator, true);
 				}
+
+				return;
 			}
+
+			auto targetChara = chara->GetTargetCharacter(false);
+			if (!((SDK::UKismetSystemLibrary*)chara)->STATIC_IsValid(targetChara)) {
+				return;
+			}
+
+			const auto charaPos = chara->GetTransform().Translation;
+			const auto targetPos = targetChara->GetTransform().Translation;
+
+
+			const auto diff = SDK::FVector{
+				targetPos.X - charaPos.X,
+				targetPos.Y - charaPos.Y ,
+				0.0,
+			};
+
+			const auto diffDistance = sqrt(diff.X * diff.X + diff.Y * diff.Y);
+
+			if (diffDistance >= params->Range) {
+				return;
+			}
+			
+			// Apply
+			const auto rotator = ((SDK::UKismetMathLibrary*)inputProcess)->STATIC_MakeRotFromX(diff);
+			chara->K2_SetActorRotation(rotator, true);
 		}
 	}
+	else {
+		processFn(Context, Stack, result);
+	}
+
 }
