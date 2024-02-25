@@ -112,6 +112,10 @@ void ControlModeModule::OnSetTurnTargetArts(UE4::UObject* Context, UE4::FFrame& 
 
 	
 		if (playerIndex >= 0) {
+			// ----------------------------
+			// Deal with logic ourselves
+			// ----------------------------
+
 			const auto inputProcess = mod->GetInputProcess(playerIndex);
 
 			if (inputProcess == nullptr) {
@@ -163,10 +167,12 @@ void ControlModeModule::OnSetTurnTargetArts(UE4::UObject* Context, UE4::FFrame& 
 			// Apply
 			const auto rotator = ((SDK::UKismetMathLibrary*)inputProcess)->STATIC_MakeRotFromX(diff);
 			chara->K2_SetActorRotation(rotator, true);
+			return;
+
+			// --------------------------
 		}
 	}
-	else {
-		processFn(Context, Stack, result);
-	}
 
+	// Fallback to default processing
+	processFn(Context, Stack, result);
 }
