@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1
+
+- Fixed issue with some systems where the game would hang on boot.
+- Kind of / hopefully fixed issue with P1 aim in manual mode.
+
 ## 1.2.0
 
 - Fixed compatibility with latest game version (9 November 2023)
