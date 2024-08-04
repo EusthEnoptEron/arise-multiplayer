@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.2
+
+- Fixed an issue with enemy not correctly attacking the players.
+
 ## 1.2.1
 
 - Fixed issue with some systems where the game would hang on boot.
